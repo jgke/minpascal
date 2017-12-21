@@ -1,0 +1,10 @@
+.gradle
+/build/
+/out/
+
+/helloWorld
+/helloWorld.c
+
+.idea
+*.iml
+*.class

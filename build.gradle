@@ -1,0 +1,55 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.1.6'
+    }
+}
+
+plugins {
+    id 'io.franzbecker.gradle-lombok' version '1.11'
+    id 'java'
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'jacoco'
+apply plugin: 'info.solidsoft.pitest'
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'junit:junit:[4,)'
+    testCompile "org.mockito:mockito-core:[2,)"
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
+    testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+        html.destination "${buildDir}/jacocoHtml"
+    }
+}
+
+task applicationCodeCoverageReport(type:JacocoReport){
+    executionData run
+    sourceSets sourceSets.main
+}
+
+pitest {
+    targetClasses = ['fi.jgke.minpascal.*']
+}
+
+mainClassName = 'fi.jgke.minpascal.MinPascal'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'fi.jgke.minpascal.MinPascal'
+    }
+}
