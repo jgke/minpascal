@@ -8,6 +8,7 @@ import fi.jgke.minpascal.util.Stub;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,14 +32,8 @@ public class ParserTest extends TestBase {
     protected void assertTypeAndValue(String content, Token token, TokenType expectedType, Object expectedValue) {
         assertThat("Tokenizer parses " + content + " as " + expectedType,
                 token.getType(), is(equalTo(expectedType)));
-        if (token.getValue().isPresent()) {
-            assertThat("Tokenizer parses " + content + " as " + expectedValue,
-                    token.getValue().get(), is(equalTo(expectedValue)));
-        } else {
-            // Welp, fail the test
-            assertThat("Token value is present",
-                    token.getValue().isPresent(), is(true));
-        }
+        assertThat("Tokenizer parses " + content + " as " + expectedValue,
+                token.getValue(), is(Optional.ofNullable(expectedValue)));
     }
 
     protected void testParse(String content, TokenType expectedType, Object expectedValue) {

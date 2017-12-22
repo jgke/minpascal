@@ -47,7 +47,7 @@ public class Tokenizer {
                     lastToken = Optional.of(parseToken());
                     return lastToken.get();
                 } catch (NoSuchElementException e) {
-                    throw new ParseException("Unexpected end of file near " + nextPosition);
+                    throw new ParseException("Unexpected end of file near " + nextPosition, e);
                 }
             }
         };
@@ -59,8 +59,7 @@ public class Tokenizer {
         Queue<CharacterWithPosition> queue = new ArrayDeque<>();
         for (String s : content.split("\n")) {
             int column = 1;
-            int length = s.codePointCount(0, s.length()); // UTF-8 :(
-            for (int i = 0; i < length; i += Character.charCount(s.codePointAt(i))) {
+            for (int i = 0; i < s.length(); i += Character.charCount(s.codePointAt(i))) {
                 int character = s.codePointAt(i);
                 queue.add(new CharacterWithPosition(character, new Position(line, column)));
             }
@@ -73,9 +72,9 @@ public class Tokenizer {
     }
 
     public static boolean isLetter(CharacterWithPosition character) {
-        if(character == null)
+        if (character == null)
             return false;
-        char c = new String(Character.toChars(character.getCharacter())).charAt(0);
+        int c = character.getCharacter();
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
     }
 
@@ -95,7 +94,7 @@ public class Tokenizer {
 
     private void assertNextDelimiter() {
         CharacterWithPosition next = queue.peek();
-        if(isLetter(next)) {
+        if (isLetter(next)) {
             throw new ParseException(next.getPosition(), "Expected a delimiter");
         }
     }
@@ -105,6 +104,10 @@ public class Tokenizer {
 
         if (isDigit(c)) {
             Token t = parseIntOrReal();
+            assertNextDelimiter();
+            return t;
+        } else if (cToStr(c.getCharacter()).equals("\"")) {
+            Token t = parseString();
             assertNextDelimiter();
             return t;
         }
@@ -160,5 +163,35 @@ public class Tokenizer {
         } else {
             return new Token(TokenType.INTEGER_LITERAL, Optional.of(number), startingPosition);
         }
+    }
+
+    private int getEscapedCharacter(int c) {
+        switch (c) {
+            case 'n':
+                return '\n';
+            case 't':
+                return '\t';
+            case 'r':
+                return '\r';
+            default:
+                return c;
+        }
+    }
+
+    private Token parseString() {
+        // Remove the '"'
+        Position startingPosition = queue.remove().getPosition();
+        StringBuilder s = new StringBuilder();
+        CharacterWithPosition character;
+
+        while ((character = queue.remove()).getCharacter() != '"') {
+            int c = character.getCharacter();
+            if (c == '\\') {
+                c = getEscapedCharacter(queue.remove().getCharacter());
+            }
+            s.append(new String(Character.toChars(c)));
+        }
+
+        return new Token(TokenType.STRING_LITERAL, Optional.of(s.toString()), startingPosition);
     }
 }
