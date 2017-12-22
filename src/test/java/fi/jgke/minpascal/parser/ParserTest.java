@@ -64,7 +64,7 @@ public class ParserTest extends TestBase {
 
     @Test
     public void parseUnknown() {
-        parseThrows("Not implemented", () -> testParse("%", TokenType.EOF, 0.0));
+        parseThrows("Unexpected character", () -> getTokens("€"));
     }
 
     private boolean isLetter(char c) {

@@ -20,6 +20,7 @@ public class NumberTokenizerTest extends ParserTest {
     @Test
     public void parseReal() {
         testParse("1.", REAL_LITERAL, 1.0);
+        testParse("1e0", REAL_LITERAL, 1.0);
         testParse("0.0", REAL_LITERAL, 0.0);
         testParse("13.4", REAL_LITERAL, 13.4);
         testParse("13.4e1", REAL_LITERAL, 134.);
@@ -27,20 +28,23 @@ public class NumberTokenizerTest extends ParserTest {
         testParse("12.1e+0", REAL_LITERAL, 12.1);
         testParse("12.1e+1", REAL_LITERAL, 121.);
         testParse("12.1e-1", REAL_LITERAL, 1.21);
+        Configuration.STRICT_MODE = true;
+        testParse("13.4e1", REAL_LITERAL, 134.);
     }
 
     @Test
     public void parseInvalidReal() {
-        parseThrows("Unexpected end of file", () -> testParse("0e", REAL_LITERAL, 0.0));
-        parseThrows("Invalid character 'a', expected a number", () -> testParse("0.0ea", REAL_LITERAL, 0.0));
+        parseThrows("Unexpected end of file", () -> getTokens("0e"));
+        parseThrows("Invalid character 'a', expected a number", () -> getTokens("0.0ea"));
     }
 
     @Test
     public void parseStrictInvalidReal() {
         Configuration.STRICT_MODE = true;
-        parseThrows("Unexpected end of file", () -> testParse("0.", REAL_LITERAL, 0.0));
-        parseThrows("Invalid character 'a', expected a number", () -> testParse("0.a", REAL_LITERAL, 0.0));
-        parseThrows("Invalid character 'a', expected a number", () -> testParse("0.0ea", REAL_LITERAL, 0.0));
+        parseThrows("Unexpected end of file", () -> getTokens("0."));
+        parseThrows("Unexpected end of file", () -> getTokens("0\""));
+        parseThrows("Invalid character 'a', expected a number", () -> getTokens("0.a"));
+        parseThrows("Invalid character 'a', expected a number", () -> getTokens("0.0ea"));
     }
 
     @Test
