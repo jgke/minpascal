@@ -15,7 +15,7 @@ public class Tokenizer {
     private Queue<CharacterWithPosition> queue;
 
     @Data
-    private class CharacterWithPosition {
+    public static class CharacterWithPosition {
         private final int character;
         private final Position position;
     }
@@ -35,14 +35,19 @@ public class Tokenizer {
 
             @Override
             public Token next() {
+                flushWhitespace();
+                if (queue.isEmpty()) {
+                    lastToken = Optional.of(new Token(TokenType.EOF, Optional.empty(), new Position(-1, -1)));
+                    return lastToken.get();
+                }
+
+                Position nextPosition = queue.peek().getPosition();
+
                 try {
                     lastToken = Optional.of(parseToken());
                     return lastToken.get();
                 } catch (NoSuchElementException e) {
-                    if (lastToken.isPresent())
-                        throw new ParseException("Unexpected end of file near " + lastToken.get().getPosition());
-                    else
-                        throw new ParseException("Unexpected end of file");
+                    throw new ParseException("Unexpected end of file near " + nextPosition);
                 }
             }
         };
@@ -63,8 +68,15 @@ public class Tokenizer {
         return queue;
     }
 
-    private boolean isDigit(CharacterWithPosition c) {
+    public static boolean isDigit(CharacterWithPosition c) {
         return c != null && c.getCharacter() >= '0' && c.getCharacter() <= '9';
+    }
+
+    public static boolean isLetter(CharacterWithPosition character) {
+        if(character == null)
+            return false;
+        char c = new String(Character.toChars(character.getCharacter())).charAt(0);
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
     }
 
     private long parseNumber() {
@@ -76,15 +88,27 @@ public class Tokenizer {
         return number;
     }
 
-    private Token parseToken() {
-        if (queue.isEmpty())
-            return new Token(TokenType.EOF, Optional.empty(), new Position(-1, -1));
+    private void flushWhitespace() {
+        while (!queue.isEmpty() && new String(Character.toChars(queue.peek().getCharacter())).trim().isEmpty())
+            queue.remove();
+    }
 
-        CharacterWithPosition c = queue.peek();
-        if (isDigit(c)) {
-            return parseIntOrReal();
+    private void assertNextDelimiter() {
+        CharacterWithPosition next = queue.peek();
+        if(isLetter(next)) {
+            throw new ParseException(next.getPosition(), "Expected a delimiter");
         }
-        throw new RuntimeException("Not implemented");
+    }
+
+    private Token parseToken() {
+        CharacterWithPosition c = queue.peek();
+
+        if (isDigit(c)) {
+            Token t = parseIntOrReal();
+            assertNextDelimiter();
+            return t;
+        }
+        throw new ParseException("Not implemented");
     }
 
     private String cToStr(int codepoint) {
@@ -120,9 +144,10 @@ public class Tokenizer {
                 }
 
                 if (!isDigit(queue.peek())) {
-                    throw new ParseException(queue.remove().getPosition(), String.format(
-                            "Invalid character %s, expected a number",
-                            cToStr(peekNext())));
+                    CharacterWithPosition nextCharacter = queue.remove();
+                    throw new ParseException(nextCharacter.getPosition(), String.format(
+                            "Invalid character '%s', expected a number",
+                            cToStr(nextCharacter.getCharacter())));
                 }
                 exponent = parseNumber();
             }
