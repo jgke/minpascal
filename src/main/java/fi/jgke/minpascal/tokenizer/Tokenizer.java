@@ -78,6 +78,10 @@ public class Tokenizer {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
     }
 
+    public static boolean isIdentifierCharacter(CharacterWithPosition c) {
+        return c != null && (c.getCharacter() == '_' || isDigit(c) || isLetter(c));
+    }
+
     private long parseNumber() {
         long number = 0;
         while (isDigit(queue.peek())) {
@@ -92,24 +96,15 @@ public class Tokenizer {
             queue.remove();
     }
 
-    private void assertNextDelimiter() {
-        CharacterWithPosition next = queue.peek();
-        if (isLetter(next)) {
-            throw new ParseException(next.getPosition(), "Expected a delimiter");
-        }
-    }
-
     private Token parseToken() {
         CharacterWithPosition c = queue.peek();
 
         if (isDigit(c)) {
-            Token t = parseIntOrReal();
-            assertNextDelimiter();
-            return t;
+            return parseIntOrReal();
         } else if (cToStr(c.getCharacter()).equals("\"")) {
-            Token t = parseString();
-            assertNextDelimiter();
-            return t;
+            return parseString();
+        } else if(isLetter(c)) {
+            return parseIdentifier();
         }
         throw new ParseException("Not implemented");
     }
@@ -193,5 +188,18 @@ public class Tokenizer {
         }
 
         return new Token(TokenType.STRING_LITERAL, Optional.of(s.toString()), startingPosition);
+    }
+
+    private Token parseIdentifier() {
+        Position startingPosition = queue.peek().getPosition();
+        StringBuilder s = new StringBuilder();
+        CharacterWithPosition character;
+
+        do {
+            character = queue.remove();
+            s.append(cToStr(character.getCharacter()));
+        } while (isIdentifierCharacter(queue.peek()));
+
+        return new Token(TokenType.IDENTIFIER, Optional.of(s.toString()), startingPosition);
     }
 }

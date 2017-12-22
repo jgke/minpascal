@@ -75,6 +75,10 @@ public class ParserTest extends TestBase {
         return Tokenizer.isDigit(new Tokenizer.CharacterWithPosition(c, null));
     }
 
+    private boolean isIdentifierCharacter(char c) {
+        return Tokenizer.isIdentifierCharacter(new Tokenizer.CharacterWithPosition(c, null));
+    }
+
     @Test
     public void detectorFunctions() {
         assertThat("A is a letter", isLetter('A'), is(true));
@@ -84,6 +88,7 @@ public class ParserTest extends TestBase {
         assertThat("j is a letter", isLetter('j'), is(true));
         assertThat("z is a letter", isLetter('z'), is(true));
 
+        assertThat("null is not a letter", Tokenizer.isLetter(null), is(false));
         assertThat("@ is not a letter", isLetter('@'), is(false));
         assertThat("[ is not a letter", isLetter('['), is(false));
         assertThat("` is not a letter", isLetter('`'), is(false));
@@ -94,5 +99,11 @@ public class ParserTest extends TestBase {
 
         assertThat("/ is not a digit", isDigit('/'), is(false));
         assertThat(": is not a digit", isDigit(':'), is(false));
+
+        assertThat("null is not an identifier character", Tokenizer.isIdentifierCharacter(null), is(false));
+        assertThat("% is not identifier character", isIdentifierCharacter('%'), is(false));
+        assertThat("a is an identifier character", isIdentifierCharacter('a'), is(true));
+        assertThat("1 is an identifier character", isIdentifierCharacter('1'), is(true));
+        assertThat("_ is an identifier character", isIdentifierCharacter('_'), is(true));
     }
 }

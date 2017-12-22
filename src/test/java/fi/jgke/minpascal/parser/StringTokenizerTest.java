@@ -18,6 +18,5 @@ public class StringTokenizerTest extends ParserTest {
     @Test
     public void testFaultyStrings() {
         parseThrows("Unexpected end of file", () -> getTokens("\"bar"));
-        parseThrows("Expected a delimiter", () -> getTokens("\"bar\"foo"));
     }
 }

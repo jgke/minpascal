@@ -38,7 +38,6 @@ public class NumberTokenizerTest extends ParserTest {
     @Test
     public void parseStrictInvalidReal() {
         Configuration.STRICT_MODE = true;
-        parseThrows("delimiter", () -> testParse("0e", REAL_LITERAL, 0.0));
         parseThrows("Unexpected end of file", () -> testParse("0.", REAL_LITERAL, 0.0));
         parseThrows("Invalid character 'a', expected a number", () -> testParse("0.a", REAL_LITERAL, 0.0));
         parseThrows("Invalid character 'a', expected a number", () -> testParse("0.0ea", REAL_LITERAL, 0.0));
