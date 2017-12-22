@@ -15,6 +15,8 @@
  */
 package fi.jgke.minpascal;
 
+import fi.jgke.minpascal.data.TreeNode;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -22,7 +24,7 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 
 public class Compiler {
-    public void compile(String content, Path out) throws IOException {
+    public void compile(TreeNode root, Path out) throws IOException {
         StatementBuilder output = new StatementBuilder();
         Files.write(out, output
                 .macroImport("stdio.h")

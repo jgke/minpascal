@@ -44,6 +44,7 @@ task applicationCodeCoverageReport(type:JacocoReport){
 
 pitest {
     targetClasses = ['fi.jgke.minpascal.*']
+    timestampedReports = false
 }
 
 mainClassName = 'fi.jgke.minpascal.MinPascal'

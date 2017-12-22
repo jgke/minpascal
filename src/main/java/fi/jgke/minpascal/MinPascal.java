@@ -16,6 +16,7 @@
 package fi.jgke.minpascal;
 
 import fi.jgke.minpascal.data.Token;
+import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.Parser;
 import fi.jgke.minpascal.tokenizer.Tokenizer;
 
@@ -57,19 +58,15 @@ public class MinPascal {
         }
 
         try {
-            Tokenizer tokenizer = new Tokenizer();
+            String content = new String(Files.readAllBytes(Paths.get(args[0])));
+
+            Tokenizer tokenizer = new Tokenizer(content);
             Parser parser = new Parser();
             Compiler compiler = new Compiler();
 
-            String content = new String(Files.readAllBytes(Paths.get(args[0])));
-
-            ArrayDeque<Character> characterStream = new ArrayDeque<>();
-            for(char c : content.toCharArray())
-                characterStream.add(c);
-
-            Stream<Token> tokenize = tokenizer.tokenize(characterStream);
-            parser.parse(tokenize);
-            compiler.compile(content, target);
+            Stream<Token> tokenize = tokenizer.tokenize();
+            TreeNode tree = parser.parse(tokenize);
+            compiler.compile(tree, target);
         } catch (RuntimeException e) {
             err.println(e.getMessage());
             return 1;
