@@ -9,6 +9,6 @@ public class Position {
 
     @Override
     public String toString() {
-        return "line " + line + ", column " + column;
+        return "line " + getLine() + ", column " + getColumn();
     }
 }

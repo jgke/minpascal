@@ -1,11 +1,11 @@
-package fi.jgke.minpascal.parser;
+package fi.jgke.minpascal.tokenizer;
 
 import fi.jgke.minpascal.data.TokenType;
 import org.junit.Test;
 
 import static fi.jgke.minpascal.data.TokenType.*;
 
-public class OperatorTest extends ParserTest {
+public class OperatorTest extends TokenizerTest {
     private void parseOperator(TokenType kw, String c) {
         testParse(c, kw, null);
     }

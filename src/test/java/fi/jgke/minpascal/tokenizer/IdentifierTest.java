@@ -1,4 +1,4 @@
-package fi.jgke.minpascal.parser;
+package fi.jgke.minpascal.tokenizer;
 
 import fi.jgke.minpascal.data.TokenType;
 import org.junit.Test;
@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 import static fi.jgke.minpascal.data.TokenType.*;
 
-public class IdentifierTest extends ParserTest {
+public class IdentifierTest extends TokenizerTest {
     @Test
     public void parseIdentifier() {
         testParse("foo", IDENTIFIER, "foo");

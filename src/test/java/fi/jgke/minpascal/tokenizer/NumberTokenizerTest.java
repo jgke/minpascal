@@ -1,4 +1,4 @@
-package fi.jgke.minpascal.parser;
+package fi.jgke.minpascal.tokenizer;
 
 import fi.jgke.minpascal.Configuration;
 import fi.jgke.minpascal.data.Token;
@@ -9,7 +9,7 @@ import java.util.List;
 import static fi.jgke.minpascal.data.TokenType.INTEGER_LITERAL;
 import static fi.jgke.minpascal.data.TokenType.REAL_LITERAL;
 
-public class NumberTokenizerTest extends ParserTest {
+public class NumberTokenizerTest extends TokenizerTest {
 
     @Test
     public void parseInt() {
@@ -56,6 +56,6 @@ public class NumberTokenizerTest extends ParserTest {
 
     @Test
     public void parseFailureOnSecondNumber() {
-        parseThrows("end of file near line 1, column 1", () -> getTokens("123 1.e"));
+        parseThrows("end of file near line 1, column 5", () -> getTokens("123 1.e"));
     }
 }

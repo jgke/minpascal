@@ -1,4 +1,4 @@
-package fi.jgke.minpascal.parser;
+package fi.jgke.minpascal.tokenizer;
 
 import fi.jgke.minpascal.Configuration;
 import org.junit.After;

@@ -103,11 +103,11 @@ public class Tokenizer {
         int line = 1;
         Queue<CharacterWithPosition> queue = new ArrayDeque<>();
         for (String s : content.split("\n")) {
-            int column = 1;
             for (int i = 0; i < s.length(); i += Character.charCount(s.codePointAt(i))) {
                 int character = s.codePointAt(i);
-                queue.add(new CharacterWithPosition(character, new Position(line, column)));
+                queue.add(new CharacterWithPosition(character, new Position(line, i+1)));
             }
+            line++;
         }
         return queue;
     }

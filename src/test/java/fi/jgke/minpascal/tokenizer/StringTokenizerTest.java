@@ -1,9 +1,9 @@
-package fi.jgke.minpascal.parser;
+package fi.jgke.minpascal.tokenizer;
 
 import fi.jgke.minpascal.data.TokenType;
 import org.junit.Test;
 
-public class StringTokenizerTest extends ParserTest {
+public class StringTokenizerTest extends TokenizerTest {
     @Test
     public void testString() {
         testParse("\"foo\"", TokenType.STRING_LITERAL, "foo");

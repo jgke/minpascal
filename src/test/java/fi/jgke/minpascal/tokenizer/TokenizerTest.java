@@ -1,9 +1,8 @@
-package fi.jgke.minpascal.parser;
+package fi.jgke.minpascal.tokenizer;
 
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TokenType;
 import fi.jgke.minpascal.exception.ParseException;
-import fi.jgke.minpascal.tokenizer.Tokenizer;
 import fi.jgke.minpascal.util.Stub;
 import org.junit.Test;
 
@@ -16,7 +15,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-public class ParserTest extends TestBase {
+public class TokenizerTest extends TestBase {
     protected List<Token> getTokens(String content) {
         List<Token> tokens = new Tokenizer(content).tokenize().collect(Collectors.toList());
         assertThat("Last token is EOF", tokens.get(tokens.size() - 1).getType(), is(equalTo(TokenType.EOF)));
@@ -105,5 +104,11 @@ public class ParserTest extends TestBase {
         assertThat("a is an identifier character", isIdentifierCharacter('a'), is(true));
         assertThat("1 is an identifier character", isIdentifierCharacter('1'), is(true));
         assertThat("_ is an identifier character", isIdentifierCharacter('_'), is(true));
+    }
+
+    @Test
+    public void errorMessages() {
+        parseThrows("Unexpected end of file near line 3, column 1", () -> getTokens("\n\n\"foo"));
+        parseThrows("Unexpected end of file near line 2, column 5", () -> getTokens("\n123 1e"));
     }
 }
