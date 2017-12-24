@@ -15,6 +15,7 @@ public class OperatorTest extends TokenizerTest {
         parseOperator(PLUS, "+");
         parseOperator(MINUS, "-");
         parseOperator(TIMES, "*");
+        parseOperator(DIVIDE, "/");
         parseOperator(MOD, "%");
         parseOperator(EQUALS, "=");
         parseOperator(OPENPAREN, "(");

@@ -17,7 +17,7 @@ package fi.jgke.minpascal;
 
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TreeNode;
-import fi.jgke.minpascal.parser.Parser;
+import fi.jgke.minpascal.parser.base.Parser;
 import fi.jgke.minpascal.tokenizer.Tokenizer;
 
 import java.io.IOException;
@@ -25,9 +25,6 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MinPascal {

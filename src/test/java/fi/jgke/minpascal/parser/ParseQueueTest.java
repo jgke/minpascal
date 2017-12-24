@@ -5,6 +5,8 @@ import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TokenType;
 import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.exception.UnexpectedTokenException;
+import fi.jgke.minpascal.parser.base.Parsable;
+import fi.jgke.minpascal.parser.base.ParseQueue;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -29,8 +31,10 @@ public class ParseQueueTest {
 
     @Test
     public void getExpectedTokenReturnsExpectedToken() {
-        assertThat("getExpectedToken returns expected token",
+        assertThat("getExpectedToken returns expected token with single argument",
                 queueWith(t1, t2).getExpectedToken(t1.getType()), is(equalTo(t1)));
+        assertThat("getExpectedToken returns expected token with multiple arguments",
+                queueWith(t1, t2).getExpectedToken(t1.getType(), t2.getType()), is(equalTo(t1)));
     }
 
     @Test(expected = UnexpectedTokenException.class)

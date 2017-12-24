@@ -38,11 +38,13 @@ public class Tokenizer {
         keywords.put("function", FUNCTION);
         keywords.put("program", PROGRAM);
         keywords.put("assert", ASSERT);
+        keywords.put("return", RETURN);
 
         basicSymbols = new HashMap<>();
         basicSymbols.put("+", PLUS);
         basicSymbols.put("-", MINUS);
         basicSymbols.put("*", TIMES);
+        basicSymbols.put("/", DIVIDE);
         basicSymbols.put("%", MOD);
         basicSymbols.put("=", EQUALS);
         basicSymbols.put("(", OPENPAREN);

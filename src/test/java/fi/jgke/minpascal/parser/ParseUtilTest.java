@@ -1,11 +1,13 @@
 package fi.jgke.minpascal.parser;
 
+import fi.jgke.minpascal.parser.base.Parsable;
+import fi.jgke.minpascal.parser.base.ParseUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
 
 import static fi.jgke.minpascal.data.TokenType.*;
-import static fi.jgke.minpascal.parser.ParseUtils.collectTokenTypes;
+import static fi.jgke.minpascal.parser.base.ParseUtils.collectTokenTypes;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

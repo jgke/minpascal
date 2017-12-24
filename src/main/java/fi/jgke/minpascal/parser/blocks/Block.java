@@ -1,21 +1,17 @@
-package fi.jgke.minpascal.parser;
+package fi.jgke.minpascal.parser.blocks;
 
-import fi.jgke.minpascal.data.TokenType;
 import fi.jgke.minpascal.data.TreeNode;
+import fi.jgke.minpascal.parser.base.Parsable;
+import fi.jgke.minpascal.parser.base.ParseQueue;
 
 import java.util.Collections;
 import java.util.List;
 
-import static fi.jgke.minpascal.data.TokenType.*;
+import static fi.jgke.minpascal.data.TokenType.BEGIN;
 
 public class Block implements Parsable {
     @Override
-    public boolean matches(ParseQueue queue) {
-        return queue.isNext(BEGIN);
-    }
-
-    @Override
-    public List<TokenType> getMatchableTokens() {
+    public List<Parsable> getParsables() {
         return Collections.singletonList(BEGIN);
     }
 
