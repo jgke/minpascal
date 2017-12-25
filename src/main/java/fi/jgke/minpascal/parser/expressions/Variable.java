@@ -1,10 +1,10 @@
 package fi.jgke.minpascal.parser.expressions;
 
 import fi.jgke.minpascal.data.Token;
-import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
 import fi.jgke.minpascal.parser.nodes.ArrayAccessNode;
+import fi.jgke.minpascal.parser.nodes.ExpressionNode;
 import fi.jgke.minpascal.parser.nodes.VariableNode;
 
 import java.util.Collections;
@@ -19,11 +19,11 @@ public class Variable implements Parsable {
     }
 
     @Override
-    public TreeNode parse(ParseQueue queue) {
+    public VariableNode parse(ParseQueue queue) {
         Token identifier = queue.getExpectedToken(IDENTIFIER);
         if(queue.isNext(OPENBRACKET)) {
             queue.getExpectedToken(OPENBRACKET);
-            TreeNode integerExpression = new Expression().parse(queue);
+            ExpressionNode integerExpression = new Expression().parse(queue);
             queue.getExpectedToken(CLOSEBRACKET);
             return new ArrayAccessNode(identifier, integerExpression);
         }

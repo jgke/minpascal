@@ -9,5 +9,5 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class CallNode extends TreeNode {
     private final Token identifier;
-    private final TreeNode arguments;
+    private final ArgumentsNode arguments;
 }

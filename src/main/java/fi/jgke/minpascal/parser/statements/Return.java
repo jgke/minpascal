@@ -1,6 +1,5 @@
 package fi.jgke.minpascal.parser.statements;
 
-import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
 import fi.jgke.minpascal.parser.expressions.Expression;
@@ -18,7 +17,7 @@ public class Return implements Parsable {
     }
 
     @Override
-    public TreeNode parse(ParseQueue queue) {
+    public ReturnNode parse(ParseQueue queue) {
         queue.getExpectedToken(RETURN);
         return new ReturnNode(new Expression().parse(queue));
     }

@@ -8,5 +8,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class VariableNode extends TreeNode {
-    private final Token identifier;
+    protected final Token identifier;
 }

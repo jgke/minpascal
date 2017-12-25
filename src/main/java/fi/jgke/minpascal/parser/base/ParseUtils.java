@@ -12,8 +12,13 @@ public class ParseUtils {
     public static final TokenType[] relationalOperators = new TokenType[]{
             EQUALS, NOTEQUALS, LESSTHAN, LESSTHANEQUALS, MORETHAN, MORETHANEQUALS
     };
+
     public static final TokenType[] multiplyingOperators = new TokenType[]{
             TIMES, DIVIDE, MOD, AND
+    };
+
+    public static final TokenType[] addingOperators = new TokenType[]{
+            PLUS, MINUS, OR
     };
 
     public static List<TokenType> collectTokenTypes(Parsable... parsables) {

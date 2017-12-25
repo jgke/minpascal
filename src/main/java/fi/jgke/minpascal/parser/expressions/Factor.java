@@ -6,6 +6,7 @@ import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.exception.ParseException;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
+import fi.jgke.minpascal.parser.nodes.FactorNode;
 import fi.jgke.minpascal.parser.nodes.NotNode;
 import fi.jgke.minpascal.parser.nodes.SizeNode;
 import fi.jgke.minpascal.parser.statements.Call;
@@ -25,6 +26,11 @@ public class Factor implements Parsable {
     @Override
     public List<Parsable> getParsables() {
         return Arrays.asList(children);
+    }
+
+    @Override
+    public FactorNode parse(ParseQueue queue) {
+        return new FactorNode(queue.any(children));
     }
 
     private static class ParenExpression implements Parsable {
@@ -49,7 +55,7 @@ public class Factor implements Parsable {
         }
 
         @Override
-        public TreeNode parse(ParseQueue queue) {
+        public NotNode parse(ParseQueue queue) {
             queue.getExpectedToken(NOT);
             return new NotNode(new Factor().parse(queue));
         }
@@ -63,7 +69,7 @@ public class Factor implements Parsable {
 
         @Override
         public TreeNode parse(ParseQueue queue) {
-            TreeNode factor = new Factor().parse(queue);
+            FactorNode factor = new Factor().parse(queue);
             queue.getExpectedToken(DOT);
             Token sizeToken = queue.getExpectedToken(IDENTIFIER);
             String sizeTokenContent = (String) sizeToken.getValue()

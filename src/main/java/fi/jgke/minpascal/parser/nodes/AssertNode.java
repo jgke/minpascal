@@ -7,5 +7,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AssertNode extends TreeNode {
-    private final TreeNode booleanExpr;
+    private final ExpressionNode booleanExpr;
 }

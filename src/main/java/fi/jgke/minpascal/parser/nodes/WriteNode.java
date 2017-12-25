@@ -7,5 +7,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class WriteNode extends TreeNode {
-    private final TreeNode arguments;
+    private final ArgumentsNode arguments;
 }

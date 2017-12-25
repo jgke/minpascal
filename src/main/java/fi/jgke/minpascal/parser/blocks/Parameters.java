@@ -1,10 +1,10 @@
 package fi.jgke.minpascal.parser.blocks;
 
 import fi.jgke.minpascal.data.Token;
-import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
 import fi.jgke.minpascal.parser.nodes.ParametersNode;
+import fi.jgke.minpascal.parser.nodes.TypeNode;
 import fi.jgke.minpascal.parser.nodes.VarDeclarationNode;
 
 import java.util.Arrays;
@@ -20,12 +20,12 @@ public class Parameters implements Parsable {
     }
 
     @Override
-    public TreeNode parse(ParseQueue queue) {
+    public ParametersNode parse(ParseQueue queue) {
         List<VarDeclarationNode> declarations = queue.collectByComma(q -> {
             queue.ifNextConsume(VAR);
             Token identifier = queue.getExpectedToken(IDENTIFIER);
             queue.getExpectedToken(COLON);
-            TreeNode type = new Type().parse(queue);
+            TypeNode type = new Type().parse(queue);
             return new VarDeclarationNode(Collections.singletonList(identifier), type);
         });
 

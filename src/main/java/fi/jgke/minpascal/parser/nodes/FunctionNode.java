@@ -11,18 +11,18 @@ import java.util.Optional;
 @EqualsAndHashCode(callSuper = true)
 public class FunctionNode extends TreeNode {
     private final Token identifier;
-    private final TreeNode params;
+    private final ParametersNode params;
     private final TreeNode body;
     private final Optional<TreeNode> returnType;
 
-    public FunctionNode(Token identifier, TreeNode params, TreeNode body, TreeNode returnType) {
+    public FunctionNode(Token identifier, ParametersNode params, TreeNode body, TreeNode returnType) {
         this.identifier = identifier;
         this.params = params;
         this.body = body;
         this.returnType = Optional.of(returnType);
     }
 
-    public FunctionNode(Token identifier, TreeNode params, TreeNode body) {
+    public FunctionNode(Token identifier, ParametersNode params, TreeNode body) {
         this.identifier = identifier;
         this.params = params;
         this.body = body;

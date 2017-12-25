@@ -1,13 +1,16 @@
 package fi.jgke.minpascal.parser.nodes;
 
 import fi.jgke.minpascal.data.Token;
-import fi.jgke.minpascal.data.TreeNode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ArrayAccessNode extends TreeNode {
-    private final Token identifier;
-    private final TreeNode integerExpression;
+public class ArrayAccessNode extends VariableNode {
+    private final ExpressionNode integerExpression;
+
+    public ArrayAccessNode(Token identifier, ExpressionNode integerExpression) {
+        super(identifier);
+        this.integerExpression = integerExpression;
+    }
 }

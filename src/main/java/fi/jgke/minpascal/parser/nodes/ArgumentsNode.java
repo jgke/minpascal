@@ -9,5 +9,5 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ArgumentsNode extends TreeNode {
-    private final List<TreeNode> arguments;
+    private final List<ExpressionNode> arguments;
 }

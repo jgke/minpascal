@@ -4,6 +4,7 @@ import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
+import fi.jgke.minpascal.parser.nodes.TypeNode;
 import fi.jgke.minpascal.parser.nodes.VarDeclarationNode;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class Declaration implements Parsable {
                 identifiers.add(queue.getExpectedToken(IDENTIFIER));
             }
             queue.getExpectedToken(COLON);
-            TreeNode type = new Type().parse(queue);
+            TypeNode type = new Type().parse(queue);
             return new VarDeclarationNode(identifiers, type);
         }
     }

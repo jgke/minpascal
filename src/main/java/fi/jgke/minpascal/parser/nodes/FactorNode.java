@@ -6,7 +6,6 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class WhileNode extends TreeNode {
-    private final ExpressionNode condition;
-    private final TreeNode statement;
+public class FactorNode extends TreeNode {
+    private final TreeNode content;
 }

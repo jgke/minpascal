@@ -7,5 +7,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class SizeNode extends TreeNode {
-    private final TreeNode factor;
+    private final FactorNode factor;
 }

@@ -7,5 +7,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ReturnNode extends TreeNode {
-    private final TreeNode expression;
+    private final ExpressionNode expression;
 }

@@ -1,10 +1,10 @@
 package fi.jgke.minpascal.parser.statements;
 
 import fi.jgke.minpascal.data.Token;
-import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
 import fi.jgke.minpascal.parser.blocks.Arguments;
+import fi.jgke.minpascal.parser.nodes.ArgumentsNode;
 import fi.jgke.minpascal.parser.nodes.CallNode;
 
 import java.util.Collections;
@@ -20,10 +20,10 @@ public class Call implements Parsable {
     }
 
     @Override
-    public TreeNode parse(ParseQueue queue) {
+    public CallNode parse(ParseQueue queue) {
         Token identifier = queue.getExpectedToken(IDENTIFIER);
         queue.getExpectedToken(OPENPAREN);
-        TreeNode arguments = new Arguments().parse(queue);
+        ArgumentsNode arguments = new Arguments().parse(queue);
         return new CallNode(identifier, arguments);
     }
 }

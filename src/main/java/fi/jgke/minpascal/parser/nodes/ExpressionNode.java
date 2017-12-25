@@ -12,15 +12,15 @@ import java.util.Optional;
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 public class ExpressionNode extends TreeNode {
-    private final TreeNode left;
+    private final SimpleExpressionNode left;
     private final Optional<Token> operator;
-    private final Optional<TreeNode> right;
+    private final Optional<SimpleExpressionNode> right;
 
-    public ExpressionNode(TreeNode left) {
+    public ExpressionNode(SimpleExpressionNode left) {
         this(left, Optional.empty(), Optional.empty());
     }
 
-    public ExpressionNode(TreeNode left, Token operator, TreeNode right) {
+    public ExpressionNode(SimpleExpressionNode left, Token operator, SimpleExpressionNode right) {
         this.left = left;
         this.right = Optional.of(right);
         this.operator = Optional.of(operator);

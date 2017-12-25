@@ -1,6 +1,8 @@
 package fi.jgke.minpascal.parser.statements;
 
 import fi.jgke.minpascal.parser.base.Parsable;
+import fi.jgke.minpascal.parser.base.ParseQueue;
+import fi.jgke.minpascal.parser.nodes.LiteralNode;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,5 +17,10 @@ public class Literal implements Parsable {
     @Override
     public List<Parsable> getParsables() {
         return Arrays.asList(children);
+    }
+
+    @Override
+    public LiteralNode parse(ParseQueue queue) {
+        return new LiteralNode(queue.any(children));
     }
 }

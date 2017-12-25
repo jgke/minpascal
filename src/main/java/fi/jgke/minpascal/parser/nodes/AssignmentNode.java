@@ -7,5 +7,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AssignmentNode extends TreeNode {
-    private final TreeNode identifier, value;
+    private final VariableNode identifier;
+    private final ExpressionNode value;
 }

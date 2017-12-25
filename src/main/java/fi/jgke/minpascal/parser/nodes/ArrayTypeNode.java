@@ -7,6 +7,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ArrayTypeNode extends TreeNode {
-    private final TreeNode size;
-    private final TreeNode type;
+    private final ExpressionNode size;
+    private final SimpleTypeNode type;
 }

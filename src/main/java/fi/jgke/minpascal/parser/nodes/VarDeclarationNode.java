@@ -11,5 +11,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class VarDeclarationNode extends TreeNode {
     private final List<Token> identifiers;
-    private final TreeNode type;
+    private final TypeNode type;
 }
