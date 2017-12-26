@@ -18,15 +18,11 @@ package fi.jgke.minpascal;
 import fi.jgke.minpascal.data.TreeNode;
 
 import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.Path;
 
 public class Compiler {
-    public void compile(TreeNode root, Path out) throws IOException {
+    public String compile(TreeNode root) throws IOException {
         StatementBuilder output = new StatementBuilder();
-        Files.write(out, output
+        return output
                 .macroImport("stdio.h")
                 .startFunction("int", "main")
                 .addArgument("int", "argc")
@@ -34,7 +30,6 @@ public class Compiler {
                 .startFunctionBody()
                 .callFunction("printf", "\"Hello world!\"")
                 .endFunctionBody()
-                .toString().getBytes()
-        );
+                .toString();
     }
 }

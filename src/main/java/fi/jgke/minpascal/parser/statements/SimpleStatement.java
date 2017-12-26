@@ -7,12 +7,12 @@ import java.util.List;
 
 public class SimpleStatement implements Parsable {
     private static final Parsable[] children = new Parsable[]{
-            new AssignmentStatement(),
-            new Call(),
             new Return(),
             new Read(),
             new Write(),
-            new Assert()
+            new Assert(),
+            new Call(),
+            new AssignmentStatement()
     };
 
     @Override

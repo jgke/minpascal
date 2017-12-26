@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static fi.jgke.minpascal.data.TokenType.CLOSEPAREN;
+import static fi.jgke.minpascal.data.TokenType.COMMA;
 
 public class Arguments implements Parsable {
     @Override
@@ -20,7 +21,7 @@ public class Arguments implements Parsable {
     @Override
     public ArgumentsNode parse(ParseQueue queue) {
         Expression e = new Expression();
-        List<ExpressionNode> arguments = queue.collectByComma(e::parse);
+        List<ExpressionNode> arguments = queue.collectBy(e::parse, COMMA);
         return new ArgumentsNode(arguments);
     }
 }

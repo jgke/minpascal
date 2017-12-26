@@ -20,6 +20,11 @@ public class Call implements Parsable {
     }
 
     @Override
+    public boolean matches(ParseQueue queue) {
+        return queue.isNextTwo(IDENTIFIER, OPENPAREN);
+    }
+
+    @Override
     public CallNode parse(ParseQueue queue) {
         Token identifier = queue.getExpectedToken(IDENTIFIER);
         queue.getExpectedToken(OPENPAREN);

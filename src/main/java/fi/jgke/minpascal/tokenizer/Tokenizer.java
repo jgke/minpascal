@@ -14,7 +14,7 @@ import java.util.stream.StreamSupport;
 import static fi.jgke.minpascal.data.TokenType.*;
 
 public class Tokenizer {
-    private Queue<CharacterWithPosition> queue;
+    private ArrayDeque<CharacterWithPosition> queue;
 
     private static Map<String, TokenType> keywords;
     private static Map<String, TokenType> basicSymbols;
@@ -86,8 +86,9 @@ public class Tokenizer {
                 Position nextPosition = queue.peek().getPosition();
 
                 try {
-                    lastToken = Optional.of(parseToken());
-                    return lastToken.get();
+                    Token token = parseToken();
+                    lastToken = Optional.of(token);
+                    return token;
                 } catch (NoSuchElementException e) {
                     throw new ParseException("Unexpected end of file near " + nextPosition, e);
                 }
@@ -101,31 +102,47 @@ public class Tokenizer {
             queue.remove();
     }
 
-    private Queue<CharacterWithPosition> convertQueue(String content) {
+    private ArrayDeque<CharacterWithPosition> convertQueue(String content) {
         int line = 1;
-        Queue<CharacterWithPosition> queue = new ArrayDeque<>();
+        ArrayDeque<CharacterWithPosition> queue = new ArrayDeque<>();
         for (String s : content.split("\n")) {
-            for (int i = 0; i < s.length(); i += Character.charCount(s.codePointAt(i))) {
+            int i;
+            for (i = 0; i < s.length(); i += Character.charCount(s.codePointAt(i))) {
                 int character = s.codePointAt(i);
-                queue.add(new CharacterWithPosition(character, new Position(line, i+1)));
+                queue.add(new CharacterWithPosition(character, new Position(line, i + 1)));
             }
+            queue.add(new CharacterWithPosition('\n', new Position(line, i + 1)));
             line++;
         }
+        queue.removeLast(); // Remove last line break
         return queue;
     }
 
     private Token parseToken() {
         CharacterWithPosition c = queue.peek();
 
-        if (isDigit(c)) {
+        if (c.getCharacter() == '{') {
+            queue.remove();
+            parseComment();
+            flushWhitespace();
+            return parseToken();
+        } else if (isDigit(c)) {
             return parseIntOrReal();
-        } else if (cToStr(c.getCharacter()).equals("\"")) {
+        } else if (cToStr(c.getCharacter()).equals("\"") ||
+                (!Configuration.STRICT_MODE && cToStr(c.getCharacter()).equals("'"))) {
             return parseString();
         } else if (isLetter(c)) {
             return parseIdentifier();
         }
 
         return parseOperator();
+    }
+
+    private void parseComment() {
+        queue.remove(); // *
+        //noinspection StatementWithEmptyBody
+        while (queue.remove().getCharacter() != '*' || queue.peek().getCharacter() != '}') ;
+        queue.remove();
     }
 
     public static boolean isDigit(CharacterWithPosition c) {
@@ -217,12 +234,13 @@ public class Tokenizer {
     }
 
     private Token parseString() {
-        // Remove the '"'
-        Position startingPosition = queue.remove().getPosition();
+        // Remove the '"' (or "'")
+        CharacterWithPosition limiter = queue.remove();
+        Position startingPosition = limiter.getPosition();
         StringBuilder s = new StringBuilder();
         CharacterWithPosition character;
 
-        while ((character = queue.remove()).getCharacter() != '"') {
+        while ((character = queue.remove()).getCharacter() != limiter.getCharacter()) {
             int c = character.getCharacter();
             if (c == '\\') {
                 c = getEscapedCharacter(queue.remove().getCharacter());
@@ -245,8 +263,8 @@ public class Tokenizer {
 
         String identifier = s.toString();
 
-        if (keywords.containsKey(identifier)) {
-            return new Token(keywords.get(identifier), Optional.empty(), startingPosition);
+        if (keywords.containsKey(identifier.toLowerCase())) {
+            return new Token(keywords.get(identifier.toLowerCase()), Optional.empty(), startingPosition);
         }
         return new Token(IDENTIFIER, Optional.of(identifier), startingPosition);
     }
@@ -259,25 +277,25 @@ public class Tokenizer {
             return new Token(basicSymbols.get(string), Optional.empty(), c.getPosition());
         }
         CharacterWithPosition next = queue.peek();
-        switch(cToStr(c.getCharacter())) {
+        switch (cToStr(c.getCharacter())) {
             case "<":
-                if(next != null && next.getCharacter() == '>') {
+                if (next != null && next.getCharacter() == '>') {
                     queue.remove();
                     return new Token(NOTEQUALS, Optional.empty(), pos);
                 }
-                if(next != null && next.getCharacter() == '=') {
+                if (next != null && next.getCharacter() == '=') {
                     queue.remove();
                     return new Token(LESSTHANEQUALS, Optional.empty(), pos);
                 }
                 return new Token(LESSTHAN, Optional.empty(), pos);
             case ">":
-                if(next != null && next.getCharacter() == '=') {
+                if (next != null && next.getCharacter() == '=') {
                     queue.remove();
                     return new Token(MORETHANEQUALS, Optional.empty(), pos);
                 }
                 return new Token(MORETHAN, Optional.empty(), pos);
             case ":":
-                if(next != null && next.getCharacter() == '=') {
+                if (next != null && next.getCharacter() == '=') {
                     queue.remove();
                     return new Token(ASSIGN, Optional.empty(), pos);
                 }

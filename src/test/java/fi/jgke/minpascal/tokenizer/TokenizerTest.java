@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static fi.jgke.minpascal.data.TokenType.INTEGER_LITERAL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -54,6 +55,18 @@ public class TokenizerTest extends TestBase {
             return;
         }
         assertThat("Call throws exception", false, is(true));
+    }
+
+    @Test
+    public void parseComment() {
+        assertThat("Parsing comments works",
+                getTokens("{* foo *} 123").size(),
+                is(equalTo(2)));
+        assertThat("Parsing comments works",
+                getTokens("{* foo *} 123").get(0).getType(),
+                is(equalTo(INTEGER_LITERAL)));
+        parseThrows("Unexpected end of file", () -> getTokens("{* foo"));
+        parseThrows("Unexpected end of file", () -> getTokens("{* foo *{"));
     }
 
     @Test

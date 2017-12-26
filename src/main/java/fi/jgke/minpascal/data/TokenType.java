@@ -36,19 +36,18 @@ public enum TokenType implements Parsable {
 
     @Override
     public boolean matches(ParseQueue queue) {
-        TokenType next = queue.peek().getType();
-        if (next.equals(IDENTIFIER) && Arrays.asList(resevedIdentifiers).contains(this)) {
-            Token nextToken = queue.peek();
-            String value = (String) nextToken.getValue()
-                    .orElseThrow(() -> new CompilerException("IDENTIFIER did not have a value"));
-            String expectedValue = this.toString().toLowerCase();
-            if (this.equals(BOOLEAN)) {
-                expectedValue = "Boolean"; // Specific casing for this only :(
-            }
+        return matches(queue.peek());
+    }
 
+    public boolean matches(Token next) {
+        if (next.getType().equals(IDENTIFIER) && Arrays.asList(resevedIdentifiers).contains(this)) {
+            String value = next.getValue()
+                    .orElseThrow(() -> new CompilerException("IDENTIFIER did not have a value"))
+                    .toString().toLowerCase();
+            String expectedValue = this.toString().toLowerCase();
             return value.equals(expectedValue);
         }
-        return queue.isNext(this);
+        return next.getType().equals(this);
     }
 
     @Override

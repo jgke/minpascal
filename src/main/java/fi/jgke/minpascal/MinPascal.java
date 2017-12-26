@@ -29,6 +29,16 @@ import java.util.stream.Stream;
 
 public class MinPascal {
 
+    public static String compile(String content) throws IOException {
+        Tokenizer tokenizer = new Tokenizer(content);
+        Parser parser = new Parser();
+        Compiler compiler = new Compiler();
+
+        Stream<Token> tokenize = tokenizer.tokenize();
+        TreeNode tree = parser.parse(tokenize);
+        return compiler.compile(tree);
+    }
+
     public static int app(String[] args, PrintStream out, PrintStream err) throws IOException {
         if (args.length < 1 || args.length > 2) {
             err.println("Invalid number of arguments: expected one or two");
@@ -56,14 +66,8 @@ public class MinPascal {
 
         try {
             String content = new String(Files.readAllBytes(Paths.get(args[0])));
-
-            Tokenizer tokenizer = new Tokenizer(content);
-            Parser parser = new Parser();
-            Compiler compiler = new Compiler();
-
-            Stream<Token> tokenize = tokenizer.tokenize();
-            TreeNode tree = parser.parse(tokenize);
-            compiler.compile(tree, target);
+            String compiled = compile(content);
+            Files.write(target, compiled.getBytes());
         } catch (RuntimeException e) {
             err.println(e.getMessage());
             return 1;

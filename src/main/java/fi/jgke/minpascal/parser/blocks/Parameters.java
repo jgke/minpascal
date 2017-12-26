@@ -21,13 +21,13 @@ public class Parameters implements Parsable {
 
     @Override
     public ParametersNode parse(ParseQueue queue) {
-        List<VarDeclarationNode> declarations = queue.collectByComma(q -> {
+        List<VarDeclarationNode> declarations = queue.collectBy(q -> {
             queue.ifNextConsume(VAR);
             Token identifier = queue.getExpectedToken(IDENTIFIER);
             queue.getExpectedToken(COLON);
             TypeNode type = new Type().parse(queue);
             return new VarDeclarationNode(Collections.singletonList(identifier), type);
-        });
+        }, COMMA);
 
         return new ParametersNode(declarations);
     }
