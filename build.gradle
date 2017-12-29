@@ -41,13 +41,14 @@ jacocoTestReport {
     }
 }
 
-task applicationCodeCoverageReport(type:JacocoReport){
+task applicationCodeCoverageReport(type: JacocoReport) {
     executionData run
     sourceSets sourceSets.main
 }
 
 pitest {
     targetClasses = ['fi.jgke.minpascal.*']
+    excludedClasses = ['fi.jgke.minpascal.system']
     timestampedReports = false
 }
 

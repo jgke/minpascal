@@ -21,6 +21,10 @@ public class Variable implements Parsable {
     @Override
     public VariableNode parse(ParseQueue queue) {
         Token identifier = queue.getExpectedToken(IDENTIFIER);
+        return parseWithIdentifier(identifier, queue);
+    }
+
+    public VariableNode parseWithIdentifier(Token identifier, ParseQueue queue) {
         if(queue.isNext(OPENBRACKET)) {
             queue.getExpectedToken(OPENBRACKET);
             ExpressionNode integerExpression = new Expression().parse(queue);

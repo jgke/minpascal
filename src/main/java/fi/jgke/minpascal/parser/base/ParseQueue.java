@@ -82,16 +82,4 @@ public final class ParseQueue extends ArrayDeque<Token> {
     public <T> List<T> collectBy(Function<ParseQueue, T> provider, TokenType delimiter) {
         return collectBy(provider, false, delimiter, queue -> !queue.isNext(TokenType.CLOSEPAREN), false);
     }
-
-    public boolean isNextTwo(TokenType a, TokenType b) {
-        boolean retval = false;
-        if (isNext(a)) {
-            Token tmp = super.remove();
-            if (isNext(b)) {
-                retval = true;
-            }
-            this.addFirst(tmp);
-        }
-        return retval;
-    }
 }
