@@ -6,9 +6,7 @@ import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
-import fi.jgke.minpascal.parser.nodes.FactorNode;
-import fi.jgke.minpascal.parser.nodes.NotNode;
-import fi.jgke.minpascal.parser.nodes.SizeNode;
+import fi.jgke.minpascal.parser.nodes.*;
 import fi.jgke.minpascal.parser.statements.Call;
 import fi.jgke.minpascal.parser.statements.Literal;
 
@@ -40,7 +38,25 @@ public class Factor implements Parsable {
     @Override
     public FactorNode parse(ParseQueue queue) {
         TreeNode content = queue.any(children);
-        return new FactorNode(content, new SizeExpression().parseOptional(queue));
+        CallNode call = null;
+        VariableNode variable = null;
+        ExpressionNode expression = null;
+        NotNode not = null;
+        LiteralNode literal = null;
+        if (content instanceof CallNode) call = (CallNode) content;
+        else if (content instanceof VariableNode) variable = (VariableNode) content;
+        else if (content instanceof ExpressionNode) expression = (ExpressionNode) content;
+        else if (content instanceof NotNode) not = (NotNode) content;
+        else if (content instanceof LiteralNode) literal = (LiteralNode) content;
+        else throw new CompilerException("Factor was not a supported type instance");
+
+        return new FactorNode(
+                Optional.ofNullable(call),
+                Optional.ofNullable(variable),
+                Optional.ofNullable(expression),
+                Optional.ofNullable(not),
+                Optional.ofNullable(literal),
+                new SizeExpression().parseOptional(queue));
     }
 
     private static class ParenExpression implements Parsable {
@@ -116,7 +132,7 @@ public class Factor implements Parsable {
         public TreeNode parse(ParseQueue queue) {
             Token identifier = queue.getExpectedToken(IDENTIFIER);
             Call call = new Call();
-            if(call.matches(queue)) {
+            if (call.matches(queue)) {
                 return call.parse(queue);
             }
             return new Variable().parseWithIdentifier(identifier, queue);

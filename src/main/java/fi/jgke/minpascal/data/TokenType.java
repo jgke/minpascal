@@ -40,6 +40,9 @@ public enum TokenType implements Parsable {
     }
 
     public boolean matches(Token next) {
+        if (next == null) {
+            return false;
+        }
         if (next.getType().equals(IDENTIFIER) && Arrays.asList(resevedIdentifiers).contains(this)) {
             String value = next.getValue()
                     .orElseThrow(() -> new CompilerException("IDENTIFIER did not have a value"))

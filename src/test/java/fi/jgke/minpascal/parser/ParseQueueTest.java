@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
+import static fi.jgke.minpascal.TestUtils.queueWith;
 import static fi.jgke.minpascal.data.TokenType.COMMA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -29,12 +30,6 @@ public class ParseQueueTest {
     Token t3 = new Token(TokenType.MINUS, Optional.empty(), new Position(0, 0));
     Token comma = new Token(COMMA, Optional.empty(), new Position(0, 0));
     Token closeParen = new Token(TokenType.CLOSEPAREN, Optional.empty(), new Position(0, 0));
-
-    private ParseQueue queueWith(Token... tokens) {
-        ParseQueue queue = new ParseQueue();
-        queue.addAll(Arrays.asList(tokens));
-        return queue;
-    }
 
     @Test
     public void getExpectedTokenReturnsExpectedToken() {
