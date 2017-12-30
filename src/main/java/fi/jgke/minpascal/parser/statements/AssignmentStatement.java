@@ -1,5 +1,7 @@
 package fi.jgke.minpascal.parser.statements;
 
+import fi.jgke.minpascal.data.Token;
+import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
 import fi.jgke.minpascal.parser.expressions.Expression;
@@ -23,7 +25,11 @@ public class AssignmentStatement implements Parsable {
 
     @Override
     public AssignmentNode parse(ParseQueue queue) {
-        VariableNode left = variable.parse(queue);
+        throw new CompilerException("parseWithIdentifier() called on AssignmentStatement without an identifier");
+    }
+
+    public AssignmentNode parseWithIdentifier(Token identifier, ParseQueue queue) {
+        VariableNode left = variable.parseWithIdentifier(identifier, queue);
         queue.getExpectedToken(ASSIGN);
         ExpressionNode right = new Expression().parse(queue);
         return new AssignmentNode(left, right);

@@ -64,7 +64,7 @@ public class ParsableTest {
 
         when(parsable.getParsables()).thenReturn(Arrays.asList(t1.getType(), parseMe));
 
-        assertThat("Default implementation returns parse output",
+        assertThat("Default implementation returns parseWithIdentifier output",
                 parsable.parse(queue),
                 is(equalTo(expected)));
 

@@ -108,7 +108,7 @@ public class ParseQueueTest {
         when(parsable2.parse(queue)).thenReturn(expected);
         when(parsable3.matches(queue)).thenReturn(true);
 
-        assertThat("any calls the first parse method which matches",
+        assertThat("any calls the first parseWithIdentifier method which matches",
                 queue.any(parsable1, parsable2, parsable3), is(equalTo(expected)));
 
         verify(parsable1).matches(queue);

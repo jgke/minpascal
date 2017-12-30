@@ -1,7 +1,7 @@
 package fi.jgke.minpascal.data;
 
 import fi.jgke.minpascal.exception.CompilerException;
-import fi.jgke.minpascal.nodes.TerminalNode;
+import fi.jgke.minpascal.parser.nodes.TerminalNode;
 import fi.jgke.minpascal.parser.base.ParseQueue;
 import org.junit.Test;
 

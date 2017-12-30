@@ -28,10 +28,10 @@ public class Call implements Parsable {
 
     @Override
     public CallNode parse(ParseQueue queue) {
-        throw new CompilerException("parse() called on Call without identifier argument");
+        throw new CompilerException("parseWithIdentifier() called on Call without identifier argument");
     }
 
-    public CallNode parse(Token identifier, ParseQueue queue) {
+    public CallNode parseWithIdentifier(Token identifier, ParseQueue queue) {
         queue.getExpectedToken(OPENPAREN);
         ArgumentsNode arguments = new Arguments().parse(queue);
         queue.getExpectedToken(CLOSEPAREN);

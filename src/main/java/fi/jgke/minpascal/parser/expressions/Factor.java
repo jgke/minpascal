@@ -120,7 +120,7 @@ public class Factor implements Parsable {
             Token identifier = queue.getExpectedToken(IDENTIFIER);
             Call call = new Call();
             if (call.matches(queue)) {
-                return call.parse(identifier, queue);
+                return call.parseWithIdentifier(identifier, queue);
             }
             return new Variable().parseWithIdentifier(identifier, queue);
         }

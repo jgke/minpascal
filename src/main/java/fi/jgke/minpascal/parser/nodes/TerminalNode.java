@@ -1,4 +1,4 @@
-package fi.jgke.minpascal.nodes;
+package fi.jgke.minpascal.parser.nodes;
 
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TreeNode;

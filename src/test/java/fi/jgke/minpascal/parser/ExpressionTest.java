@@ -38,7 +38,7 @@ public class ExpressionTest {
     private final Token cb = new Token(CLOSEBRACKET, Optional.empty(), new Position(0, 0));
 
     @Test
-    public void simpleLiteral() {
+    public void literal() {
         ParseQueue queue = queueWith(five);
         ExpressionNode parse = new Expression().parse(queue);
         SimpleExpressionNode node = parse.getLeft();
@@ -75,7 +75,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleLiteralWithSign() {
+    public void literalWithSign() {
         ParseQueue queue = queueWith(plus, five);
         ExpressionNode parse = new Expression().parse(queue);
         SimpleExpressionNode node = parse.getLeft();
@@ -85,7 +85,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleLiteralWithSizeExpression() {
+    public void literalWithSizeExpression() {
         ParseQueue queue = queueWith(five, dot, size);
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Size expression is present",
@@ -95,7 +95,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleLiteralWithTwoSizeExpressions() {
+    public void literalWithTwoSizeExpressions() {
         ParseQueue queue = queueWith(five, dot, size, dot, size);
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Size expression is present",
@@ -105,7 +105,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleNot() {
+    public void notExpression() {
         ParseQueue queue = queueWith(not, five);
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Not expression is present", parse.getLeft().getLeft().getLeft().getNot().isPresent());
@@ -115,7 +115,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleParen() {
+    public void parenExpression() {
         ParseQueue queue = queueWith(op, five, cp);
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Paren expression is present", parse.getLeft().getLeft().getLeft().getExpression().isPresent());
@@ -125,7 +125,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleCall() {
+    public void callExpression() {
         ParseQueue queue = queueWith(id, op, cp);
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Call expression is present", parse.getLeft().getLeft().getLeft().getCall().isPresent());
@@ -135,7 +135,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleCallWithArgument() {
+    public void callWithArgument() {
         ParseQueue queue = queueWith(id, op, five, cp);
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Call expression is present", parse.getLeft().getLeft().getLeft().getCall().isPresent());
@@ -149,7 +149,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleCallWithMultipleArguments() {
+    public void callWithMultipleArguments() {
         ParseQueue queue = queueWith(id, op, five, comma, six, comma, five, cp);
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Call expression is present", parse.getLeft().getLeft().getLeft().getCall().isPresent());
@@ -163,7 +163,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleVariable() {
+    public void variableExpression() {
         ParseQueue queue = queueWith(id);
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Variable is present", parse.getLeft().getLeft().getLeft().getVariable().isPresent());
@@ -173,7 +173,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void simpleVariableWithArrayAccess() {
+    public void variableWithArrayAccess() {
         ParseQueue queue = queueWith(id, ob, five, cb);
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Variable is present", parse.getLeft().getLeft().getLeft().getVariable().isPresent());
