@@ -28,7 +28,7 @@ public class Call implements Parsable {
 
     @Override
     public CallNode parse(ParseQueue queue) {
-        throw new CompilerException("parse() called on Call");
+        throw new CompilerException("parse() called on Call without identifier argument");
     }
 
     public CallNode parse(Token identifier, ParseQueue queue) {

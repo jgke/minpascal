@@ -3,12 +3,12 @@ package fi.jgke.minpascal.parser.expressions;
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
-import fi.jgke.minpascal.parser.nodes.ArrayAccessNode;
 import fi.jgke.minpascal.parser.nodes.ExpressionNode;
 import fi.jgke.minpascal.parser.nodes.VariableNode;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static fi.jgke.minpascal.data.TokenType.*;
 
@@ -29,8 +29,8 @@ public class Variable implements Parsable {
             queue.getExpectedToken(OPENBRACKET);
             ExpressionNode integerExpression = new Expression().parse(queue);
             queue.getExpectedToken(CLOSEBRACKET);
-            return new ArrayAccessNode(identifier, integerExpression);
+            return new VariableNode(identifier, Optional.ofNullable(integerExpression));
         }
-        return new VariableNode(identifier);
+        return new VariableNode(identifier, Optional.empty());
     }
 }

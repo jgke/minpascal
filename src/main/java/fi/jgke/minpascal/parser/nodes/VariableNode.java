@@ -5,8 +5,11 @@ import fi.jgke.minpascal.data.TreeNode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Optional;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class VariableNode extends TreeNode {
     protected final Token identifier;
+    private final Optional<ExpressionNode> arrayAccessInteger;
 }
