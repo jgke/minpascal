@@ -23,10 +23,10 @@ import static fi.jgke.minpascal.data.TokenType.IDENTIFIER;
 
 public class SimpleStatement implements Parsable {
     private static final Parsable[] children = new Parsable[]{
-            new IdentifierStatement(),
-            new Return(),
             new Read(),
             new Write(),
+            new IdentifierStatement(),
+            new Return(),
             new Assert()
     };
 
