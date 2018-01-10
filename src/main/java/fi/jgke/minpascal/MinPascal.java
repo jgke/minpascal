@@ -19,12 +19,16 @@ import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parser;
 import fi.jgke.minpascal.tokenizer.Tokenizer;
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class MinPascal {
@@ -39,28 +43,43 @@ public class MinPascal {
         return compiler.compile(tree);
     }
 
-    public static int app(String[] args, PrintStream out, PrintStream err) throws IOException {
-        if (args.length < 1 || args.length > 2) {
-            err.println("Invalid number of arguments: expected one or two");
+    public static int app(String[] args, PrintWriter out, PrintWriter err) {
+        ArgumentParser parser = ArgumentParsers.newFor("minpascal").build()
+                .defaultHelp(true)
+                .description("Compile minipascal files to simplified C.");
+        parser.addArgument("-s", "--strict").setDefault(false)
+                .help("Strict mode - follow specification to the letter");
+        parser.addArgument("file").required(true)
+                .help("Input file");
+        parser.addArgument("outFile").nargs("?").setDefault((Object) null)
+                .help("Output file");
+
+        Namespace ns = null;
+        try {
+            ns = parser.parseArgs(args);
+        } catch (ArgumentParserException e) {
+            parser.handleError(e, err);
             return -1;
         }
 
-        Path source = Paths.get(args[0]);
+        Configuration.STRICT_MODE = ns.getBoolean("strict");
+        Path source, target;
+
+        source = Paths.get(ns.getString("file"));
+
         if (!Files.exists(source)) {
             err.println("Invalid argument: file not found");
             return -1;
         }
 
-        if(args.length == 1 && !source.toString().endsWith(".mpp")) {
-            err.println("Invalid source file parameter: You need to provide a " +
-                    "target file if you don't have the correct extension (.mpp)");
-            return -1;
-        }
-
-        Path target;
-        if(args.length == 2) {
-            target = Paths.get(args[1]);
+        if(ns.get("outFile") != null) {
+            target = Paths.get(ns.getString("outFile"));
         } else {
+            if(!source.toString().endsWith(".mpp")) {
+                err.println("Invalid source file parameter: You need to provide a " +
+                        "target file if you don't have the correct extension (.mpp)");
+                return -1;
+            }
             target = Paths.get(source.toString().replaceAll(".mpp$", ".c"));
         }
 
@@ -68,15 +87,15 @@ public class MinPascal {
             String content = new String(Files.readAllBytes(Paths.get(args[0])));
             String compiled = compile(content);
             Files.write(target, compiled.getBytes());
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             err.println(e.getMessage());
             return 1;
         }
         return 0;
     }
 
-    public static void main(String[] args) throws IOException {
-        System.exit(app(args, System.out, System.err));
+    public static void main(String[] args) {
+        System.exit(app(args, new PrintWriter(System.out), new PrintWriter(System.err)));
     }
 
 }

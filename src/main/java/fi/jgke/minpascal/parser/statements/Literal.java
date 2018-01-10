@@ -1,7 +1,7 @@
 package fi.jgke.minpascal.parser.statements;
 
+import fi.jgke.minpascal.Configuration;
 import fi.jgke.minpascal.data.Token;
-import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
 import fi.jgke.minpascal.parser.nodes.LiteralNode;
@@ -15,26 +15,52 @@ import static fi.jgke.minpascal.data.TokenType.*;
 public class Literal implements Parsable {
     @Override
     public List<Parsable> getParsables() {
-        return Arrays.asList(INTEGER_LITERAL, REAL_LITERAL, STRING_LITERAL);
+        if (Configuration.STRICT_MODE) {
+            return Arrays.asList(INTEGER_LITERAL, REAL_LITERAL, STRING_LITERAL);
+        }
+        return Arrays.asList(INTEGER_LITERAL, REAL_LITERAL, STRING_LITERAL, TRUE, FALSE);
     }
 
     @Override
     public LiteralNode parse(ParseQueue queue) {
-        Token token = queue.getExpectedToken(INTEGER_LITERAL, REAL_LITERAL, STRING_LITERAL);
-        Object content = token.getValue()
-                .orElseThrow(() -> new CompilerException("Literal token didn't have a value"));
-        Integer integer = null;
-        Double number = null;
-        String string = null;
+        Token token;
+        if (Configuration.STRICT_MODE) {
+            token = queue.getExpectedToken(INTEGER_LITERAL, REAL_LITERAL, STRING_LITERAL);
+        } else {
+            token = queue.getExpectedToken(INTEGER_LITERAL, REAL_LITERAL, STRING_LITERAL, TRUE, FALSE);
+        }
 
-        if (token.getType().equals(INTEGER_LITERAL)) integer = (Integer) content;
-        else if (token.getType().equals(INTEGER_LITERAL)) number = (Double) content;
-        else if (token.getType().equals(INTEGER_LITERAL)) string = (String) content;
+        if (Arrays.asList(INTEGER_LITERAL, REAL_LITERAL, STRING_LITERAL).contains(token.getType())) {
+            Object content = token.getValue().orElse(null);
+            Integer integer = null;
+            Double number = null;
+            String string = null;
 
+            if (token.getType().equals(INTEGER_LITERAL)) integer = (int) content;
+            else if (token.getType().equals(REAL_LITERAL)) number = (double) content;
+            else if (token.getType().equals(STRING_LITERAL)) string = (String) content;
+
+            assert integer != null || number != null || string != null;
+
+            return new LiteralNode(
+                    Optional.ofNullable(integer),
+                    Optional.ofNullable(number),
+                    Optional.ofNullable(string),
+                    Optional.empty()
+            );
+        }
+
+        Boolean bool = null;
+
+        if (token.getType().equals(TRUE)) bool = true;
+        else if (token.getType().equals(FALSE)) bool = false;
+
+        assert bool != null;
         return new LiteralNode(
-                Optional.ofNullable(integer),
-                Optional.ofNullable(number),
-                Optional.ofNullable(string)
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(bool)
         );
     }
 }

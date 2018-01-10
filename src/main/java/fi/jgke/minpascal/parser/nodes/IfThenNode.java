@@ -10,16 +10,16 @@ import java.util.Optional;
 @EqualsAndHashCode(callSuper = true)
 public class IfThenNode extends TreeNode {
     private final ExpressionNode condition;
-    private final TreeNode thenStatement;
-    private final Optional<TreeNode> elseStatement;
+    private final StatementNode thenStatement;
+    private final Optional<StatementNode> elseStatement;
 
-    public IfThenNode(ExpressionNode condition, TreeNode thenStatement) {
+    public IfThenNode(ExpressionNode condition, StatementNode thenStatement) {
         this.condition = condition;
         this.thenStatement = thenStatement;
         this.elseStatement = Optional.empty();
     }
 
-    public IfThenNode(ExpressionNode condition, TreeNode thenStatement, TreeNode elseStatement) {
+    public IfThenNode(ExpressionNode condition, StatementNode thenStatement, StatementNode elseStatement) {
         this.condition = condition;
         this.thenStatement = thenStatement;
         this.elseStatement = Optional.of(elseStatement);

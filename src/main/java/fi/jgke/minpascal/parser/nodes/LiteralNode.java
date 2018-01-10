@@ -12,4 +12,5 @@ public class LiteralNode extends TreeNode {
     private final Optional<Integer> integer;
     private final Optional<Double> number;
     private final Optional<String> string;
+    private final Optional<Boolean> bool;
 }

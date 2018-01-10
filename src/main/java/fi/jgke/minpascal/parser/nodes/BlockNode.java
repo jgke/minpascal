@@ -9,5 +9,5 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class BlockNode extends TreeNode {
-    private final List<TreeNode> children;
+    private final List<StatementNode> children;
 }
