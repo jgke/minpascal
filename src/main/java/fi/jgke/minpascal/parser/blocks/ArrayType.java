@@ -1,6 +1,5 @@
 package fi.jgke.minpascal.parser.blocks;
 
-import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
 import fi.jgke.minpascal.parser.expressions.Expression;
@@ -20,7 +19,7 @@ public class ArrayType implements Parsable {
     }
 
     @Override
-    public TreeNode parse(ParseQueue queue) {
+    public ArrayTypeNode parse(ParseQueue queue) {
         queue.getExpectedTokens(ARRAY, OPENBRACKET);
         ExpressionNode integerExpression = new Expression().parse(queue);
         queue.getExpectedTokens(CLOSEBRACKET, OF);

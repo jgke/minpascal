@@ -4,8 +4,10 @@ import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
+import fi.jgke.minpascal.parser.nodes.BlockNode;
 import fi.jgke.minpascal.parser.nodes.FunctionNode;
 import fi.jgke.minpascal.parser.nodes.ParametersNode;
+import fi.jgke.minpascal.parser.nodes.TypeNode;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,9 +28,9 @@ public class FunctionStatement implements Parsable {
         queue.getExpectedToken(OPENPAREN);
         ParametersNode params = new Parameters().parse(queue);
         queue.getExpectedTokens(CLOSEPAREN, COLON);
-        TreeNode returnType = new Type().parse(queue);
+        TypeNode returnType = new Type().parse(queue);
         queue.getExpectedToken(SEMICOLON);
-        TreeNode body = new Block().parse(queue);
+        BlockNode body = new Block().parse(queue);
         return new FunctionNode(identifier, params, body, returnType);
     }
 }

@@ -12,17 +12,17 @@ import java.util.Optional;
 public class FunctionNode extends TreeNode {
     private final Token identifier;
     private final ParametersNode params;
-    private final TreeNode body;
-    private final Optional<TreeNode> returnType;
+    private final BlockNode body;
+    private final Optional<TypeNode> returnType;
 
-    public FunctionNode(Token identifier, ParametersNode params, TreeNode body, TreeNode returnType) {
+    public FunctionNode(Token identifier, ParametersNode params, BlockNode body, TypeNode returnType) {
         this.identifier = identifier;
         this.params = params;
         this.body = body;
         this.returnType = Optional.of(returnType);
     }
 
-    public FunctionNode(Token identifier, ParametersNode params, TreeNode body) {
+    public FunctionNode(Token identifier, ParametersNode params, BlockNode body) {
         this.identifier = identifier;
         this.params = params;
         this.body = body;
