@@ -2,7 +2,7 @@ package fi.jgke.minpascal.exception;
 
 import fi.jgke.minpascal.data.Position;
 
-public class ParseException extends RuntimeException {
+public class ParseException extends UserError {
     public ParseException(Position position, String message) {
         super(String.format("Parse exception at %s: %s", position, message));
     }

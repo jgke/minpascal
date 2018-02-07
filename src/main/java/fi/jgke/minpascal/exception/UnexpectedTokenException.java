@@ -5,7 +5,7 @@ import fi.jgke.minpascal.data.TokenType;
 
 import java.util.List;
 
-public class UnexpectedTokenException extends RuntimeException {
+public class UnexpectedTokenException extends UserError {
     public UnexpectedTokenException(Token token, TokenType type) {
         super("Unexpected token: " + token.getType() + "[" + token.getValue() +
                 "], expected " + type + " near " + token.getPosition());

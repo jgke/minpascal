@@ -15,9 +15,10 @@
  */
 package fi.jgke.minpascal;
 
+import fi.jgke.minpascal.compiler.Compiler;
 import fi.jgke.minpascal.data.Token;
-import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parser;
+import fi.jgke.minpascal.parser.nodes.BlockNode;
 import fi.jgke.minpascal.tokenizer.Tokenizer;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -36,11 +37,10 @@ public class MinPascal {
     public static String compile(String content) throws IOException {
         Tokenizer tokenizer = new Tokenizer(content);
         Parser parser = new Parser();
-        Compiler compiler = new Compiler();
 
         Stream<Token> tokenize = tokenizer.tokenize();
-        TreeNode tree = parser.parse(tokenize);
-        return compiler.compile(tree);
+        BlockNode tree = parser.parse(tokenize);
+        return Compiler.compile(tree);
     }
 
     public static int app(String[] args, PrintWriter out, PrintWriter err) {
@@ -72,12 +72,12 @@ public class MinPascal {
             return -1;
         }
 
-        if(ns.get("outFile") != null) {
+        if (ns.get("outFile") != null) {
             target = Paths.get(ns.getString("outFile"));
         } else {
-            if(!source.toString().endsWith(".mpp")) {
+            if (!source.toString().endsWith(".mpp")) {
                 err.println("Invalid source file parameter: You need to provide a " +
-                        "target file if you don't have the correct extension (.mpp)");
+                                    "target file if you don't have the correct extension (.mpp)");
                 return -1;
             }
             target = Paths.get(source.toString().replaceAll(".mpp$", ".c"));
@@ -88,14 +88,22 @@ public class MinPascal {
             String compiled = compile(content);
             Files.write(target, compiled.getBytes());
         } catch (RuntimeException | IOException e) {
-            err.println(e.getMessage());
+            e.printStackTrace(err);
             return 1;
         }
         return 0;
     }
 
     public static void main(String[] args) {
-        System.exit(app(args, new PrintWriter(System.out), new PrintWriter(System.err)));
+        int exitCode;
+        try (PrintWriter out = new PrintWriter(System.out)) {
+            try (PrintWriter err = new PrintWriter(System.err)) {
+                exitCode = app(args, out, err);
+                err.flush();
+            }
+            out.flush();
+        }
+        System.exit(exitCode);
     }
 
 }

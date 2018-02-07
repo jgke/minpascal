@@ -8,7 +8,6 @@ import java.util.List;
 
 import static fi.jgke.minpascal.data.TokenType.INTEGER_LITERAL;
 import static fi.jgke.minpascal.data.TokenType.REAL_LITERAL;
-
 public class NumberTokenizerTest extends TokenizerTest {
 
     @Test

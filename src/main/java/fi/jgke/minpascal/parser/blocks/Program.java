@@ -1,8 +1,8 @@
 package fi.jgke.minpascal.parser.blocks;
 
-import fi.jgke.minpascal.data.TreeNode;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
+import fi.jgke.minpascal.parser.nodes.BlockNode;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,11 +16,11 @@ public class Program implements Parsable {
     }
 
     @Override
-    public TreeNode parse(ParseQueue queue) {
+    public BlockNode parse(ParseQueue queue) {
         queue.getExpectedTokens(PROGRAM);
         queue.getExpectedToken(IDENTIFIER);
         queue.getExpectedTokens(SEMICOLON);
-        TreeNode block = new Block().parse(queue);
+        BlockNode block = new Block().parse(queue);
         queue.getExpectedToken(DOT);
 
         return block;

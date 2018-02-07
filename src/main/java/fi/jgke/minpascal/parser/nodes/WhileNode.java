@@ -8,5 +8,5 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class WhileNode extends TreeNode {
     private final ExpressionNode condition;
-    private final TreeNode statement;
+    private final StatementNode statement;
 }
