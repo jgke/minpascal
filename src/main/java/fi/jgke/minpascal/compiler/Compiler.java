@@ -15,7 +15,6 @@
  */
 package fi.jgke.minpascal.compiler;
 
-import fi.jgke.minpascal.CBuilder;
 import fi.jgke.minpascal.parser.nodes.BlockNode;
 
 public class Compiler {
@@ -31,6 +30,7 @@ public class Compiler {
         output.macroImport("stdbool.h");
 
         IdentifierContext.push();
+//       root.debug();
         RootBuilder rootBuilder = new RootBuilder(root);
         rootBuilder.build(output);
         IdentifierContext.pop();

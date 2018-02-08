@@ -14,8 +14,8 @@ public class IdentifierContext {
 
     public static CType getType(String identifier) {
         for (int i = identifiers.size() - 1; i >= 0; i--) {
-            if (identifiers.get(i).containsKey(identifier)) {
-                return identifiers.get(i).get(identifier);
+            if (identifiers.get(i).containsKey(identifier.toLowerCase())) {
+                return identifiers.get(i).get(identifier.toLowerCase());
             }
         }
         throw new IdentifierNotFound(identifier);
@@ -30,12 +30,15 @@ public class IdentifierContext {
     }
 
     public static void addIdentifier(String identifier, CType type) {
-        if(identifiers.get(identifiers.size()-1).containsKey(identifier))
+        if(identifiers.get(identifiers.size()-1).containsKey(identifier.toLowerCase()))
             throw new IdentifierAlreadyExists(identifier);
-        identifiers.get(identifiers.size()-1).put(identifier, type);
+        identifiers.get(identifiers.size()-1).put(identifier.toLowerCase(), type);
     }
 
     public static String genIdentifier() {
-        return "_identifier" + identifierNumber++;
+        return genIdentifier("identifier");
+    }
+    public static String genIdentifier(String prefix) {
+        return "_" + prefix + identifierNumber++;
     }
 }

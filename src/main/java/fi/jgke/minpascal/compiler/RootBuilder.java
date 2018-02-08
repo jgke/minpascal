@@ -1,6 +1,5 @@
 package fi.jgke.minpascal.compiler;
 
-import fi.jgke.minpascal.CBuilder;
 import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TokenType;

@@ -8,6 +8,8 @@ import fi.jgke.minpascal.parser.nodes.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -18,8 +20,8 @@ import static fi.jgke.minpascal.compiler.IdentifierContext.genIdentifier;
 public class CExpressionResult {
     private final CType type;
     private final String identifier;
-    private final String temporaries;
-    private final String post;
+    private final List<String> temporaries;
+    private final List<String> post;
 
     public static CExpressionResult fromExpression(ExpressionNode arg) {
         return getType(arg);
@@ -59,7 +61,7 @@ public class CExpressionResult {
         String identifier = var.getIdentifier().getValue();
         CType type = IdentifierContext.getType(identifier);
         var.getArrayAccessInteger().ifPresent($ -> notImplemented());
-        return new CExpressionResult(type, identifier, "", ":w");
+        return new CExpressionResult(type, identifier, Collections.emptyList(), Collections.emptyList());
     }
 
     private static CExpressionResult toExpression(CallNode call) {
@@ -72,7 +74,8 @@ public class CExpressionResult {
 
     private static CExpressionResult toExpression(CType type, Object value) {
         String id = genIdentifier();
-        return new CExpressionResult(type, id, type.toDeclaration(id) + " = " + value + ";", "");
+        return new CExpressionResult(type, id, Collections.singletonList(type.toDeclaration(id) + " = " + value + ";"),
+                Collections.emptyList());
     }
 
     private static CExpressionResult getLiteralType(LiteralNode literalNode) {

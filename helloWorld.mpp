@@ -1,4 +1,8 @@
 program Hello;
 begin
-  writeln ('Hello, world.' + ' str concat', 1 * 2 + 3 * 4, true)
+  writeln ('Hello, world.' + ' str concat', 1 * 2 + 3 * 4, true);
+  if true then
+    writeln ('boo');
+  while false do
+    writeln ('never')
 end.

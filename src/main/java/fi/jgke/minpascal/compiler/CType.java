@@ -74,8 +74,11 @@ public class CType {
     private static String fromPascal(TypeNode typeNode) {
         String type = pascalToCMap.get(
                 typeNode.getSimpleType()
-                        .orElseGet(() -> typeNode.getArrayType().map(ArrayTypeNode::getType).get())
-                        .getType().getType().toString());
+                        .orElseGet(typeNode.getArrayType().map(ArrayTypeNode::getType)::get)
+                        .getType().getValue().toLowerCase());
+        if (type == null) {
+            throw new CompilerException("Invalid type " + typeNode);
+        }
         type += typeNode.getArrayType().map(arrayTypeNode -> "*").orElse("");
         return type;
     }

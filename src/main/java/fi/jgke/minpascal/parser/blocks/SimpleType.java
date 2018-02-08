@@ -1,5 +1,7 @@
 package fi.jgke.minpascal.parser.blocks;
 
+import fi.jgke.minpascal.data.Token;
+import fi.jgke.minpascal.exception.ParseException;
 import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
 import fi.jgke.minpascal.parser.nodes.SimpleTypeNode;
@@ -17,6 +19,19 @@ public class SimpleType implements Parsable {
 
     @Override
     public SimpleTypeNode parse(ParseQueue queue) {
-        return new SimpleTypeNode(queue.getIdentifier());
+        Token<String> identifier = queue.getIdentifier();
+        switch (identifier.getValue().toLowerCase()) {
+            case "integer":
+                break;
+            case "boolean":
+                break;
+            case "string":
+                break;
+            case "real":
+                break;
+            default:
+                throw new ParseException(identifier.getPosition(), "Unknown type: " + identifier.getValue());
+        }
+        return new SimpleTypeNode(identifier);
     }
 }

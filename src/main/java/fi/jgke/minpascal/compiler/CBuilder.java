@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fi.jgke.minpascal;
+package fi.jgke.minpascal.compiler;
 
 import com.google.common.collect.Streams;
-import fi.jgke.minpascal.compiler.CType;
-import fi.jgke.minpascal.compiler.IdentifierContext;
+import fi.jgke.minpascal.compiler.std.CExpressionResult;
 import fi.jgke.minpascal.compiler.std.WriteLn;
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.nodes.*;
-import fi.jgke.minpascal.util.Formatter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,7 +39,7 @@ public class CBuilder {
         return this.append(str, true);
     }
 
-    public CBuilder append(String str, boolean indent) {
+    private CBuilder append(String str, boolean indent) {
         if (indent) {
             builder.append("\n");
             for (int i = 0; i < indentation; i++) {
@@ -57,12 +55,13 @@ public class CBuilder {
         return this;
     }
 
-    public CBuilder addDeclaration(String identifier, CType type) {
+    private CBuilder addDeclaration(String identifier, CType type) {
         this.append(type.toDeclaration(identifier)).append(";", false);
+        IdentifierContext.addIdentifier(identifier, type);
         return this;
     }
 
-    public CBuilder startFunction(String name, List<String> argumentNames, CType type) {
+    private CBuilder startFunction(String name, List<String> argumentNames, CType type) {
         IdentifierContext.push();
         this.append("");
         this.append(type.toFunctionDeclaration(argumentNames, name));
@@ -76,10 +75,20 @@ public class CBuilder {
         return this;
     }
 
-    public CBuilder endFunctionBody() {
+    private CBuilder endFunctionBody() {
         indentation--;
         this.append("}");
         IdentifierContext.pop();
+        return this;
+    }
+
+    private CBuilder addLabel(String label) {
+        this.append("\n" + label + ":;", false); // left align labels
+        return this;
+    }
+
+    private CBuilder addGoto(String label) {
+        this.append("goto " + label + ";");
         return this;
     }
 
@@ -121,19 +130,49 @@ public class CBuilder {
     }
 
     private Void addWhile(WhileNode whileNode) {
-        this.append("while(0) {\n");
+        String again = IdentifierContext.genIdentifier("again");
+        String end = IdentifierContext.genIdentifier("end");
+
+        this.addLabel(again);
+
+        CExpressionResult result = CExpressionResult.fromExpression(whileNode.getCondition());
+        result.getTemporaries().forEach(this::append);
+        this.append("if(!" + result.getIdentifier() + ") ");
         this.indentation++;
-        addStatement(whileNode.getStatement());
+        addGoto(end);
         this.indentation--;
-        this.append("}\n");
+
+        addStatement(whileNode.getStatement());
+        this.addGoto(again);
+        this.addLabel(end);
         return null;
     }
 
     private Void addIf(IfThenNode ifThenNode) {
-        this.append("if(0) {");
-        this.indentation++;
+        String end = IdentifierContext.genIdentifier("iffalse");
+
+        CExpressionResult result = CExpressionResult.fromExpression(ifThenNode.getCondition());
+        result.getTemporaries().forEach(this::append);
+
+        this.append("if(!" + result.getIdentifier() + ") ");
+        indentation++;
+        addGoto(end);
+        indentation--;
+
         addStatement(ifThenNode.getThenStatement());
-        this.indentation--;
+
+        if (ifThenNode.getElseStatement().isPresent()) {
+            StatementNode elseStatement = ifThenNode.getElseStatement().get();
+            String label2 = IdentifierContext.genIdentifier("end");
+
+            this.addGoto(label2);
+
+            this.addLabel(end);
+            addStatement(elseStatement);
+
+            end = label2;
+        }
+        this.addLabel(end);
         return null;
     }
 
@@ -142,7 +181,6 @@ public class CBuilder {
     }
 
     private void addSimple(SimpleStatementNode simpleStatementNode) {
-        Formatter.formatTree(simpleStatementNode.toString());
         simpleStatementNode.map(
                 this::notImplemented,
                 this::notImplemented,

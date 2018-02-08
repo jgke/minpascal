@@ -11,18 +11,22 @@ public class WriteLn {
     public static String fromArguments(ArgumentsNode node) {
         StringBuilder fmt = new StringBuilder();
         List<String> args = new ArrayList<>();
-        List<String> steps = new ArrayList<>();
+        List<List<String>> steps = new ArrayList<>();
         List<String> post = new ArrayList<>();
         for (ExpressionNode arg : node.getArguments()) {
             CExpressionResult result = CExpressionResult.fromExpression(arg);
             fmt.append(result.getType().toFormat()).append(" ");
             args.add(result.getIdentifier());
             steps.add(result.getTemporaries());
-            post.add(result.getPost());
+            post.addAll(result.getPost());
         }
-        return steps.stream().map(str -> str.replaceAll(";", ";\n")).collect(Collectors.joining()) +
-                "\nprintf(\"" + fmt.toString().trim() + "\\n\", " +
-                args.stream().collect(Collectors.joining(", ")) + ");\n\n" +
-                post.stream().map(str -> str.replaceAll(";", ";\n")).collect(Collectors.joining());
+
+        String pre = steps.stream()
+                .map(list -> list.stream()
+                        .collect(Collectors.joining("\n")) + "\n")
+                .collect(Collectors.joining("\n")) + "\n";
+        String print = "printf(\"" + fmt.toString().trim() + "\\n\", " + args.stream().collect(Collectors.joining(", ")) + ");\n";
+        String clean = post.stream().collect(Collectors.joining("\n")) + "\n";
+        return pre + print + clean;
     }
 }

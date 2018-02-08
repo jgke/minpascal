@@ -4,10 +4,12 @@ import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TokenType;
 import fi.jgke.minpascal.exception.CompilerException;
+import fi.jgke.minpascal.exception.OperatorError;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 import static fi.jgke.minpascal.compiler.CType.*;
@@ -24,6 +26,8 @@ public class CBinaryExpressions {
         binary(CBinaryExpressionFn::str, new CType[]{CSTRING, CBOOLEAN}, PLUS);
         binary(CBinaryExpressionFn::std, new CType[]{CBOOLEAN}, AND, OR, EQUALS);
         binary(CBinaryExpressionFn::std, new CType[]{CINTEGER, CDOUBLE}, PLUS, MINUS, TIMES, DIVIDE, MOD);
+        binary(CBinaryExpressionFn::std, ($, $$) -> CType.CBOOLEAN, new CType[]{CINTEGER, CDOUBLE},
+                MORETHAN, MORETHANEQUALS, LESSTHAN, LESSTHANEQUALS, EQUALS, NOTEQUALS);
         nest.get(CBOOLEAN).remove(PLUS);
     }
 
@@ -52,14 +56,23 @@ public class CBinaryExpressions {
     }
 
     private static void binary(Function<CType, CBinaryExpressionFn> supplier, CType[] type, TokenType... operators) {
+        binary(supplier, CBinaryExpressions::max, type, operators);
+    }
+
+    private static void binary(Function<CType, CBinaryExpressionFn> supplier, BinaryOperator<CType> result, CType[] type, TokenType... operators) {
         Arrays.stream(type).forEach(a ->
                 Arrays.stream(type).forEach(b ->
-                        Arrays.stream(operators).forEach(operator -> add(a, operator, b, supplier.apply(max(a, b))))
+                        Arrays.stream(operators).forEach(operator -> add(a, operator, b, supplier.apply(result.apply(a, b))))
                 )
         );
     }
 
     public static CExpressionResult apply(CExpressionResult left, Token<Void> operator, CExpressionResult right) {
+        if (!nest.containsKey(left.getType()) ||
+                !nest.get(left.getType()).containsKey(operator.getType()) ||
+                !nest.get(left.getType()).get(operator.getType()).containsKey(right.getType())) {
+            throw new OperatorError(left.getType(), operator, right.getType());
+        }
         return nest.get(left.getType())
                 .get(operator.getType())
                 .get(right.getType())

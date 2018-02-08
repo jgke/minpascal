@@ -64,8 +64,6 @@ task fatJar(type: Jar) {
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
-mainClassName = 'fi.jgke.minpascal.MinPascal'
-
 jar {
     manifest {
         attributes 'Main-Class': 'fi.jgke.minpascal.MinPascal'
