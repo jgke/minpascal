@@ -22,15 +22,15 @@ public class SimpleExpression implements Parsable {
 
     @Override
     public SimpleExpressionNode parse(ParseQueue queue) {
-        Optional<Token> sign = Optional.empty();
+        Optional<Token<Void>> sign = Optional.empty();
         if (queue.isNext(PLUS, MINUS)) {
-            sign = Optional.of(queue.getExpectedToken(PLUS, MINUS));
+            sign = Optional.of((Token<Void>) queue.getExpectedToken(PLUS, MINUS));
         }
 
         TermNode left = new Term().parse(queue);
 
         if (queue.isNext(addingOperators)) {
-            Token operator = queue.getExpectedToken(addingOperators);
+            Token<Void> operator = (Token<Void>) queue.getExpectedToken(addingOperators);
             TermNode right = new Term().parse(queue);
             return new SimpleExpressionNode(sign, left, operator, right);
         }

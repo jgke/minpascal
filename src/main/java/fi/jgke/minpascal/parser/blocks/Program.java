@@ -18,7 +18,7 @@ public class Program implements Parsable {
     @Override
     public BlockNode parse(ParseQueue queue) {
         queue.getExpectedTokens(PROGRAM);
-        queue.getExpectedToken(IDENTIFIER);
+        queue.getIdentifier();
         queue.getExpectedTokens(SEMICOLON);
         BlockNode block = new Block().parse(queue);
         queue.getExpectedToken(DOT);

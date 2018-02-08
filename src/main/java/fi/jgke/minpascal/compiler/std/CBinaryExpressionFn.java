@@ -7,7 +7,7 @@ import static fi.jgke.minpascal.compiler.IdentifierContext.genIdentifier;
 
 @FunctionalInterface
 public interface CBinaryExpressionFn {
-    CExpressionResult apply(CExpressionResult left, Token op, CExpressionResult right);
+    CExpressionResult apply(CExpressionResult left, Token<Void> op, CExpressionResult right);
 
     static CBinaryExpressionFn std(CType type) {
         return (left, op, right) -> {

@@ -71,7 +71,7 @@ public class SimpleStatement implements Parsable {
 
         @Override
         public TreeNode parse(ParseQueue queue) {
-            Token identifier = queue.getExpectedToken(IDENTIFIER);
+           Token<String> identifier = queue.getIdentifier();
             if (new Call().matches(queue))
                 return new Call().parseWithIdentifier(identifier, queue);
             return new AssignmentStatement().parseWithIdentifier(identifier, queue);

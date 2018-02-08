@@ -24,7 +24,7 @@ public class Expression implements Parsable {
         if (!queue.isNext(ParseUtils.relationalOperators)) {
             return new ExpressionNode(left);
         }
-        Token operator = queue.getExpectedToken(ParseUtils.relationalOperators);
+        Token<Void> operator = (Token<Void>) queue.getExpectedToken(ParseUtils.relationalOperators);
         SimpleExpressionNode right = simpleExpression.parse(queue);
         return new ExpressionNode(left, operator, right);
     }

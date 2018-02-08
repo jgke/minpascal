@@ -39,14 +39,14 @@ public enum TokenType implements Parsable {
         return matches(queue.peek());
     }
 
-    public boolean matches(Token next) {
+    public boolean matches(Token<?> next) {
         if (next == null) {
             return false;
         }
         if (next.getType().equals(IDENTIFIER) && Arrays.asList(resevedIdentifiers).contains(this)) {
-            String value = next.getValue()
-                    .orElseThrow(() -> new CompilerException("IDENTIFIER did not have a value"))
-                    .toString().toLowerCase();
+            //noinspection unchecked
+            Token<String> token = (Token<String>) next;
+            String value = token.getValue().toLowerCase();
             String expectedValue = this.toString().toLowerCase();
             return value.equals(expectedValue);
         }
@@ -69,8 +69,26 @@ public enum TokenType implements Parsable {
     @Override
     public TreeNode parse(ParseQueue queue) {
         if (Arrays.asList(resevedIdentifiers).contains(this)) {
-            return new TerminalNode(queue.getExpectedToken(IDENTIFIER));
+            return new TerminalNode(queue.getIdentifier());
         }
         return new TerminalNode(queue.getExpectedToken(this));
+    }
+
+    public Class<?> acceptedType() {
+        if (Arrays.asList(resevedIdentifiers).contains(this)) {
+            return String.class;
+        }
+        switch (this) {
+            case IDENTIFIER:
+                return String.class;
+            case INTEGER_LITERAL:
+                return Integer.class;
+            case REAL_LITERAL:
+                return Double.class;
+            case STRING_LITERAL:
+                return String.class;
+            default:
+                return Void.class;
+        }
     }
 }

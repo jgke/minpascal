@@ -66,9 +66,9 @@ public class Tokenizer {
         this.queue = convertQueue(content);
     }
 
-    public Stream<Token> tokenize() {
-        Iterator<Token> it = new Iterator<Token>() {
-            Optional<Token> lastToken = Optional.empty();
+    public Stream<Token<?>> tokenize() {
+        Iterator<Token<?>> it = new Iterator<Token<?>>() {
+            Optional<Token<?>> lastToken = Optional.empty();
 
             @Override
             public boolean hasNext() {
@@ -76,17 +76,17 @@ public class Tokenizer {
             }
 
             @Override
-            public Token next() {
+            public Token<?> next() {
                 flushWhitespace();
                 if (queue.isEmpty()) {
-                    lastToken = Optional.of(new Token(EOF, Optional.empty(), new Position(-1, -1)));
+                    lastToken = Optional.of(Token.token(EOF, new Position(-1, -1)));
                     return lastToken.get();
                 }
 
                 Position nextPosition = queue.peek().getPosition();
 
                 try {
-                    Token token = parseToken();
+                    Token<?> token = parseToken();
                     lastToken = Optional.of(token);
                     return token;
                 } catch (NoSuchElementException e) {
@@ -118,7 +118,7 @@ public class Tokenizer {
         return queue;
     }
 
-    private Token parseToken() {
+    private Token<?> parseToken() {
         CharacterWithPosition c = queue.peek();
 
         if (c.getCharacter() == '{') {
@@ -177,7 +177,7 @@ public class Tokenizer {
         return queue.isEmpty() ? 0 : queue.peek().getCharacter();
     }
 
-    private Token parseIntOrReal() {
+    private Token<?> parseIntOrReal() {
         Position startingPosition = queue.peek().getPosition();
         int number = parseNumber();
         // Allow numbers like 1e5 if outside strict mode
@@ -212,11 +212,11 @@ public class Tokenizer {
             // Let parseDouble handle the math part, so we won't throw away precision unnecessarily
             // roughly (number + fractional / 10^(ceil(log10(fractional)))) * 10^(sign * exponent)
             String doubleString = String.format("%s.%se%s%s", number, fractional, sign, exponent);
-            return new Token(REAL_LITERAL,
-                    Optional.of(Double.parseDouble(doubleString)),
+            return Token.token(REAL_LITERAL,
+                    Double.parseDouble(doubleString),
                     startingPosition);
         } else {
-            return new Token(INTEGER_LITERAL, Optional.of(number), startingPosition);
+            return Token.token(INTEGER_LITERAL, number, startingPosition);
         }
     }
 
@@ -233,7 +233,7 @@ public class Tokenizer {
         }
     }
 
-    private Token parseString() {
+    private Token<String> parseString() {
         // Remove the '"' (or "'")
         CharacterWithPosition limiter = queue.remove();
         Position startingPosition = limiter.getPosition();
@@ -248,10 +248,10 @@ public class Tokenizer {
             s.append(new String(Character.toChars(c)));
         }
 
-        return new Token(STRING_LITERAL, Optional.of(s.toString()), startingPosition);
+        return Token.token(STRING_LITERAL, s.toString(), startingPosition);
     }
 
-    private Token parseIdentifier() {
+    private Token<?> parseIdentifier() {
         Position startingPosition = queue.peek().getPosition();
         StringBuilder s = new StringBuilder();
         CharacterWithPosition character;
@@ -264,42 +264,42 @@ public class Tokenizer {
         String identifier = s.toString();
 
         if (keywords.containsKey(identifier.toLowerCase())) {
-            return new Token(keywords.get(identifier.toLowerCase()), Optional.empty(), startingPosition);
+            return Token.token(keywords.get(identifier.toLowerCase()), startingPosition);
         }
-        return new Token(IDENTIFIER, Optional.of(identifier), startingPosition);
+        return Token.token(IDENTIFIER, identifier, startingPosition);
     }
 
-    private Token parseOperator() {
+    private Token<Void> parseOperator() {
         CharacterWithPosition c = queue.remove();
         Position pos = c.getPosition();
         String string = cToStr(c.getCharacter());
         if (basicSymbols.containsKey(string)) {
-            return new Token(basicSymbols.get(string), Optional.empty(), c.getPosition());
+            return Token.token(basicSymbols.get(string), c.getPosition());
         }
         CharacterWithPosition next = queue.peek();
         switch (cToStr(c.getCharacter())) {
             case "<":
                 if (next != null && next.getCharacter() == '>') {
                     queue.remove();
-                    return new Token(NOTEQUALS, Optional.empty(), pos);
+                    return Token.token(NOTEQUALS, pos);
                 }
                 if (next != null && next.getCharacter() == '=') {
                     queue.remove();
-                    return new Token(LESSTHANEQUALS, Optional.empty(), pos);
+                    return Token.token(LESSTHANEQUALS, pos);
                 }
-                return new Token(LESSTHAN, Optional.empty(), pos);
+                return Token.token(LESSTHAN, pos);
             case ">":
                 if (next != null && next.getCharacter() == '=') {
                     queue.remove();
-                    return new Token(MORETHANEQUALS, Optional.empty(), pos);
+                    return Token.token(MORETHANEQUALS, pos);
                 }
-                return new Token(MORETHAN, Optional.empty(), pos);
+                return Token.token(MORETHAN, pos);
             case ":":
                 if (next != null && next.getCharacter() == '=') {
                     queue.remove();
-                    return new Token(ASSIGN, Optional.empty(), pos);
+                    return Token.token(ASSIGN, pos);
                 }
-                return new Token(COLON, Optional.empty(), pos);
+                return Token.token(COLON, pos);
         }
         throw new ParseException(pos, "Unexpected character '" + cToStr(c.getCharacter()) + "'");
     }

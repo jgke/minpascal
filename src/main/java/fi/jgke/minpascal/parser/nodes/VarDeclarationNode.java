@@ -10,6 +10,6 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class VarDeclarationNode extends TreeNode {
-    private final List<Token> identifiers;
+    private final List<Token<String>> identifiers;
     private final TypeNode type;
 }

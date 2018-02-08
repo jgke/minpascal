@@ -23,7 +23,7 @@ public class Parameters implements Parsable {
     public ParametersNode parse(ParseQueue queue) {
         List<VarDeclarationNode> declarations = queue.collectBy(q -> {
             queue.ifNextConsume(VAR);
-            Token identifier = queue.getExpectedToken(IDENTIFIER);
+           Token<String> identifier = queue.getIdentifier();
             queue.getExpectedToken(COLON);
             TypeNode type = new Type().parse(queue);
             return new VarDeclarationNode(Collections.singletonList(identifier), type);

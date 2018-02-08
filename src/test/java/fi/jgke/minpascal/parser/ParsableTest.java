@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -19,10 +18,10 @@ import static org.mockito.Mockito.*;
 
 public class ParsableTest {
     private Parsable parsable = spy(Parsable.class);
-    Token t1 = new Token(TokenType.BEGIN, Optional.empty(), new Position(0, 0));
-    Token t2 = new Token(TokenType.PROGRAM, Optional.empty(), new Position(0, 0));
+    private Token<Void> t1 = Token.token(TokenType.BEGIN, new Position(0, 0));
+    private Token<Void> t2 = Token.token(TokenType.PROGRAM, new Position(0, 0));
 
-    private ParseQueue queueWith(Token... tokens) {
+    private ParseQueue queueWith(Token<?>... tokens) {
         ParseQueue queue = new ParseQueue();
         queue.addAll(Arrays.asList(tokens));
         return queue;

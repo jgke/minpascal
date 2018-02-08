@@ -22,7 +22,7 @@ public class Term implements Parsable {
     public TermNode parse(ParseQueue queue) {
         FactorNode left = factor.parse(queue);
         if (queue.isNext(ParseUtils.multiplyingOperators)) {
-            Token operator = queue.getExpectedToken(ParseUtils.multiplyingOperators);
+            Token<Void> operator = (Token<Void>) queue.getExpectedToken(ParseUtils.multiplyingOperators);
             FactorNode right = factor.parse(queue);
             return new TermNode(left, operator, right);
         }

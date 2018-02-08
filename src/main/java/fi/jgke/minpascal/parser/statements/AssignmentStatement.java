@@ -28,7 +28,7 @@ public class AssignmentStatement implements Parsable {
         throw new CompilerException("parseWithIdentifier() called on AssignmentStatement without an identifier");
     }
 
-    public AssignmentNode parseWithIdentifier(Token identifier, ParseQueue queue) {
+    public AssignmentNode parseWithIdentifier(Token<String> identifier, ParseQueue queue) {
         VariableNode left = variable.parseWithIdentifier(identifier, queue);
         queue.getExpectedToken(ASSIGN);
         ExpressionNode right = new Expression().parse(queue);

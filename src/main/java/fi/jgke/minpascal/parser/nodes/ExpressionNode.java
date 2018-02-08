@@ -13,14 +13,14 @@ import java.util.Optional;
 @AllArgsConstructor
 public class ExpressionNode extends TreeNode {
     private final SimpleExpressionNode left;
-    private final Optional<Token> operator;
+    private final Optional<Token<Void>> operator;
     private final Optional<SimpleExpressionNode> right;
 
     public ExpressionNode(SimpleExpressionNode left) {
         this(left, Optional.empty(), Optional.empty());
     }
 
-    public ExpressionNode(SimpleExpressionNode left, Token operator, SimpleExpressionNode right) {
+    public ExpressionNode(SimpleExpressionNode left, Token<Void> operator, SimpleExpressionNode right) {
         this.left = left;
         this.right = Optional.of(right);
         this.operator = Optional.of(operator);

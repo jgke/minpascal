@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static fi.jgke.minpascal.TestUtils.queueWith;
+import static fi.jgke.minpascal.data.Token.token;
 import static fi.jgke.minpascal.data.TokenType.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,19 +24,19 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @SuppressWarnings("ConstantConditions")
 public class ExpressionTest {
 
-    private final Token five = new Token(INTEGER_LITERAL, Optional.of(5), new Position(0, 0));
-    private final Token six = new Token(INTEGER_LITERAL, Optional.of(6), new Position(0, 0));
-    private final Token plus = new Token(PLUS, Optional.empty(), new Position(0, 0));
-    private final Token times = new Token(TIMES, Optional.empty(), new Position(0, 0));
-    private final Token dot = new Token(DOT, Optional.empty(), new Position(0, 0));
-    private final Token size = new Token(IDENTIFIER, Optional.of("size"), new Position(0, 0));
-    private final Token not = new Token(NOT, Optional.empty(), new Position(0, 0));
-    private final Token op = new Token(OPENPAREN, Optional.empty(), new Position(0, 0));
-    private final Token cp = new Token(CLOSEPAREN, Optional.empty(), new Position(0, 0));
-    private final Token comma = new Token(COMMA, Optional.empty(), new Position(0, 0));
-    private final Token id = new Token(IDENTIFIER, Optional.of("foobar"), new Position(0, 0));
-    private final Token ob = new Token(OPENBRACKET, Optional.empty(), new Position(0, 0));
-    private final Token cb = new Token(CLOSEBRACKET, Optional.empty(), new Position(0, 0));
+    private final Token<Integer> five = token(INTEGER_LITERAL, 5, new Position(0, 0));
+    private final Token<Integer> six = token(INTEGER_LITERAL, 6, new Position(0, 0));
+    private final Token<Void> plus = token(PLUS, new Position(0, 0));
+    private final Token<Void> times = token(TIMES, new Position(0, 0));
+    private final Token<Void> dot = token(DOT, new Position(0, 0));
+    private final Token<String> size = token(IDENTIFIER, "size", new Position(0, 0));
+    private final Token<Void> not = token(NOT, new Position(0, 0));
+    private final Token<Void> op = token(OPENPAREN, new Position(0, 0));
+    private final Token<Void> cp = token(CLOSEPAREN, new Position(0, 0));
+    private final Token<Void> comma = token(COMMA, new Position(0, 0));
+    private final Token<String> id = token(IDENTIFIER, "foobar", new Position(0, 0));
+    private final Token<Void> ob = token(OPENBRACKET, new Position(0, 0));
+    private final Token<Void> cb = token(CLOSEBRACKET, new Position(0, 0));
 
     @Test
     public void literal() {
@@ -130,7 +131,7 @@ public class ExpressionTest {
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Call expression is present", parse.getLeft().getLeft().getLeft().getCall().isPresent());
         assertThat("Call identifier contains foobar",
-                parse.getLeft().getLeft().getLeft().getCall().get().getIdentifier().getValue().get(),
+                parse.getLeft().getLeft().getLeft().getCall().get().getIdentifier().getValue(),
                 is(equalTo("foobar")));
     }
 
@@ -140,7 +141,7 @@ public class ExpressionTest {
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Call expression is present", parse.getLeft().getLeft().getLeft().getCall().isPresent());
         assertThat("Call identifier contains foobar",
-                parse.getLeft().getLeft().getLeft().getCall().get().getIdentifier().getValue().get(),
+                parse.getLeft().getLeft().getLeft().getCall().get().getIdentifier().getValue(),
                 is(equalTo("foobar")));
         assertThat("Call arguments contain 5",
                 parse.getLeft().getLeft().getLeft().getCall().get().getArguments().getArguments().stream()
@@ -154,7 +155,7 @@ public class ExpressionTest {
         ExpressionNode parse = new Expression().parse(queue);
         assertThat("Call expression is present", parse.getLeft().getLeft().getLeft().getCall().isPresent());
         assertThat("Call identifier contains foobar",
-                parse.getLeft().getLeft().getLeft().getCall().get().getIdentifier().getValue().get(),
+                parse.getLeft().getLeft().getLeft().getCall().get().getIdentifier().getValue(),
                 is(equalTo("foobar")));
         assertThat("Call arguments contain 5, 6, 5",
                 parse.getLeft().getLeft().getLeft().getCall().get().getArguments().getArguments().stream()

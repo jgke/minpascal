@@ -14,7 +14,6 @@ import org.junit.rules.ExpectedException;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 
 import static fi.jgke.minpascal.TestUtils.queueWith;
 import static fi.jgke.minpascal.data.TokenType.COMMA;
@@ -25,11 +24,11 @@ import static org.mockito.Mockito.*;
 
 public class ParseQueueTest {
 
-    Token t1 = new Token(TokenType.BEGIN, Optional.empty(), new Position(0, 0));
-    Token t2 = new Token(TokenType.PROGRAM, Optional.empty(), new Position(0, 0));
-    Token t3 = new Token(TokenType.MINUS, Optional.empty(), new Position(0, 0));
-    Token comma = new Token(COMMA, Optional.empty(), new Position(0, 0));
-    Token closeParen = new Token(TokenType.CLOSEPAREN, Optional.empty(), new Position(0, 0));
+    private Token<Void> t1 = Token.token(TokenType.BEGIN, new Position(0, 0));
+    private Token<Void> t2 = Token.token(TokenType.PROGRAM, new Position(0, 0));
+    private Token<Void> t3 = Token.token(TokenType.MINUS, new Position(0, 0));
+    private Token<Void> comma = Token.token(COMMA, new Position(0, 0));
+    private Token<Void> closeParen = Token.token(TokenType.CLOSEPAREN, new Position(0, 0));
 
     @Test
     public void getExpectedTokenReturnsExpectedToken() {

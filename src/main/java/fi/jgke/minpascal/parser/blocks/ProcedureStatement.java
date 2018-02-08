@@ -21,7 +21,7 @@ public class ProcedureStatement implements Parsable {
     @Override
     public FunctionNode parse(ParseQueue queue) {
         queue.getExpectedToken(PROCEDURE);
-        Token identifier = queue.getExpectedToken(IDENTIFIER);
+       Token<String> identifier = queue.getIdentifier();
         queue.getExpectedToken(OPENPAREN);
         ParametersNode parameters = new Parameters().parse(queue);
         queue.getExpectedTokens(CLOSEPAREN, SEMICOLON);

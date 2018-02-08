@@ -17,6 +17,6 @@ public class SimpleType implements Parsable {
 
     @Override
     public SimpleTypeNode parse(ParseQueue queue) {
-        return new SimpleTypeNode(queue.getExpectedToken(IDENTIFIER));
+        return new SimpleTypeNode(queue.getIdentifier());
     }
 }

@@ -21,11 +21,13 @@ public class VarStatement implements Parsable {
     @Override
     public VarDeclarationNode parse(ParseQueue queue) {
         queue.getExpectedToken(VAR);
-        ArrayList<Token> identifiers = new ArrayList<>();
-        identifiers.add(queue.getExpectedToken(IDENTIFIER));
+        ArrayList<Token<String>> identifiers = new ArrayList<>();
+        //noinspection unchecked
+        identifiers.add((Token<String>) queue.getIdentifier());
         while (queue.isNext(COMMA)) {
             queue.getExpectedToken(COMMA);
-            identifiers.add(queue.getExpectedToken(IDENTIFIER));
+            //noinspection unchecked
+            identifiers.add((Token<String>) queue.getIdentifier());
         }
         queue.getExpectedToken(COLON);
         TypeNode type = new Type().parse(queue);

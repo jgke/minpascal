@@ -38,7 +38,7 @@ public class MinPascal {
         Tokenizer tokenizer = new Tokenizer(content);
         Parser parser = new Parser();
 
-        Stream<Token> tokenize = tokenizer.tokenize();
+        Stream<Token<?>> tokenize = tokenizer.tokenize();
         BlockNode tree = parser.parse(tokenize);
         return Compiler.compile(tree);
     }

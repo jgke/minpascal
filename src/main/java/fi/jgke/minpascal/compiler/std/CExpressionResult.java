@@ -25,7 +25,7 @@ public class CExpressionResult {
         return getType(arg);
     }
 
-    private static <T> CExpressionResult getType(T left, Optional<Token> operator, Optional<T> right, Function<T, CExpressionResult> get) {
+    private static <T> CExpressionResult getType(T left, Optional<Token<Void>> operator, Optional<T> right, Function<T, CExpressionResult> get) {
         //noinspection ConstantConditions
         return operator.map(
                 op -> CBinaryExpressions.apply(get.apply(left), op, get.apply(right.get()))
@@ -56,7 +56,7 @@ public class CExpressionResult {
     }
 
     private static CExpressionResult toExpression(VariableNode var) {
-        String identifier = var.getIdentifier().getValue().get().toString();
+        String identifier = var.getIdentifier().getValue();
         CType type = IdentifierContext.getType(identifier);
         var.getArrayAccessInteger().ifPresent($ -> notImplemented());
         return new CExpressionResult(type, identifier, "", ":w");

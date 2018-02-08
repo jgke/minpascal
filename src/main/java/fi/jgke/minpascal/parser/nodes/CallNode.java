@@ -8,6 +8,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class CallNode extends TreeNode {
-    private final Token identifier;
+    private final Token<String> identifier;
     private final ArgumentsNode arguments;
 }

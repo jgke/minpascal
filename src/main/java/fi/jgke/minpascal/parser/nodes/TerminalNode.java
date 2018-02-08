@@ -8,5 +8,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class TerminalNode extends TreeNode {
-    private final Token expectedToken;
+    private final Token<?> expectedToken;
 }

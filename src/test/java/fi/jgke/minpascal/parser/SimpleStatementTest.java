@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static fi.jgke.minpascal.TestUtils.queueWith;
@@ -18,20 +17,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@SuppressWarnings("ConstantConditions")
 public class SimpleStatementTest {
 
-    private final Token five = new Token(INTEGER_LITERAL, Optional.of(5), new Position(0, 0));
-    private final Token six = new Token(INTEGER_LITERAL, Optional.of(6), new Position(0, 0));
-    private final Token op = new Token(OPENPAREN, Optional.empty(), new Position(0, 0));
-    private final Token cp = new Token(CLOSEPAREN, Optional.empty(), new Position(0, 0));
-    private final Token comma = new Token(COMMA, Optional.empty(), new Position(0, 0));
-    private final Token id = new Token(IDENTIFIER, Optional.of("foobar"), new Position(0, 0));
-    private final Token assign = new Token(ASSIGN, Optional.empty(), new Position(0, 0));
-    private final Token returnToken = new Token(RETURN, Optional.empty(), new Position(0, 0));
-    private final Token read = new Token(IDENTIFIER, Optional.of("read"), new Position(0, 0));
-    private final Token write = new Token(IDENTIFIER, Optional.of("writeln"), new Position(0, 0));
-    private final Token assertToken = new Token(ASSERT, Optional.empty(), new Position(0, 0));
+    private final Token<Integer> five = Token.token(INTEGER_LITERAL, 5, new Position(0, 0));
+    private final Token<Integer> six = Token.token(INTEGER_LITERAL, 6, new Position(0, 0));
+    private final Token<Void> op = Token.token(OPENPAREN, new Position(0, 0));
+    private final Token<Void> cp = Token.token(CLOSEPAREN, new Position(0, 0));
+    private final Token<Void> comma = Token.token(COMMA, new Position(0, 0));
+    private final Token<String> id = Token.token(IDENTIFIER, "foobar", new Position(0, 0));
+    private final Token<Void> assign = Token.token(ASSIGN, new Position(0, 0));
+    private final Token<Void> returnToken = Token.token(RETURN, new Position(0, 0));
+    private final Token<String> read = Token.token(IDENTIFIER, "read", new Position(0, 0));
+    private final Token<String> write = Token.token(IDENTIFIER, "writeln", new Position(0, 0));
+    private final Token<Void> assertToken = Token.token(ASSERT, new Position(0, 0));
 
     @Test
     public void assignmentNode() {
@@ -39,7 +37,7 @@ public class SimpleStatementTest {
         SimpleStatementNode parse = new SimpleStatement().parse(queue);
         assertThat("Assignment expression is present", parse.getAssignmentNode().isPresent());
         assertThat("Assignment identifier contains foobar",
-                parse.getAssignmentNode().get().getIdentifier().getIdentifier().getValue().get(),
+                parse.getAssignmentNode().get().getIdentifier().getIdentifier().getValue(),
                 is(equalTo("foobar")));
         assertThat("Array assignment is not present",
                 !parse.getAssignmentNode().get().getIdentifier().getArrayAccessInteger().isPresent());
@@ -54,7 +52,7 @@ public class SimpleStatementTest {
         SimpleStatementNode parse = new SimpleStatement().parse(queue);
         assertThat("Call expression is present", parse.getCallNode().isPresent());
         assertThat("Call identifier contains foobar",
-                parse.getCallNode().get().getIdentifier().getValue().get(),
+                parse.getCallNode().get().getIdentifier().getValue(),
                 is(equalTo("foobar")));
         assertThat("Call arguments contain 5",
                 parse.getCallNode().get().getArguments().getArguments().stream()
@@ -68,7 +66,7 @@ public class SimpleStatementTest {
         SimpleStatementNode parse = new SimpleStatement().parse(queue);
         assertThat("Call expression is present", parse.getCallNode().isPresent());
         assertThat("Call identifier contains foobar",
-                parse.getCallNode().get().getIdentifier().getValue().get(),
+                parse.getCallNode().get().getIdentifier().getValue(),
                 is(equalTo("foobar")));
         assertThat("Call arguments contain 5, 6, 5",
                 parse.getCallNode().get().getArguments().getArguments().stream()
@@ -93,7 +91,7 @@ public class SimpleStatementTest {
         assertThat("Read expression is present", parse.getReadNode().isPresent());
         assertThat("Read expression contains foobar",
                 parse.getReadNode().get().getVariables().stream()
-                        .map(variableNode -> variableNode.getIdentifier().getValue().get())
+                        .map(variableNode -> variableNode.getIdentifier().getValue())
                         .collect(Collectors.toList()),
                 is(equalTo(Collections.singletonList("foobar"))));
     }
@@ -105,7 +103,7 @@ public class SimpleStatementTest {
         assertThat("Read expression is present", parse.getReadNode().isPresent());
         assertThat("Read expression contains foobar, foobar",
                 parse.getReadNode().get().getVariables().stream()
-                        .map(variableNode -> variableNode.getIdentifier().getValue().get())
+                        .map(variableNode -> variableNode.getIdentifier().getValue())
                         .collect(Collectors.toList()),
                 is(equalTo(Arrays.asList("foobar", "foobar"))));
     }

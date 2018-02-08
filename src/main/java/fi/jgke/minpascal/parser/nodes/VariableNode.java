@@ -10,6 +10,6 @@ import java.util.Optional;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class VariableNode extends TreeNode {
-    protected final Token identifier;
+    protected final Token<String> identifier;
     private final Optional<ExpressionNode> arrayAccessInteger;
 }

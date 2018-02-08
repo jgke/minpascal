@@ -59,7 +59,7 @@ public class CBinaryExpressions {
         );
     }
 
-    public static CExpressionResult apply(CExpressionResult left, Token operator, CExpressionResult right) {
+    public static CExpressionResult apply(CExpressionResult left, Token<Void> operator, CExpressionResult right) {
         return nest.get(left.getType())
                 .get(operator.getType())
                 .get(right.getType())

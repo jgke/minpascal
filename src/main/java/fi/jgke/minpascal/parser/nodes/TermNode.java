@@ -11,10 +11,10 @@ import java.util.Optional;
 @EqualsAndHashCode(callSuper = true)
 public class TermNode extends TreeNode {
     private final FactorNode left;
-    private final Optional<Token> operator;
+    private final Optional<Token<Void>> operator;
     private final Optional<FactorNode> right;
 
-    public TermNode(FactorNode left, Token operator, FactorNode right) {
+    public TermNode(FactorNode left, Token<Void> operator, FactorNode right) {
         this.left = left;
         this.operator = Optional.of(operator);
         this.right = Optional.of(right);

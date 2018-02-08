@@ -8,5 +8,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class SimpleTypeNode extends TreeNode {
-    private final Token type;
+    private final Token<String> type;
 }

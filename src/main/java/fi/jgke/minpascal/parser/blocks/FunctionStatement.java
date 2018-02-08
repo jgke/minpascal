@@ -24,7 +24,7 @@ public class FunctionStatement implements Parsable {
     public TreeNode parse(ParseQueue queue) {
         // "function" <id> "(" parameters ")" ":" <type> ";" <block>
         queue.getExpectedToken(FUNCTION);
-        Token identifier = queue.getExpectedToken(IDENTIFIER);
+        Token<String> identifier = queue.getIdentifier();
         queue.getExpectedToken(OPENPAREN);
         ParametersNode params = new Parameters().parse(queue);
         queue.getExpectedTokens(CLOSEPAREN, COLON);

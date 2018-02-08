@@ -7,37 +7,40 @@ import fi.jgke.minpascal.util.Stub;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static fi.jgke.minpascal.data.TokenType.INTEGER_LITERAL;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 public class TokenizerTest extends TestBase {
-    protected List<Token> getTokens(String content) {
-        List<Token> tokens = new Tokenizer(content).tokenize().collect(Collectors.toList());
+    protected List<Token<?>> getTokens(String content) {
+        List<Token<?>> tokens = new Tokenizer(content).tokenize().collect(Collectors.toList());
         assertThat("Last token is EOF", tokens.get(tokens.size() - 1).getType(), is(equalTo(TokenType.EOF)));
         return tokens;
     }
 
-    protected Token getSingleToken(String content) {
-        List<Token> tokens = getTokens(content);
+    protected Token<?> getSingleToken(String content) {
+        List<Token<?>> tokens = getTokens(content);
         assertThat("Only one real token was parsed", tokens.size(), is(equalTo(2)));
         return tokens.get(0);
     }
 
-    protected void assertTypeAndValue(String content, Token token, TokenType expectedType, Object expectedValue) {
+    protected void assertTypeAndValue(String content, Token<?> token, TokenType expectedType, Object expectedValue) {
         assertThat("Tokenizer parses " + content + " as " + expectedType,
                 token.getType(), is(equalTo(expectedType)));
-        assertThat("Tokenizer parses " + content + " as " + expectedValue,
-                token.getValue(), is(Optional.ofNullable(expectedValue)));
+        if(expectedValue == null) {
+            assertThat("Tokenizer parses " + content + " as void",
+                    token.getValue() instanceof Void);
+        } else {
+            assertThat("Tokenizer parses " + content + " as " + expectedValue,
+                    token.getValue(), is(equalTo(expectedValue)));
+        }
+
     }
 
     protected void testParse(String content, TokenType expectedType, Object expectedValue) {
-        Token token = getSingleToken(content);
+        Token<?> token = getSingleToken(content);
         assertTypeAndValue(content, token, expectedType, expectedValue);
     }
 

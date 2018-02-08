@@ -10,19 +10,19 @@ import java.util.Optional;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class FunctionNode extends TreeNode {
-    private final Token identifier;
+    private final Token<String> identifier;
     private final ParametersNode params;
     private final BlockNode body;
     private final Optional<TypeNode> returnType;
 
-    public FunctionNode(Token identifier, ParametersNode params, BlockNode body, TypeNode returnType) {
+    public FunctionNode(Token<String> identifier, ParametersNode params, BlockNode body, TypeNode returnType) {
         this.identifier = identifier;
         this.params = params;
         this.body = body;
         this.returnType = Optional.of(returnType);
     }
 
-    public FunctionNode(Token identifier, ParametersNode params, BlockNode body) {
+    public FunctionNode(Token<String> identifier, ParametersNode params, BlockNode body) {
         this.identifier = identifier;
         this.params = params;
         this.body = body;

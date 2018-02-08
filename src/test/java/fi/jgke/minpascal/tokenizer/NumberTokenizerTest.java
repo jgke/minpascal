@@ -48,7 +48,7 @@ public class NumberTokenizerTest extends TokenizerTest {
 
     @Test
     public void parseTwoNumbers() {
-        List<Token> tokens = getTokens("123 234");
+        List<Token<?>> tokens = getTokens("123 234");
         assertTypeAndValue("123", tokens.get(0), INTEGER_LITERAL, 123);
         assertTypeAndValue("234", tokens.get(1), INTEGER_LITERAL, 234);
     }

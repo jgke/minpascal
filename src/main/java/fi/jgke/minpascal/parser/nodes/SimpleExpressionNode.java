@@ -10,19 +10,19 @@ import java.util.Optional;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class SimpleExpressionNode extends TreeNode {
-    private final Optional<Token> sign;
+    private final Optional<Token<Void>> sign;
     private final TermNode left;
-    private final Optional<Token> addingOperator;
+    private final Optional<Token<Void>> addingOperator;
     private final Optional<TermNode> right;
 
-    public SimpleExpressionNode(Optional<Token> sign, TermNode left) {
+    public SimpleExpressionNode(Optional<Token<Void>> sign, TermNode left) {
         this.sign = sign;
         this.left = left;
         this.addingOperator = Optional.empty();
         this.right = Optional.empty();
     }
 
-    public SimpleExpressionNode(Optional<Token> sign, TermNode left, Token addingOperator, TermNode right) {
+    public SimpleExpressionNode(Optional<Token<Void>> sign, TermNode left, Token<Void> addingOperator, TermNode right) {
         this.sign = sign;
         this.left = left;
         this.addingOperator = Optional.of(addingOperator);

@@ -19,6 +19,7 @@ import com.google.common.collect.Streams;
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.compiler.std.WriteLn;
+import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.nodes.*;
 import fi.jgke.minpascal.util.Formatter;
@@ -90,7 +91,7 @@ public class CBuilder {
     public void addFunction(String identifier, FunctionNode functionNode) {
         this.startFunction(identifier, functionNode.getParams().getDeclarations().stream()
                         .flatMap(varDeclarationNode -> varDeclarationNode.getIdentifiers().stream()
-                                .map(token -> token.getValue().get().toString()))
+                                .map(Token::getValue))
                         .collect(Collectors.toList()),
                 CType.fromFunction(functionNode)
         );
@@ -161,7 +162,7 @@ public class CBuilder {
     private void addDeclaration(DeclarationNode declarationNode) {
         declarationNode.getVarDeclaration().ifPresent(var ->
                 var.getIdentifiers().forEach(id ->
-                        this.addDeclaration(id.getValue().get().toString(), new CType(var.getType()))
+                        this.addDeclaration(id.getValue(), new CType(var.getType()))
                 ));
         declarationNode.getFunctionNode().ifPresent($ -> {
             throw new CompilerException("Nested functions not implemented");

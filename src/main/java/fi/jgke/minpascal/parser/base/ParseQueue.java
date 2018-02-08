@@ -14,9 +14,9 @@ import java.util.function.Predicate;
 
 import static fi.jgke.minpascal.parser.base.ParseUtils.collectTokenTypes;
 
-public final class ParseQueue extends ArrayDeque<Token> {
-    public Token getExpectedToken(TokenType... types) {
-        Token token = this.remove();
+public final class ParseQueue extends ArrayDeque<Token<?>> {
+    public Token<?> getExpectedToken(TokenType... types) {
+        Token<?> token = this.remove();
         return Arrays.stream(types)
                 .filter(t -> t.matches(token))
                 .findFirst()
@@ -25,6 +25,11 @@ public final class ParseQueue extends ArrayDeque<Token> {
                         types.length == 1
                         ? new UnexpectedTokenException(token, types[0])
                         : new UnexpectedTokenException(token, Arrays.asList(types)));
+    }
+
+    public Token<String> getIdentifier() {
+        //noinspection unchecked
+        return (Token<String>) getExpectedToken(TokenType.IDENTIFIER);
     }
 
     public void getExpectedTokens(TokenType... types) {
@@ -45,7 +50,7 @@ public final class ParseQueue extends ArrayDeque<Token> {
     }
 
     public TreeNode any(Parsable... parsables) {
-        Token next = this.peek();
+        Token<?> next = this.peek();
         return Arrays.stream(parsables)
                 .filter(parsable -> parsable.matches(this))
                 .findFirst()

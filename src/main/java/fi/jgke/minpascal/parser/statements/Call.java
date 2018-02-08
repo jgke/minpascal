@@ -31,7 +31,7 @@ public class Call implements Parsable {
         throw new CompilerException("parseWithIdentifier() called on Call without identifier argument");
     }
 
-    public CallNode parseWithIdentifier(Token identifier, ParseQueue queue) {
+    public CallNode parseWithIdentifier(Token<String> identifier, ParseQueue queue) {
         queue.getExpectedToken(OPENPAREN);
         ArgumentsNode arguments = new Arguments().parse(queue);
         queue.getExpectedToken(CLOSEPAREN);

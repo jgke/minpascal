@@ -120,7 +120,7 @@ public class Factor implements Parsable {
 
         @Override
         public TreeNode parse(ParseQueue queue) {
-            Token identifier = queue.getExpectedToken(IDENTIFIER);
+           Token<String> identifier = queue.getIdentifier();
             Call call = new Call();
             if (call.matches(queue)) {
                 return call.parseWithIdentifier(identifier, queue);

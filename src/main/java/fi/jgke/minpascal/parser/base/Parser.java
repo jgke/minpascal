@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Parser {
-    public BlockNode parse(Stream<Token> tokenStream) {
+    public BlockNode parse(Stream<Token<?>> tokenStream) {
         return new Program().parse(tokenStream.collect(Collectors.toCollection(ParseQueue::new)));
     }
 }

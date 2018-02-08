@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static fi.jgke.minpascal.TestUtils.queueWith;
+import static fi.jgke.minpascal.data.Token.token;
 import static fi.jgke.minpascal.data.TokenType.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,33 +24,29 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @SuppressWarnings("ConstantConditions")
 public class BlockTest {
 
-    private final Token five = new Token(INTEGER_LITERAL, Optional.of(5), new Position(0, 0));
-    private final Token If = new Token(IF, Optional.empty(), new Position(0, 0));
-    private final Token True = new Token(TRUE, Optional.empty(), new Position(0, 0));
-    private final Token then = new Token(THEN, Optional.empty(), new Position(0, 0));
-    private final Token comma = new Token(COMMA, Optional.empty(), new Position(0, 0));
-    private final Token id = new Token(IDENTIFIER, Optional.of("foobar"), new Position(0, 0));
-    private final Token assign = new Token(ASSIGN, Optional.empty(), new Position(0, 0));
-    private final Token returnToken = new Token(RETURN, Optional.empty(), new Position(0, 0));
-    private final Token read = new Token(IDENTIFIER, Optional.of("read"), new Position(0, 0));
-    private final Token write = new Token(IDENTIFIER, Optional.of("writeln"), new Position(0, 0));
-    private final Token assertToken = new Token(ASSERT, Optional.empty(), new Position(0, 0));
-    private final Token begin = new Token(BEGIN, Optional.empty(), new Position(0, 0));
-    private final Token end = new Token(END, Optional.empty(), new Position(0, 0));
-    private final Token bool = new Token(IDENTIFIER, Optional.of("boolean"), new Position(0, 0));
-    private final Token var = new Token(VAR, Optional.empty(), new Position(0, 0));
-    private final Token colon = new Token(COLON, Optional.empty(), new Position(0, 0));
-    private final Token array = new Token(ARRAY, Optional.empty(), new Position(0, 0));
-    private final Token ob = new Token(OPENBRACKET, Optional.empty(), new Position(0, 0));
-    private final Token cb = new Token(CLOSEBRACKET, Optional.empty(), new Position(0, 0));
-    private final Token of = new Token(OF, Optional.empty(), new Position(0, 0));
-    private final Token procedure = new Token(PROCEDURE, Optional.empty(), new Position(0, 0));
-    private final Token op = new Token(OPENPAREN, Optional.empty(), new Position(0, 0));
-    private final Token cp = new Token(CLOSEPAREN, Optional.empty(), new Position(0, 0));
-    private final Token semicolon = new Token(SEMICOLON, Optional.empty(), new Position(0, 0));
-    private final Token dot = new Token(DOT, Optional.empty(), new Position(0, 0));
-    private final Token function = new Token(FUNCTION, Optional.empty(), new Position(0, 0));
-    private final Token integer = new Token(IDENTIFIER, Optional.of("integer"), new Position(0, 0));
+    private final Token<Integer> five = token(INTEGER_LITERAL, 5, new Position(0, 0));
+    private final Token<Void> If = token(IF, new Position(0, 0));
+    private final Token<String> True = token(TRUE, "true", new Position(0, 0));
+    private final Token<Void> then = token(THEN, new Position(0, 0));
+    private final Token<Void> comma = token(COMMA, new Position(0, 0));
+    private final Token<String> id = token(IDENTIFIER, "foobar", new Position(0, 0));
+    private final Token<Void> assign = token(ASSIGN, new Position(0, 0));
+    private final Token<Void> begin = token(BEGIN, new Position(0, 0));
+    private final Token<Void> end = token(END, new Position(0, 0));
+    private final Token<String> bool = token(IDENTIFIER, "boolean", new Position(0, 0));
+    private final Token<Void> var = token(VAR, new Position(0, 0));
+    private final Token<Void> colon = token(COLON, new Position(0, 0));
+    private final Token<Void> array = token(ARRAY, new Position(0, 0));
+    private final Token<Void> ob = token(OPENBRACKET, new Position(0, 0));
+    private final Token<Void> cb = token(CLOSEBRACKET, new Position(0, 0));
+    private final Token<Void> of = token(OF, new Position(0, 0));
+    private final Token<Void> procedure = token(PROCEDURE, new Position(0, 0));
+    private final Token<Void> op = token(OPENPAREN, new Position(0, 0));
+    private final Token<Void> cp = token(CLOSEPAREN, new Position(0, 0));
+    private final Token<Void> semicolon = token(SEMICOLON, new Position(0, 0));
+    private final Token<Void> dot = token(DOT, new Position(0, 0));
+    private final Token<Void> function = token(FUNCTION, new Position(0, 0));
+    private final Token<String> integer = token(IDENTIFIER, "integer", new Position(0, 0));
 
     @Test
     public void testBlock() {
@@ -59,7 +56,7 @@ public class BlockTest {
         Optional<AssignmentNode> node = parse.getChildren().get(0).getSimple().get().getAssignmentNode();
         assertThat("Assignment expression is present", node.isPresent());
         assertThat("Assignment identifier contains foobar",
-                node.get().getIdentifier().getIdentifier().getValue().get(),
+                node.get().getIdentifier().getIdentifier().getValue(),
                 is(equalTo("foobar")));
         assertThat("Array assignment is not present",
                 !node.get().getIdentifier().getArrayAccessInteger().isPresent());
@@ -144,7 +141,7 @@ public class BlockTest {
         testFunction(queue, Optional.of(integer));
     }
 
-    private void testFunction(ParseQueue queue, Optional<Token> expectedType) {
+    private void testFunction(ParseQueue queue, Optional<Token<String>> expectedType) {
         StatementNode parse = new Statement().parse(queue);
         assertThat("Procedure node is present", parse.getDeclarationNode().get().getFunctionNode().isPresent());
         assertThat("Procedure arguments' size is 1",

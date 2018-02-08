@@ -1,16 +1,16 @@
 package fi.jgke.minpascal.data;
 
 import fi.jgke.minpascal.exception.CompilerException;
-import fi.jgke.minpascal.parser.nodes.TerminalNode;
 import fi.jgke.minpascal.parser.base.ParseQueue;
+import fi.jgke.minpascal.parser.nodes.TerminalNode;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static fi.jgke.minpascal.data.Token.token;
 import static fi.jgke.minpascal.data.TokenType.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,9 +28,9 @@ public class TokenTypeTest {
                 .collect(Collectors.toSet());
 
         for (TokenType t : TokenType.values()) {
-            if (!reservedIdentifiers.contains(t)) {
+            if (t.acceptedType().equals(Void.class)) {
                 ParseQueue queue = new ParseQueue();
-                queue.add(new Token(t, Optional.of(t.toString()), new Position(0, 0)));
+                queue.add(token(t, new Position(0, 0)));
                 assertThat("Token matches on self", t.matches(queue));
             }
         }
@@ -38,10 +38,10 @@ public class TokenTypeTest {
         for (TokenType t : reservedIdentifiers) {
             ParseQueue queue = new ParseQueue();
             String parseText = t.toString().toLowerCase();
-            queue.add(new Token(IDENTIFIER, Optional.of(parseText), new Position(0, 0)));
-            queue.add(new Token(IDENTIFIER, Optional.of("foo"), new Position(0, 0)));
+            queue.add(token(IDENTIFIER, parseText, new Position(0, 0)));
+            queue.add(token(IDENTIFIER, "foo", new Position(0, 0)));
             assertThat("Reserved token matches on identifier with self text", t.matches(queue));
-            queue.getExpectedToken(IDENTIFIER);
+            queue.getIdentifier();
             assertThat("Reserved token does not match on identifier with other text", !t.matches(queue));
         }
     }
@@ -59,7 +59,7 @@ public class TokenTypeTest {
     @Test(expected = CompilerException.class)
     public void testSanityChecks1() {
         ParseQueue queue = new ParseQueue();
-        queue.add(new Token(IDENTIFIER, Optional.empty(), new Position(0, 0)));
+        queue.add(token(IDENTIFIER, new Position(-1, 0)));
         BOOLEAN.matches(queue);
     }
 
@@ -71,8 +71,8 @@ public class TokenTypeTest {
     @Test
     public void testParse() {
         ParseQueue queue = new ParseQueue();
-        Token t1 = new Token(IDENTIFIER, Optional.of("foo"), new Position(0, 0));
-        Token t2 = new Token(IDENTIFIER, Optional.of("Boolean"), new Position(0, 0));
+        Token<String> t1 = token(IDENTIFIER, "foo", new Position(0, 0));
+        Token<String> t2 = token(IDENTIFIER, "Boolean", new Position(0, 0));
         queue.add(t1);
         queue.add(t2);
         assertThat("IDENTIFIER parses token", IDENTIFIER.parse(queue), is(equalTo(new TerminalNode(t1))));

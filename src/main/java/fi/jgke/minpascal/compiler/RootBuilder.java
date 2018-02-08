@@ -11,7 +11,6 @@ import fi.jgke.minpascal.parser.nodes.StatementNode;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class RootBuilder {
     BlockNode root;
@@ -22,8 +21,7 @@ public class RootBuilder {
 
     private FunctionNode fromStatement(List<StatementNode> statementNode) {
         return new FunctionNode(
-                new Token(TokenType.IDENTIFIER, Optional.of("main"),
-                        new Position(0, 0)),
+                Token.token(TokenType.IDENTIFIER, "main", new Position(0, 0)),
                 new ParametersNode(Collections.emptyList()),
                 root
         );

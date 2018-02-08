@@ -23,7 +23,7 @@ public class Literal implements Parsable {
 
     @Override
     public LiteralNode parse(ParseQueue queue) {
-        Token token;
+        Token<?> token;
         if (Configuration.STRICT_MODE) {
             token = queue.getExpectedToken(INTEGER_LITERAL, REAL_LITERAL, STRING_LITERAL);
         } else {
@@ -31,7 +31,7 @@ public class Literal implements Parsable {
         }
 
         if (Arrays.asList(INTEGER_LITERAL, REAL_LITERAL, STRING_LITERAL).contains(token.getType())) {
-            Object content = token.getValue().orElse(null);
+            Object content = token.getValue();
             Integer integer = null;
             Double number = null;
             String string = null;
