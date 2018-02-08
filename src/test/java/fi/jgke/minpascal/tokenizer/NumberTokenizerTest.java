@@ -12,8 +12,8 @@ public class NumberTokenizerTest extends TokenizerTest {
 
     @Test
     public void parseInt() {
-        testParse("123", INTEGER_LITERAL, 123L);
-        testParse("0", INTEGER_LITERAL, 0L);
+        testParse("123", INTEGER_LITERAL, 123);
+        testParse("0", INTEGER_LITERAL, 0);
     }
 
     @Test
@@ -49,8 +49,8 @@ public class NumberTokenizerTest extends TokenizerTest {
     @Test
     public void parseTwoNumbers() {
         List<Token> tokens = getTokens("123 234");
-        assertTypeAndValue("123", tokens.get(0), INTEGER_LITERAL, 123L);
-        assertTypeAndValue("234", tokens.get(1), INTEGER_LITERAL, 234L);
+        assertTypeAndValue("123", tokens.get(0), INTEGER_LITERAL, 123);
+        assertTypeAndValue("234", tokens.get(1), INTEGER_LITERAL, 234);
     }
 
     @Test

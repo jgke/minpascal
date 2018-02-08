@@ -87,7 +87,7 @@ public class MinPascal {
             String content = new String(Files.readAllBytes(Paths.get(args[0])));
             String compiled = compile(content);
             Files.write(target, compiled.getBytes());
-        } catch (RuntimeException | IOException e) {
+        } catch (Throwable e) {
             e.printStackTrace(err);
             return 1;
         }
@@ -96,8 +96,8 @@ public class MinPascal {
 
     public static void main(String[] args) {
         int exitCode;
-        try (PrintWriter out = new PrintWriter(System.out)) {
-            try (PrintWriter err = new PrintWriter(System.err)) {
+        try (PrintWriter out = new PrintWriter(System.out, false)) {
+            try (PrintWriter err = new PrintWriter(System.err, false)) {
                 exitCode = app(args, out, err);
                 err.flush();
             }

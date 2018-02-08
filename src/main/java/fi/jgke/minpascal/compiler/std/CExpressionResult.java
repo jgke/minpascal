@@ -2,82 +2,85 @@ package fi.jgke.minpascal.compiler.std;
 
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
-import fi.jgke.minpascal.data.Position;
-import fi.jgke.minpascal.data.TokenType;
-import fi.jgke.minpascal.exception.TypeError;
+import fi.jgke.minpascal.data.Token;
+import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.nodes.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Optional;
 import java.util.function.Function;
 
+import static fi.jgke.minpascal.compiler.IdentifierContext.genIdentifier;
+
 @Data
+@AllArgsConstructor
 public class CExpressionResult {
     private final CType type;
     private final String identifier;
+    private final String temporaries;
+    private final String post;
 
     public static CExpressionResult fromExpression(ExpressionNode arg) {
-        return new CExpressionResult(getType(arg), "");
+        return getType(arg);
     }
 
-    private static CType getType(ExpressionNode arg) {
-        SimpleExpressionNode left = arg.getLeft();
-        CType type1 = getType(left);
-        return arg.getOperator().map(op -> {
-            assertTypeEquals(left, arg.getRight(), op.getPosition(), CExpressionResult::getType);
-            return new CType("bool");
-        }).orElse(type1);
+    private static <T> CExpressionResult getType(T left, Optional<Token> operator, Optional<T> right, Function<T, CExpressionResult> get) {
+        //noinspection ConstantConditions
+        return operator.map(
+                op -> CBinaryExpressions.apply(get.apply(left), op, get.apply(right.get()))
+        ).orElse(get.apply(left));
     }
 
-    private static CType getType(SimpleExpressionNode arg) {
-        TermNode left = arg.getLeft();
-        CType type = getType(left);
-        return arg.getAddingOperator().map(op -> {
-            assertTypeEquals(left, arg.getRight(), op.getPosition(), CExpressionResult::getType);
-            if (op.getType().equals(TokenType.OR) && !type.equals(CType.BOOLEAN)) {
-                throw new TypeError(op.getPosition(), CType.BOOLEAN, type);
-            } /* check more */
-            return type;
-        }).orElse(type);
+    private static CExpressionResult getType(ExpressionNode arg) {
+        return getType(arg.getLeft(), arg.getOperator(), arg.getRight(), CExpressionResult::getType);
     }
 
-    private static CType getType(TermNode arg) {
-        FactorNode left = arg.getLeft();
-        CType type = getType(left);
-        return arg.getOperator().map(op -> {
-            assertTypeEquals(left, arg.getRight(), op.getPosition(), CExpressionResult::getType);
-            if (op.getType().equals(TokenType.AND) && !type.equals(CType.BOOLEAN)) {
-                throw new TypeError(op.getPosition(), CType.BOOLEAN, type);
-            } /* check more */
-            return type;
-        }).orElse(getType(left));
+    private static CExpressionResult getType(SimpleExpressionNode arg) {
+        return getType(arg.getLeft(), arg.getAddingOperator(), arg.getRight(), CExpressionResult::getType);
     }
 
-    private static CType getType(FactorNode factor) {
+    private static CExpressionResult getType(TermNode arg) {
+        return getType(arg.getLeft(), arg.getOperator(), arg.getRight(), CExpressionResult::getType);
+    }
+
+    private static CExpressionResult getType(FactorNode factor) {
         return factor.map(
-                call -> IdentifierContext.getType(call.getIdentifier().getValue().get().toString()),
-                var -> IdentifierContext.getType(var.getIdentifier().getValue().get().toString()),
+                CExpressionResult::toExpression,
+                CExpressionResult::toExpression,
                 CExpressionResult::getType,
                 not -> CExpressionResult.getType(not.getFactor()),
                 CExpressionResult::getLiteralType,
-                $ -> CType.INTEGER
+                sizeNode -> notImplemented()
         );
     }
 
-    private static CType getLiteralType(LiteralNode literalNode) {
+    private static CExpressionResult toExpression(VariableNode var) {
+        String identifier = var.getIdentifier().getValue().get().toString();
+        CType type = IdentifierContext.getType(identifier);
+        var.getArrayAccessInteger().ifPresent($ -> notImplemented());
+        return new CExpressionResult(type, identifier, "", ":w");
+    }
+
+    private static CExpressionResult toExpression(CallNode call) {
+        return notImplemented();
+    }
+
+    private static CExpressionResult notImplemented() {
+        throw new CompilerException("Not implemented");
+    }
+
+    private static CExpressionResult toExpression(CType type, Object value) {
+        String id = genIdentifier();
+        return new CExpressionResult(type, id, type.toDeclaration(id) + " = " + value + ";", "");
+    }
+
+    private static CExpressionResult getLiteralType(LiteralNode literalNode) {
         return literalNode.map(
-                $ -> CType.INTEGER,
-                $ -> CType.DOUBLE,
-                $ -> CType.STRING,
-                $ -> CType.BOOLEAN
+                i -> toExpression(CType.CINTEGER, i),
+                d -> toExpression(CType.CDOUBLE, d),
+                s -> toExpression(CType.CSTRING, '"' + s + '"'),
+                b -> toExpression(CType.CBOOLEAN, b)
         );
     }
-
-    private static <T> void assertTypeEquals(T a, Optional<T> b, Position p, Function<T, CType> fn) {
-        assert b.isPresent();
-        if (fn.apply(a).equals(fn.apply(b.get()))) {
-            throw new TypeError(p, fn.apply(a), fn.apply(b.get()));
-        }
-    }
-
 }

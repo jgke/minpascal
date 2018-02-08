@@ -25,7 +25,10 @@ import static fi.jgke.minpascal.data.TokenType.*;
  */
 public class Factor implements Parsable {
     private static final Parsable[] children = new Parsable[]{
-            new IdentifierExpression(), new Literal(), new ParenExpression(), new NotFactor()
+            new Literal(),
+            new IdentifierExpression(),
+            new ParenExpression(),
+            new NotFactor()
     };
 
     @Override

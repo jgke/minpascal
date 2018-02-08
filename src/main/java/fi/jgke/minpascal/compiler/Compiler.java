@@ -27,6 +27,8 @@ public class Compiler {
 
     private Compiler block(BlockNode root) {
         output.macroImport("stdio.h");
+        output.macroImport("stdlib.h");
+        output.macroImport("stdbool.h");
 
         IdentifierContext.push();
         RootBuilder rootBuilder = new RootBuilder(root);

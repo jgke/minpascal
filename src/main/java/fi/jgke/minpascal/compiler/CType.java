@@ -1,6 +1,7 @@
 package fi.jgke.minpascal.compiler;
 
 import com.google.common.collect.Streams;
+import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.nodes.ArrayTypeNode;
 import fi.jgke.minpascal.parser.nodes.FunctionNode;
 import fi.jgke.minpascal.parser.nodes.TypeNode;
@@ -18,10 +19,10 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CType {
 
-    public static final CType BOOLEAN = new CType("boolean");
-    public static final CType INTEGER = new CType("int");
-    public static final CType DOUBLE = new CType("double");
-    public static final CType STRING  = new CType("char *");
+    public static final CType CBOOLEAN = new CType("bool");
+    public static final CType CINTEGER = new CType("int");
+    public static final CType CDOUBLE = new CType("double");
+    public static final CType CSTRING = new CType("char *");
 
     private final String me;
     private final Optional<CType> call;
@@ -114,5 +115,15 @@ public class CType {
                         Streams.zip(sibling.stream(), argumentIdentifiers.stream(),
                                 (type, identifier) -> type.toString() + " " + identifier
                         ).collect(Collectors.joining(", ")) + ")";
+    }
+
+    public String toFormat() {
+        if (call.isPresent() || sibling.size() > 0)
+            return "%p";
+        if (this.equals(CINTEGER)) return "%d";
+        if (this.equals(CDOUBLE)) return "%f";
+        if (this.equals(CBOOLEAN)) return "%d";
+        if (this.equals(CSTRING)) return "%s";
+        throw new CompilerException("Unreachable");
     }
 }

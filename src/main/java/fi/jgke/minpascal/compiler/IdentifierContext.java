@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class IdentifierContext {
     private static List<Map<String, CType>> identifiers = new ArrayList<>();
+    private static int identifierNumber = 0;
 
     public static CType getType(String identifier) {
         for (int i = identifiers.size() - 1; i >= 0; i--) {
@@ -32,5 +33,9 @@ public class IdentifierContext {
         if(identifiers.get(identifiers.size()-1).containsKey(identifier))
             throw new IdentifierAlreadyExists(identifier);
         identifiers.get(identifiers.size()-1).put(identifier, type);
+    }
+
+    public static String genIdentifier() {
+        return "_identifier" + identifierNumber++;
     }
 }

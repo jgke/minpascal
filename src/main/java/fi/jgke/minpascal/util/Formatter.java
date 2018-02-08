@@ -8,6 +8,7 @@ public class Formatter {
                 .replaceAll("\\(", "(\n")
                 .replaceAll("\\[", "[\n")
                 .replaceAll(",", ",\n")
+                .replaceAll(";", ";\n")
                 .replaceAll("\\)", "\n)")
                 .replaceAll("]", "\n)");
         int indent = 0;

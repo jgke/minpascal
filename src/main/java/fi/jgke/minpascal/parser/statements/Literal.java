@@ -35,6 +35,7 @@ public class Literal implements Parsable {
             Integer integer = null;
             Double number = null;
             String string = null;
+            Boolean bool = null;
 
             if (token.getType().equals(INTEGER_LITERAL)) integer = (int) content;
             else if (token.getType().equals(REAL_LITERAL)) number = (double) content;
@@ -52,8 +53,8 @@ public class Literal implements Parsable {
 
         Boolean bool = null;
 
-        if (token.getType().equals(TRUE)) bool = true;
-        else if (token.getType().equals(FALSE)) bool = false;
+        if (TRUE.matches(token)) bool = true;
+        else if (FALSE.matches(token)) bool = false;
 
         assert bool != null;
         return new LiteralNode(

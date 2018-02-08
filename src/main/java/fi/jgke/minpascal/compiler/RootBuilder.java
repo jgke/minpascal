@@ -31,5 +31,6 @@ public class RootBuilder {
 
     public void build(CBuilder output) {
         output.addFunction("main", fromStatement(root.getChildren()));
+        output.append("\n");
     }
 }

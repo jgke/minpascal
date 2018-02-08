@@ -160,8 +160,8 @@ public class Tokenizer {
         return c != null && (c.getCharacter() == '_' || isDigit(c) || isLetter(c));
     }
 
-    private long parseNumber() {
-        long number = 0;
+    private int parseNumber() {
+        int number = 0;
         while (isDigit(queue.peek())) {
             number *= 10;
             number += queue.remove().getCharacter() - '0';
@@ -179,10 +179,10 @@ public class Tokenizer {
 
     private Token parseIntOrReal() {
         Position startingPosition = queue.peek().getPosition();
-        long number = parseNumber();
+        int number = parseNumber();
         // Allow numbers like 1e5 if outside strict mode
         if (peekNext() == '.' || (!Configuration.STRICT_MODE && peekNext() == 'e')) {
-            long fractional = 0, exponent = 0;
+            int fractional = 0, exponent = 0;
             char sign = '+';
             if (peekNext() == '.')
                 queue.remove();

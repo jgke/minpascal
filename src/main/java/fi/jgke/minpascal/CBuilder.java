@@ -21,7 +21,9 @@ import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.compiler.std.WriteLn;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.nodes.*;
+import fi.jgke.minpascal.util.Formatter;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +41,7 @@ public class CBuilder {
     }
 
     public CBuilder append(String str, boolean indent) {
-        if (!indent) {
+        if (indent) {
             builder.append("\n");
             for (int i = 0; i < indentation; i++) {
                 builder.append("    ");
@@ -50,7 +52,7 @@ public class CBuilder {
     }
 
     public CBuilder macroImport(String library) {
-        this.append("#import <").append(library, false).append(">", false);
+        this.append("#include <").append(library, false).append(">", false);
         return this;
     }
 
@@ -61,6 +63,7 @@ public class CBuilder {
 
     public CBuilder startFunction(String name, List<String> argumentNames, CType type) {
         IdentifierContext.push();
+        this.append("");
         this.append(type.toFunctionDeclaration(argumentNames, name));
         Streams.zip(argumentNames.stream(), type.getSibling().stream(),
                 (identifier, subType) -> {
@@ -91,7 +94,7 @@ public class CBuilder {
                         .collect(Collectors.toList()),
                 CType.fromFunction(functionNode)
         );
-        this.addBlock(functionNode.getBody());
+        functionNode.getBody().getChildren().forEach(this::addStatement);
         this.endFunctionBody();
     }
 
@@ -133,8 +136,26 @@ public class CBuilder {
         return null;
     }
 
+    private Void notImplemented(Object any) {
+        throw new CompilerException("Not implemented");
+    }
+
     private void addSimple(SimpleStatementNode simpleStatementNode) {
-        simpleStatementNode.getWriteNode().ifPresent(node -> WriteLn.fromArguments(node.getArguments()));
+        Formatter.formatTree(simpleStatementNode.toString());
+        simpleStatementNode.map(
+                this::notImplemented,
+                this::notImplemented,
+                this::addWrite,
+                this::notImplemented,
+                this::notImplemented,
+                this::notImplemented
+        );
+    }
+
+    private Void addWrite(WriteNode writeNode) {
+        Arrays.stream(WriteLn.fromArguments(writeNode.getArguments()).split("\n"))
+                .forEach(this::append);
+        return null;
     }
 
     private void addDeclaration(DeclarationNode declarationNode) {
