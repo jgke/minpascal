@@ -42,11 +42,11 @@ public class CType {
     }
 
     public CType(Optional<TypeNode> type, Optional<CType> call, List<CType> siblings) {
-        this(type.map(CType::fromPascal).orElse("void"), call, siblings);
+        this(type.map(CType::fromPascal).orElse("int"), call, siblings); // default to int so we can always store the result
     }
 
     public CType(Optional<TypeNode> type) {
-        this(type.map(CType::fromPascal).orElse("void"));
+        this(type.map(CType::fromPascal).orElse("int"));
     }
 
     public CType(TypeNode typeNode) {

@@ -36,7 +36,7 @@ public interface CBinaryExpressionFn {
     static CBinaryExpressionFn str(CType type) {
         return (left, op, right) -> {
             String template = "" +
-                    "size_t %s = snprintf(NULL, 0, %s, %s, %s);\n" +
+                    "size_t %s = snprintf(NULL, 0, %s, %s, %s) + 1;\n" +
                     "char *%s = malloc(%s);\n" +
                     "snprintf(%s, %s, %s, %s, %s);";
             String sizeId = genIdentifier();

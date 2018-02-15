@@ -4,6 +4,7 @@ import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.exception.CompilerException;
+import fi.jgke.minpascal.exception.TypeError;
 import fi.jgke.minpascal.parser.nodes.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static fi.jgke.minpascal.compiler.IdentifierContext.genIdentifier;
 
@@ -65,7 +67,24 @@ public class CExpressionResult {
     }
 
     private static CExpressionResult toExpression(CallNode call) {
-        return notImplemented();
+        String fn = call.getIdentifier().getValue();
+        List<CExpressionResult> expressions = call.getArguments().getArguments().stream()
+                .map(CExpressionResult::fromExpression)
+                .collect(Collectors.toList());
+        List<String> temporaries = expressions.stream()
+                .flatMap(e -> e.getTemporaries().stream())
+                .collect(Collectors.toList());
+        List<String> post = expressions.stream()
+                .flatMap(e -> e.getPost().stream())
+                .collect(Collectors.toList());
+        String arguments = expressions.stream()
+                .map(CExpressionResult::getIdentifier)
+                .collect(Collectors.joining(", "));
+        String result = genIdentifier();
+        CType type = IdentifierContext.getType(fn).getCall()
+                .orElseThrow(() -> new TypeError(call.getIdentifier().getPosition(), "Identifier " + fn + " is not a function"));
+        temporaries.add(type.toDeclaration(result) + " = " + fn + "(" + arguments + ");");
+        return new CExpressionResult(type, result, temporaries, post);
     }
 
     private static CExpressionResult notImplemented() {

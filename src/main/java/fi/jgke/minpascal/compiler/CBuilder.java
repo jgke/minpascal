@@ -22,17 +22,23 @@ import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.nodes.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CBuilder {
     private StringBuilder builder;
+    private List<CBuilder> functions;
+    private List<String> imports;
 
     private int indentation = 0;
 
     public CBuilder() {
         this.builder = new StringBuilder();
+        this.functions = new ArrayList<>();
+        this.imports = new ArrayList<>();
     }
 
     public CBuilder append(String str) {
@@ -51,7 +57,7 @@ public class CBuilder {
     }
 
     public CBuilder macroImport(String library) {
-        this.append("#include <").append(library, false).append(">", false);
+        this.imports.add("#include <" + library + ">\n");
         return this;
     }
 
@@ -62,14 +68,11 @@ public class CBuilder {
     }
 
     private CBuilder startFunction(String name, List<String> argumentNames, CType type) {
+        IdentifierContext.addIdentifier(name, type);
         IdentifierContext.push();
         this.append("");
         this.append(type.toFunctionDeclaration(argumentNames, name));
-        Streams.zip(argumentNames.stream(), type.getSibling().stream(),
-                (identifier, subType) -> {
-                    IdentifierContext.addIdentifier(identifier, subType);
-                    return null;
-                });
+        Streams.forEachPair(argumentNames.stream(), type.getSibling().stream(), IdentifierContext::addIdentifier);
         this.append(" {", false);
         indentation++;
         return this;
@@ -92,20 +95,36 @@ public class CBuilder {
         return this;
     }
 
+    public Stream<CBuilder> getFunctions() {
+        return Stream.concat(
+                functions.stream().flatMap(CBuilder::getFunctions),
+                Stream.of(this));
+    }
+
     @Override
     public String toString() {
-        return builder.toString();
+        return this.toString(getFunctions().filter(cb -> !cb.equals(this)));
+    }
+
+    public String toString(Stream<CBuilder> builders) {
+        return imports.stream().collect(Collectors.joining("")) +
+                builders
+                        .map(cBuilder -> cBuilder.toString(Stream.empty()))
+                        .collect(Collectors.joining("\n")) +
+                "\n" + this.builder.toString();
     }
 
     public void addFunction(String identifier, FunctionNode functionNode) {
-        this.startFunction(identifier, functionNode.getParams().getDeclarations().stream()
-                        .flatMap(varDeclarationNode -> varDeclarationNode.getIdentifiers().stream()
-                                .map(Token::getValue))
-                        .collect(Collectors.toList()),
-                CType.fromFunction(functionNode)
-        );
-        functionNode.getBody().getChildren().forEach(this::addStatement);
-        this.endFunctionBody();
+        CBuilder cBuilder = new CBuilder()
+                .startFunction(identifier, functionNode.getParams().getDeclarations().stream()
+                                .flatMap(varDeclarationNode -> varDeclarationNode.getIdentifiers().stream()
+                                        .map(Token::getValue))
+                                .collect(Collectors.toList()),
+                        CType.fromFunction(functionNode)
+                );
+        functionNode.getBody().getChildren().forEach(cBuilder::addStatement);
+        cBuilder.endFunctionBody();
+        this.functions.add(cBuilder);
     }
 
     private Void addBlock(BlockNode body) {
@@ -182,13 +201,60 @@ public class CBuilder {
 
     private void addSimple(SimpleStatementNode simpleStatementNode) {
         simpleStatementNode.map(
-                this::notImplemented,
+                this::addReturn,
                 this::notImplemented,
                 this::addWrite,
-                this::notImplemented,
-                this::notImplemented,
-                this::notImplemented
+                this::addAssert,
+                this::addCall,
+                this::addAssign
         );
+    }
+
+    private Void addAssign(AssignmentNode assignmentNode) {
+        CExpressionResult cExpressionResult = CExpressionResult.fromExpression(assignmentNode.getValue());
+        cExpressionResult.getTemporaries().forEach(this::append);
+        String identifier = assignmentNode.getIdentifier().getIdentifier().getValue();
+        if (assignmentNode.getIdentifier().getArrayAccessInteger().isPresent()) {
+            ExpressionNode e = assignmentNode.getIdentifier().getArrayAccessInteger().get();
+            CExpressionResult accessInt = CExpressionResult.fromExpression(e);
+            accessInt.getTemporaries().forEach(this::append);
+            identifier += "[" + accessInt.getIdentifier() + "]";
+            accessInt.getPost().forEach(this::append);
+        }
+        this.append(identifier + " = " + cExpressionResult.getIdentifier() + ";");
+        cExpressionResult.getPost().forEach(this::append);
+        return null;
+    }
+
+    private Void addCall(CallNode callNode) {
+        List<CExpressionResult> collect = callNode.getArguments().getArguments().stream()
+                .map(CExpressionResult::fromExpression)
+                .collect(Collectors.toList());
+        collect.forEach(e -> e.getTemporaries().forEach(this::append));
+        this.append(callNode.getIdentifier().getValue() + "(");
+        this.append(collect.stream()
+                .map(CExpressionResult::getIdentifier)
+                .collect(Collectors.joining(", ")), false);
+        this.append(");", false);
+        collect.forEach(e -> e.getPost().forEach(this::append));
+        return null;
+    }
+
+    private Void addAssert(AssertNode assertNode) {
+        CExpressionResult cExpressionResult = CExpressionResult.fromExpression(assertNode.getBooleanExpr());
+        cExpressionResult.getTemporaries().forEach(this::append);
+        this.append("assert " + cExpressionResult.getIdentifier() + ";");
+        cExpressionResult.getPost().forEach(this::append);
+        return null;
+    }
+
+    private Void addReturn(ReturnNode returnNode) {
+        ExpressionNode expression = returnNode.getExpression();
+        CExpressionResult cExpressionResult = CExpressionResult.fromExpression(expression);
+        cExpressionResult.getTemporaries().forEach(this::append);
+        cExpressionResult.getPost().forEach(this::append);
+        this.append("return " + cExpressionResult.getIdentifier() + ";"); // leak memory for now
+        return null;
     }
 
     private Void addWrite(WriteNode writeNode) {
@@ -202,8 +268,8 @@ public class CBuilder {
                 var.getIdentifiers().forEach(id ->
                         this.addDeclaration(id.getValue(), new CType(var.getType()))
                 ));
-        declarationNode.getFunctionNode().ifPresent($ -> {
-            throw new CompilerException("Nested functions not implemented");
+        declarationNode.getFunctionNode().ifPresent(functionNode -> {
+            this.addFunction(functionNode.getIdentifier().getValue(), functionNode);
         });
     }
 }

@@ -1,8 +1,18 @@
 program Hello;
 begin
-  writeln ('Hello, world.' + ' str concat', 1 * 2 + 3 * 4, true);
-  if true then
-    writeln ('boo');
-  while false do
-    writeln ('never')
+  procedure foo ();
+  begin
+    writeln ('Procedure call');
+  end;
+  function bar (x : integer): integer;
+  begin
+    writeln ('Function call');
+    return 5 + x;
+  end;
+  var x : integer;
+  x := 5;
+  writeln ('Hello, world.' + ' str concat', 1 * 2 + 3 * 4, true, x);
+  foo();
+  x := bar(10);
+  writeln ('bar(10) =', x);
 end.
