@@ -10,8 +10,11 @@ begin
     return 5 + x;
   end;
   var x : integer;
+  var str : string;
   x := 5;
   writeln ('Hello, world.' + ' str concat', 1 * 2 + 3 * 4, true, x);
+  read (x, str);
+  writeln ('I read in x =', x, 'and str =', str);
   foo();
   x := bar(10);
   writeln ('bar(10) =', x);

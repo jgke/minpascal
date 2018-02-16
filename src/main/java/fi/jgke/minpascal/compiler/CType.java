@@ -129,4 +129,10 @@ public class CType {
         if (this.equals(CSTRING)) return "%s";
         throw new CompilerException("Unreachable");
     }
+
+    public String defaultValue() {
+        if(this.equals(CINTEGER) || this.equals(CBOOLEAN)) return "0";
+        if(this.equals(CDOUBLE)) return "0.0d";
+        return "NULL";
+    }
 }

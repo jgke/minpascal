@@ -28,6 +28,33 @@ public class Compiler {
         output.macroImport("stdio.h");
         output.macroImport("stdlib.h");
         output.macroImport("stdbool.h");
+        output.macroImport("string.h");
+        output.standardLibraryFunction("" +
+                "void _builtin_scanstring(char **str) {" +
+                "size_t strSize = 1024;" +
+                "size_t pos = 0;" +
+                "int c = 0;" +
+                "int white = 0;" +
+                "while(1) {" +
+                "*str = realloc(*str, strSize);" +
+                "while(pos < strSize-1) {" +
+                "c = getchar();" +
+                "if(c == EOF || !c || (white && c == '\\n')) goto end;" +
+                "if(white || (c != '\\n' && c != ' ')) " +
+                "(*str)[pos++] = (char)c;" +
+                "if(c != '\\n' && c != ' ') white = 1;" +
+                "}" +
+                "strSize *= 1.5;" +
+                "}" +
+                "end:" +
+                "(*str)[pos] = '\\0';" +
+                "}\n");
+        output.standardLibraryFunction("" +
+                "char *_builtin_strdup(const char *str) {" +
+                "char *out = malloc(strlen(str)+1);" +
+                "strcpy(out, str);" +
+                "return out;"+
+                "}");
 
         IdentifierContext.push();
 //       root.debug();

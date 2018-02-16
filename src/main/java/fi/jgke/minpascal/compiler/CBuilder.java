@@ -17,7 +17,7 @@ package fi.jgke.minpascal.compiler;
 
 import com.google.common.collect.Streams;
 import fi.jgke.minpascal.compiler.std.CExpressionResult;
-import fi.jgke.minpascal.compiler.std.WriteLn;
+import fi.jgke.minpascal.compiler.std.StdIO;
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.parser.nodes.*;
@@ -56,13 +56,18 @@ public class CBuilder {
         return this;
     }
 
+    public CBuilder standardLibraryFunction(String fn) {
+        this.imports.add(fn);
+        return this;
+    }
+
     public CBuilder macroImport(String library) {
         this.imports.add("#include <" + library + ">\n");
         return this;
     }
 
     private CBuilder addDeclaration(String identifier, CType type) {
-        this.append(type.toDeclaration(identifier)).append(";", false);
+        this.append(type.toDeclaration(identifier)).append(" = " + type.defaultValue() + ";", false);
         IdentifierContext.addIdentifier(identifier, type);
         return this;
     }
@@ -120,8 +125,7 @@ public class CBuilder {
                                 .flatMap(varDeclarationNode -> varDeclarationNode.getIdentifiers().stream()
                                         .map(Token::getValue))
                                 .collect(Collectors.toList()),
-                        CType.fromFunction(functionNode)
-                );
+                        CType.fromFunction(functionNode));
         functionNode.getBody().getChildren().forEach(cBuilder::addStatement);
         cBuilder.endFunctionBody();
         this.functions.add(cBuilder);
@@ -202,7 +206,7 @@ public class CBuilder {
     private void addSimple(SimpleStatementNode simpleStatementNode) {
         simpleStatementNode.map(
                 this::addReturn,
-                this::notImplemented,
+                this::addRead,
                 this::addWrite,
                 this::addAssert,
                 this::addCall,
@@ -257,8 +261,14 @@ public class CBuilder {
         return null;
     }
 
+    private Void addRead(ReadNode readNode) {
+        Arrays.stream(StdIO.read(readNode.getVariables()).split("\n"))
+                .forEach(this::append);
+        return null;
+    }
+
     private Void addWrite(WriteNode writeNode) {
-        Arrays.stream(WriteLn.fromArguments(writeNode.getArguments()).split("\n"))
+        Arrays.stream(StdIO.writeLn(writeNode.getArguments()).split("\n"))
                 .forEach(this::append);
         return null;
     }
