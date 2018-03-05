@@ -85,7 +85,7 @@ public final class ParseQueue extends ArrayDeque<Token<?>> {
     }
 
     public <T> List<T> collectBy(Function<ParseQueue, T> provider, TokenType delimiter) {
-        return collectBy(provider, false, delimiter, queue -> !queue.isNext(TokenType.CLOSEPAREN), false);
+        return collectBy(provider, delimiter, false);
     }
 
     public <T> List<T> collectBy(Function<ParseQueue, T> provider, TokenType delimiter, boolean requireOne) {

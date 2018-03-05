@@ -188,8 +188,20 @@ public class ParseQueueTest {
     }
 
     @Test(expected = UnexpectedTokenException.class)
+    public void collectByCommaThrowsOnEmptyList() {
+        ParseQueue queue = queueWith(closeParen, t3);
+        queue.collectBy(t -> queue.getExpectedToken(t1.getType()), COMMA, true);
+    }
+
+    @Test(expected = UnexpectedTokenException.class)
     public void collectByCommaThrowsWhenAskedTo() {
         ParseQueue queue = queueWith(closeParen, t3);
         queue.collectBy(t -> queue.getExpectedToken(t1.getType()), true, COMMA, q -> false, false);
+    }
+
+    @Test(expected = UnexpectedTokenException.class)
+    public void collectByCommaThrowsWithoutClosingParen() {
+        ParseQueue queue = queueWith(t3);
+        queue.collectBy(t -> queue.getExpectedToken(t1.getType()), COMMA,true);
     }
 }

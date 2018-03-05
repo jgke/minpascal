@@ -1,5 +1,7 @@
 package fi.jgke.minpascal.util;
 
+import fi.jgke.minpascal.exception.CompilerException;
+
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
@@ -33,6 +35,8 @@ public class OptionalUtils {
                 .mapToInt(o -> o.map($ -> 1).orElse(0))
                 .sum();
 
-        assert count == 1;
+        if(count != 1) {
+            throw new CompilerException("asserted one optional but got none or multiple");
+        }
     }
 }

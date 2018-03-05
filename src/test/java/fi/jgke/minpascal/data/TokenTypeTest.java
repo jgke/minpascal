@@ -73,9 +73,12 @@ public class TokenTypeTest {
         ParseQueue queue = new ParseQueue();
         Token<String> t1 = token(IDENTIFIER, "foo", new Position(0, 0));
         Token<String> t2 = token(IDENTIFIER, "Boolean", new Position(0, 0));
+        Token<Void> t3 = token(WHILE, new Position(0, 0));
         queue.add(t1);
         queue.add(t2);
+        queue.add(t3);
         assertThat("IDENTIFIER parses token", IDENTIFIER.parse(queue), is(equalTo(new TerminalNode(t1))));
         assertThat("BOOLEAN parses token", BOOLEAN.parse(queue), is(equalTo(new TerminalNode(t2))));
+        assertThat("WHILE parses token", WHILE.parse(queue), is(equalTo(new TerminalNode(t3))));
     }
 }

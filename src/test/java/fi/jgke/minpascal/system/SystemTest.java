@@ -7,12 +7,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Consumer;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.CoreMatchers.is;
 
 public class SystemTest {
     @Test
@@ -40,7 +39,7 @@ public class SystemTest {
     }
 
     @Test
-    public void helloWorldInFile() throws IOException {
+    public void helloWorldInFile() throws IOException, InterruptedException {
         String content = "program example;" +
                 "begin\n" +
                 "  WriteLn('Condition met')\n" +
@@ -53,14 +52,19 @@ public class SystemTest {
             ByteArrayOutputStream err = new ByteArrayOutputStream();
             PrintWriter errw = new PrintWriter(new PrintStream(err));
             String[] args = {path.toAbsolutePath().toString()};
-            System.out.println(path.toAbsolutePath().toString());
             MinPascal.app(args, outw, errw);
             String output = err.toString();
             assertThat(output, isEmptyString());
         });
     }
 
-    private void withMppFile(String content, Consumer<Path> consumer) throws IOException {
+    @FunctionalInterface
+    interface IOConsumer<T> {
+        void accept(T param) throws IOException, InterruptedException;
+    }
+
+
+    static void withMppFile(String content, IOConsumer<Path> consumer) throws IOException, InterruptedException {
         Path p = Files.createTempFile(null, ".mpp");
         try (OutputStream s = Files.newOutputStream(p.toAbsolutePath())) {
             s.write(content.getBytes());
@@ -69,6 +73,10 @@ public class SystemTest {
         } finally {
             Files.delete(p);
             Path target = Paths.get(p.toString().replaceAll(".mpp$", ".c"));
+            if (Files.exists(target)) {
+                Files.delete(target);
+            }
+            target = Paths.get(p.toString().replaceAll(".mpp$", ""));
             if (Files.exists(target)) {
                 Files.delete(target);
             }

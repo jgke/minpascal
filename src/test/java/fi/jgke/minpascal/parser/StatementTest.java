@@ -2,13 +2,21 @@ package fi.jgke.minpascal.parser;
 
 import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.data.Token;
+import fi.jgke.minpascal.exception.CompilerException;
+import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
+import fi.jgke.minpascal.parser.blocks.Arguments;
+import fi.jgke.minpascal.parser.blocks.Parameters;
 import fi.jgke.minpascal.parser.nodes.SimpleStatementNode;
+import fi.jgke.minpascal.parser.nodes.StructuredStatementNode;
+import fi.jgke.minpascal.parser.statements.AssignmentStatement;
+import fi.jgke.minpascal.parser.statements.Call;
 import fi.jgke.minpascal.parser.statements.SimpleStatement;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static fi.jgke.minpascal.TestUtils.queueWith;
@@ -17,12 +25,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-public class SimpleStatementTest {
+public class StatementTest {
 
     private final Token<Integer> five = Token.token(INTEGER_LITERAL, 5, new Position(0, 0));
     private final Token<Integer> six = Token.token(INTEGER_LITERAL, 6, new Position(0, 0));
     private final Token<Void> op = Token.token(OPENPAREN, new Position(0, 0));
     private final Token<Void> cp = Token.token(CLOSEPAREN, new Position(0, 0));
+    private final Token<Void> var = Token.token(VAR, new Position(0, 0));
     private final Token<Void> comma = Token.token(COMMA, new Position(0, 0));
     private final Token<String> id = Token.token(IDENTIFIER, "foobar", new Position(0, 0));
     private final Token<Void> assign = Token.token(ASSIGN, new Position(0, 0));
@@ -34,6 +43,7 @@ public class SimpleStatementTest {
     @Test
     public void assignmentNode() {
         ParseQueue queue = queueWith(id, assign, five);
+        assertThat("Assignment matches queue", new AssignmentStatement().matches(queue));
         SimpleStatementNode parse = new SimpleStatement().parse(queue);
         assertThat("Assignment expression is present", parse.getAssignmentNode().isPresent());
         assertThat("Assignment identifier contains foobar",
@@ -46,9 +56,33 @@ public class SimpleStatementTest {
                 is(equalTo(5)));
     }
 
+    @Test(expected = CompilerException.class)
+    public void cannotParseAssignmentWithoutIdentifier() {
+        new AssignmentStatement().parse(null);
+    }
+
+    @Test(expected = CompilerException.class)
+    public void cannotParseCallWithoutIdentifier() {
+        new Call().parse(null);
+    }
+
+    @Test
+    public void testArgumentMatching() {
+        assertThat("Arguments matches empty", queueWith(cp).anyMatches(new Arguments()));
+        assertThat("Arguments matches expression", queueWith(five, cp).anyMatches(new Arguments()));
+    }
+
+    @Test
+    public void testParameterMatching() {
+        assertThat("Parameter matches empty", queueWith(cp).anyMatches(new Parameters()));
+        assertThat("Parameter matches var", queueWith(var, id, cp).anyMatches(new Parameters()));
+        assertThat("Parameter matches identifier", queueWith(id, cp).anyMatches(new Parameters()));
+    }
+
     @Test
     public void callStatementWithArgument() {
         ParseQueue queue = queueWith(id, op, five, cp);
+        assertThat("Call matches", queue.anyMatches(new Call().getParsables().toArray(new Parsable[0])));
         SimpleStatementNode parse = new SimpleStatement().parse(queue);
         assertThat("Call expression is present", parse.getCallNode().isPresent());
         assertThat("Call identifier contains foobar",
@@ -140,5 +174,11 @@ public class SimpleStatementTest {
         assertThat("Assert expression contains 5",
                 parse.getAssertNode().get().getBooleanExpr().getLeft().getLeft().getLeft().getLiteral().get().getInteger().get(),
                 is(equalTo(5)));
+        assertThat("Queue is empty", queue.isEmpty());
+    }
+
+    @Test(expected = CompilerException.class)
+    public void structuredStatementAssertsOne() {
+        new StructuredStatementNode(Optional.empty(), Optional.empty(), Optional.empty());
     }
 }

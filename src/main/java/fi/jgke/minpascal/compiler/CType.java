@@ -79,7 +79,7 @@ public class CType {
         if (type == null) {
             throw new CompilerException("Invalid type " + typeNode);
         }
-        type += typeNode.getArrayType().map(arrayTypeNode -> "*").orElse("");
+        type += typeNode.getArrayType().map(arrayTypeNode -> " *").orElse("");
         return type;
     }
 
@@ -127,7 +127,7 @@ public class CType {
         if (this.equals(CDOUBLE)) return "%f";
         if (this.equals(CBOOLEAN)) return "%d";
         if (this.equals(CSTRING)) return "%s";
-        throw new CompilerException("Unreachable");
+        return "%p";
     }
 
     public String defaultValue() {

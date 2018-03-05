@@ -2,11 +2,9 @@ package fi.jgke.minpascal.parser;
 
 import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.data.Token;
+import fi.jgke.minpascal.parser.base.Parsable;
 import fi.jgke.minpascal.parser.base.ParseQueue;
-import fi.jgke.minpascal.parser.blocks.Block;
-import fi.jgke.minpascal.parser.blocks.Declaration;
-import fi.jgke.minpascal.parser.blocks.Statement;
-import fi.jgke.minpascal.parser.blocks.Type;
+import fi.jgke.minpascal.parser.blocks.*;
 import fi.jgke.minpascal.parser.nodes.*;
 import org.junit.Test;
 
@@ -26,6 +24,8 @@ public class BlockTest {
 
     private final Token<Integer> five = token(INTEGER_LITERAL, 5, new Position(0, 0));
     private final Token<Void> If = token(IF, new Position(0, 0));
+    private final Token<Void> While = token(WHILE, new Position(0, 0));
+    private final Token<Void> Do = token(DO, new Position(0, 0));
     private final Token<String> True = token(TRUE, "true", new Position(0, 0));
     private final Token<Void> then = token(THEN, new Position(0, 0));
     private final Token<Void> comma = token(COMMA, new Position(0, 0));
@@ -47,11 +47,12 @@ public class BlockTest {
     private final Token<Void> dot = token(DOT, new Position(0, 0));
     private final Token<Void> function = token(FUNCTION, new Position(0, 0));
     private final Token<String> integer = token(IDENTIFIER, "integer", new Position(0, 0));
+    private final Token<Void> program = token(PROGRAM, new Position(0, 0));
 
     @Test
     public void testBlock() {
         ParseQueue queue = queueWith(begin, id, assign, five, end);
-        BlockNode parse = new Block().parse(queue);
+        BlockNode parse = new Statement().parse(queue).getStructured().get().getBlockNode().get();
         assertThat("One child is present", parse.getChildren().size(), is(equalTo(1)));
         Optional<AssignmentNode> node = parse.getChildren().get(0).getSimple().get().getAssignmentNode();
         assertThat("Assignment expression is present", node.isPresent());
@@ -77,6 +78,21 @@ public class BlockTest {
                 is(equalTo(true)));
         assertThat("if block contains assign",
                 node.get().getThenStatement().getSimple().get().getAssignmentNode().isPresent(),
+                is(equalTo(true)));
+    }
+
+    @Test
+    public void testWhile() {
+        ParseQueue queue = queueWith(begin, While, True, Do, id, assign, five, end);
+        BlockNode parse = new Block().parse(queue);
+        assertThat("One child is present", parse.getChildren().size(), is(equalTo(1)));
+        Optional<WhileNode> node = parse.getChildren().get(0).getStructured().get().getWhileNode();
+        assertThat("while node is present", node.isPresent());
+        assertThat("while condition contains true",
+                node.get().getCondition().getLeft().getLeft().getLeft().getLiteral().get().getBool().get(),
+                is(equalTo(true)));
+        assertThat("while block contains assign",
+                node.get().getStatement().getSimple().get().getAssignmentNode().isPresent(),
                 is(equalTo(true)));
     }
 
@@ -161,5 +177,10 @@ public class BlockTest {
                 is(equalTo(1)));
         assertThat("Procedure body contains assignment",
                 parse.getDeclarationNode().get().getFunctionNode().get().getBody().getChildren().get(0).getSimple().get().getAssignmentNode().isPresent());
+    }
+
+    @Test
+    public void testProgramMatching() {
+        assertThat("Program matches program", queueWith(program).anyMatches(new Program().getParsables().toArray(new Parsable[0])));
     }
 }
