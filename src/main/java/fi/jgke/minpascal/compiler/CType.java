@@ -23,6 +23,7 @@ public class CType {
     public static final CType CINTEGER = new CType("int");
     public static final CType CDOUBLE = new CType("double");
     public static final CType CSTRING = new CType("char *");
+    public static final CType CVOID = new CType("void");
 
     private final String me;
     private final Optional<CType> call;

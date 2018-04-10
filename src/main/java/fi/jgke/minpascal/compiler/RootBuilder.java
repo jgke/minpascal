@@ -1,5 +1,6 @@
 package fi.jgke.minpascal.compiler;
 
+import fi.jgke.minpascal.compiler.nodes.CFunction;
 import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TokenType;
@@ -29,5 +30,14 @@ public class RootBuilder {
     public void build(CBuilder output) {
         output.addFunction("main", fromStatement(root.getChildren()));
         output.append("\n");
+    }
+
+    public static CFunction parse(BlockNode root) {
+        return new CFunction(
+                "main",
+                Collections.emptyList(),
+                CType.CVOID,
+               null // CBlock.parse(root)
+        );
     }
 }
