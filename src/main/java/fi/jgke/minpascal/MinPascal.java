@@ -17,6 +17,7 @@ package fi.jgke.minpascal;
 
 import fi.jgke.minpascal.compiler.Compiler;
 import fi.jgke.minpascal.data.Token;
+import fi.jgke.minpascal.parser.astparser.AstParser;
 import fi.jgke.minpascal.parser.base.Parser;
 import fi.jgke.minpascal.parser.nodes.BlockNode;
 import fi.jgke.minpascal.tokenizer.Tokenizer;
@@ -40,6 +41,7 @@ public class MinPascal {
 
         Stream<Token<?>> tokenize = tokenizer.tokenize();
         BlockNode tree = parser.parse(tokenize);
+        AstParser.parse(content);
         return Compiler.compile(tree);
     }
 
@@ -89,6 +91,7 @@ public class MinPascal {
             Files.write(target, compiled.getBytes());
         } catch (Throwable e) {
             e.printStackTrace(err);
+            e.printStackTrace();
             return 1;
         }
         return 0;

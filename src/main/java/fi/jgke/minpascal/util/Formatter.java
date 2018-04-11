@@ -10,7 +10,7 @@ public class Formatter {
                 .replaceAll(",", ",\n")
                 .replaceAll(";", ";\n")
                 .replaceAll("\\)", "\n)")
-                .replaceAll("]", "\n)");
+                .replaceAll("]", "\n]");
         int indent = 0;
         for (String s1 : s.split("\n")) {
             if (s1.startsWith(")") || s1.startsWith("]"))

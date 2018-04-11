@@ -3,8 +3,10 @@ package fi.jgke.minpascal.util;
 import fi.jgke.minpascal.exception.CompilerException;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class OptionalUtils {
     public static class Until<T> {
@@ -38,5 +40,12 @@ public class OptionalUtils {
         if(count != 1) {
             throw new CompilerException("asserted one optional but got none or multiple");
         }
+    }
+
+    public static <T> List<T> toList(Optional<T> ...optionals) {
+        return Arrays.stream(optionals)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 }

@@ -31,8 +31,9 @@ public class CTest {
         String app = "program Hello;\n" +
                 "begin\n" +
                 "  if false then writeln ('this is not printed');\n" +
+                "  if true then writeln ('this is printed');\n" +
                 "end.\n";
-        test(app, "\n");
+        test(app, "this is printed\n");
     }
 
     private static class StreamGobbler implements Runnable {
