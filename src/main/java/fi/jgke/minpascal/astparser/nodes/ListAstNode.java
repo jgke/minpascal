@@ -1,4 +1,4 @@
-package fi.jgke.minpascal.parser.astparser.nodes;
+package fi.jgke.minpascal.astparser.nodes;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -23,6 +23,7 @@ public class ListAstNode implements AstNode {
 
     @Override
     public String toString() {
-        return "ListAstNode:" + name + ' ' + content;
+        String s = content.toString();
+        return ":" + name + " (" + s.substring(1, s.length()-1) + ")";
     }
 }

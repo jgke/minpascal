@@ -1,7 +1,7 @@
-package fi.jgke.minpascal.parser.astparser.parsers;
+package fi.jgke.minpascal.astparser.parsers;
 
-import fi.jgke.minpascal.parser.astparser.nodes.AstNode;
-import fi.jgke.minpascal.parser.astparser.nodes.ListAstNode;
+import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.astparser.nodes.ListAstNode;
 import fi.jgke.minpascal.util.Pair;
 import lombok.AllArgsConstructor;
 

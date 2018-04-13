@@ -1,4 +1,4 @@
-package fi.jgke.minpascal.parser.astparser.nodes;
+package fi.jgke.minpascal.astparser.nodes;
 
 import lombok.AllArgsConstructor;
 
@@ -17,6 +17,6 @@ public class LeafNode implements AstNode {
 
     @Override
     public String toString() {
-        return "LeafNode:" + name + '~' + content;
+        return ":" + name + '~' + content;
     }
 }

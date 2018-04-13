@@ -17,7 +17,7 @@ package fi.jgke.minpascal;
 
 import fi.jgke.minpascal.compiler.Compiler;
 import fi.jgke.minpascal.data.Token;
-import fi.jgke.minpascal.parser.astparser.AstParser;
+import fi.jgke.minpascal.astparser.AstParser;
 import fi.jgke.minpascal.parser.base.Parser;
 import fi.jgke.minpascal.parser.nodes.BlockNode;
 import fi.jgke.minpascal.tokenizer.Tokenizer;

@@ -3,7 +3,7 @@ package fi.jgke.minpascal.parser;
 import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TokenType;
-import fi.jgke.minpascal.parser.astparser.AstParser;
+import fi.jgke.minpascal.astparser.AstParser;
 import fi.jgke.minpascal.parser.nodes.*;
 import org.junit.Test;
 

@@ -4,13 +4,13 @@ public class Formatter {
     public static String formatTree(String tree) {
         StringBuilder result = new StringBuilder();
         String s = tree
-                .replaceAll(" ", "")
-                .replaceAll("\\(", "(\n")
-                .replaceAll("\\[", "[\n")
-                .replaceAll(",", ",\n")
-                .replaceAll(";", ";\n")
-                .replaceAll("\\)", "\n)")
-                .replaceAll("]", "\n]");
+                .replaceAll("(?<!~) ", "")
+                .replaceAll("(?<!~)\\(", " (\n")
+                .replaceAll("(?<!~)\\[", "[\n")
+                .replaceAll("(?<!~),", " \n")
+                .replaceAll("(?<!~);", ";\n")
+                .replaceAll("(?<!~)\\)", "\n)")
+                .replaceAll("(?<!~)]", "\n]");
         int indent = 0;
         for (String s1 : s.split("\n")) {
             if (s1.startsWith(")") || s1.startsWith("]"))

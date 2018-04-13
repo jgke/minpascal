@@ -1,6 +1,6 @@
-package fi.jgke.minpascal.parser.astparser;
+package fi.jgke.minpascal.astparser;
 
-import fi.jgke.minpascal.parser.astparser.parsers.*;
+import fi.jgke.minpascal.astparser.parsers.*;
 import lombok.Data;
 
 import java.util.*;
@@ -20,10 +20,14 @@ public class Rule {
     }
 
     /* split + Intersperse */
+    // eg. flatmapSplit(flatmapSplit(Arrays.asList("15+23*2+32*12+5"), "*"), "+"
+    // -> ["15", "+", "23", "*", "2", "+", "32", "*", "12", "+", "5"]
     private static List<String> flatmapSplit(List<String> strs, String delimiter) {
         return strs.stream()
                 .map(str -> Arrays.stream(str.split(Pattern.quote(delimiter), -1)))
-                .flatMap(ss -> ss.flatMap(s1 -> Stream.of(delimiter, s1)).skip(1))
+                .flatMap(ss -> ss
+                        .flatMap(s1 -> Stream.of(delimiter, s1))
+                        .skip(1))
                 .filter(s -> !s.trim().isEmpty())
                 .collect(Collectors.toList());
     }
@@ -59,7 +63,7 @@ public class Rule {
                 case "*":
                     Parser parser = parsers.get(parsers.size() - 1);
                     parsers.remove(parsers.size() - 1);
-                    parsers.add(new KleeneMatch(parser));
+                    parsers.add(new KleeneMatch("more", parser));
                     break;
                 case "|":
                     Parser inner = toJust(parsers);

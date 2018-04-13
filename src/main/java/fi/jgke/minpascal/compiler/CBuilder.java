@@ -278,8 +278,6 @@ public class CBuilder {
                 var.getIdentifiers().forEach(id ->
                         this.addDeclaration(id.getValue(), new CType(var.getType()))
                 ));
-        declarationNode.getFunctionNode().ifPresent(functionNode -> {
-            this.addFunction(functionNode.getIdentifier().getValue(), functionNode);
-        });
+        declarationNode.getFunctionNode().ifPresent(functionNode -> this.addFunction(functionNode.getIdentifier().getValue(), functionNode));
     }
 }

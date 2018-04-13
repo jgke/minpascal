@@ -1,9 +1,9 @@
-package fi.jgke.minpascal.parser.astparser.parsers;
+package fi.jgke.minpascal.astparser.parsers;
 
 import fi.jgke.minpascal.exception.CompilerException;
-import fi.jgke.minpascal.parser.astparser.Regex;
-import fi.jgke.minpascal.parser.astparser.nodes.AstNode;
-import fi.jgke.minpascal.parser.astparser.nodes.LeafNode;
+import fi.jgke.minpascal.astparser.Regex;
+import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.astparser.nodes.LeafNode;
 import fi.jgke.minpascal.util.Pair;
 
 import java.util.List;

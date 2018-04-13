@@ -1,7 +1,7 @@
-package fi.jgke.minpascal.parser.astparser.parsers;
+package fi.jgke.minpascal.astparser.parsers;
 
-import fi.jgke.minpascal.parser.astparser.nodes.AstNode;
-import fi.jgke.minpascal.parser.astparser.nodes.ListAstNode;
+import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.astparser.nodes.ListAstNode;
 import fi.jgke.minpascal.util.Pair;
 import lombok.AllArgsConstructor;
 
@@ -11,6 +11,7 @@ import java.util.List;
 
 @AllArgsConstructor
 public class KleeneMatch implements Parser {
+    private final String name;
     private final Parser parser;
 
     @Override
@@ -22,7 +23,7 @@ public class KleeneMatch implements Parser {
             astNodes.add(parse.getLeft());
             pair = new Pair<>(astNodes, parse.getRight());
         }
-        return new Pair<>(new ListAstNode("", pair.getLeft()), pair.getRight());
+        return new Pair<>(new ListAstNode(name, pair.getLeft()), pair.getRight());
     }
 
     @Override

@@ -1,4 +1,4 @@
-package fi.jgke.minpascal.parser.astparser.nodes;
+package fi.jgke.minpascal.astparser.nodes;
 
 import fi.jgke.minpascal.exception.CompilerException;
 

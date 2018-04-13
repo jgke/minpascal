@@ -1,8 +1,8 @@
-package fi.jgke.minpascal.parser.astparser;
+package fi.jgke.minpascal.astparser;
 
 import fi.jgke.minpascal.exception.CompilerException;
-import fi.jgke.minpascal.parser.astparser.nodes.AstNode;
-import fi.jgke.minpascal.parser.astparser.parsers.Parser;
+import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.astparser.parsers.Parser;
 import fi.jgke.minpascal.util.Pair;
 
 import java.io.BufferedReader;
@@ -10,8 +10,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static fi.jgke.minpascal.util.Formatter.formatTree;
 
 /* Parse the BNF */
 public class AstParser {
@@ -22,8 +25,8 @@ public class AstParser {
         if (resource != null) {
             try (InputStream inputStream = resource.openStream();
                  BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-                rules = bufferedReader
-                        .lines()
+                rules = Arrays.stream(bufferedReader.lines().collect(Collectors.joining("\n"))
+                        .replaceAll("\n(?![^ ])", " ").split("\n"))
                         .filter(rule -> !rule.isEmpty())
                         .map(Rule::new)
                         .collect(Collectors.toMap(Rule::getName, Rule::getParser));
@@ -41,5 +44,7 @@ public class AstParser {
         if (!parse.getRight().trim().isEmpty()) {
             throw new CompilerException("Input not empty after parsing");
         }
+        //System.out.println(formatTree(parse.getLeft().toString()));
+        //System.out.println(parse.getLeft().toString());
     }
 }
