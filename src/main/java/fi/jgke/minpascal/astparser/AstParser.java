@@ -1,8 +1,8 @@
 package fi.jgke.minpascal.astparser;
 
-import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.parsers.Parser;
+import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
 
 import java.io.BufferedReader;
@@ -13,8 +13,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static fi.jgke.minpascal.util.Formatter.formatTree;
 
 /* Parse the BNF */
 public class AstParser {

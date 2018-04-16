@@ -20,10 +20,10 @@ public class SystemTest {
                 "begin\n" +
                 "var a : integer;" +
                 "var b : integer;" +
-                "while a <> b do  WriteLn('Waiting');\n" +
+                "while a <> b do  WriteLn(\"Waiting\");\n" +
                 "\n" +
-                "if a > b then WriteLn('Condition met')   {* no semicolon allowed! *}\n" +
-                "           else WriteLn('Condition not met');\n" +
+                "if a > b then WriteLn(\"Condition met\")   {* no semicolon allowed! *}\n" +
+                "           else WriteLn(\"Condition not met\");\n" +
                 "\n" +
                 "" +
                 "end\n" +
@@ -42,7 +42,7 @@ public class SystemTest {
     public void helloWorldInFile() throws IOException, InterruptedException {
         String content = "program example;" +
                 "begin\n" +
-                "  WriteLn('Condition met')\n" +
+                "  WriteLn(\"Condition met\")\n" +
                 "end\n" +
                 ".";
 

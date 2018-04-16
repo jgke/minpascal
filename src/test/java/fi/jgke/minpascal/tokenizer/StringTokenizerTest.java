@@ -17,7 +17,6 @@ public class StringTokenizerTest extends TokenizerTest {
         testParse("\"\uD83D\uDC31\"", TokenType.STRING_LITERAL, "\uD83D\uDC31");
 
         // Test using "'" as limiter
-        testParse("'foo'", TokenType.STRING_LITERAL, "foo");
         Configuration.STRICT_MODE = true;
         parseThrows("Unexpected character '''", () -> getTokens("'foo'"));
     }

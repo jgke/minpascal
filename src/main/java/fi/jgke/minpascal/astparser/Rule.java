@@ -86,12 +86,12 @@ public class Rule {
     }
 
     public Parser getParser() {
-        Regex strRegex = new Regex("^\".*\"$");
-        Regex regexRegex = new Regex("^#\".*\"$");
+        Regex strRegex = new Regex("^\'.*\'$");
+        Regex regexRegex = new Regex("^\".*\"$");
         if (strRegex.matches(pattern)) {
             return new TerminalMatch(name, pattern.substring(1, pattern.length() - 1), false);
         } else if (regexRegex.matches(pattern)) {
-            return new TerminalMatch(name, pattern.substring(2, pattern.length() - 1), true);
+            return new TerminalMatch(name, pattern.substring(1, pattern.length() - 1), true);
         }
         List<String> split = Arrays.asList(pattern.split("\\s+"));
         for (String s : Arrays.asList("!", "[", "]", "|", "(", ")", "*")) {

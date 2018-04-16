@@ -21,7 +21,7 @@ public class CTest {
     public void helloWorld() {
         String app = "program Hello;\n" +
                 "begin\n" +
-                "  writeln ('Hello world!');\n" +
+                "  writeln (\"Hello world!\");\n" +
                 "end.\n";
         test(app, "Hello world!\n");
     }
@@ -30,8 +30,8 @@ public class CTest {
     public void ifClause() {
         String app = "program Hello;\n" +
                 "begin\n" +
-                "  if false then writeln ('this is not printed');\n" +
-                "  if true then writeln ('this is printed');\n" +
+                "  if false then writeln (\"this is not printed\");\n" +
+                "  if true then writeln (\"this is printed\");\n" +
                 "end.\n";
         test(app, "this is printed\n");
     }

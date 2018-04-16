@@ -49,61 +49,61 @@ Sign ::= plus | minus
 AddOp ::= plus | minus | or
 MulOp ::= times | divide | mod | and
 
-and ::= "and"
-array ::= "array"
-assert ::= "assert"
-assign ::= ":="
-begin ::= "begin"
-cb ::= "]"
-colon ::= ":"
-comma ::= ","
-cp ::= ")"
-divide ::= "/"
-do ::= "do"
-dot ::= "."
-else ::= "else"
-end ::= "end"
-equals ::= "=="
-false ::= "false"
-function ::= "function"
+and ::= 'and'
+array ::= 'array'
+assert ::= 'assert'
+assign ::= ':='
+begin ::= 'begin'
+cb ::= ']'
+colon ::= ':'
+comma ::= ','
+cp ::= ')'
+divide ::= '/'
+do ::= 'do'
+dot ::= '.'
+else ::= 'else'
+end ::= 'end'
+equals ::= '=='
+false ::= 'false'
+function ::= 'function'
 identifier ::= !keyword identifierregex
-identifierregex ::= #"[a-zA-Z]+"
+identifierregex ::= "[a-zA-Z]+"
 keyword ::= or | and | not | if | then | else | of | while | do
           | begin | end | var | array | procedure | function
           | program | assert | return
-if ::= "if"
-integerliteral ::= #"[0-9]+"
-lessthan ::= "<"
-lessthanequals ::= "<="
-minus ::= "-"
-mod ::= "%"
-morethan ::= ">"
-morethanequals ::= ">="
-not ::= "!"
-notequals ::= "<>"
-ob ::= "["
-of ::= "of"
-op ::= "("
-or ::= "or"
-plus ::= "+"
-procedure ::= "procedure"
-program ::= "program"
-read ::= "read"
-realliteral ::= #"[0-9]+\.[0-9]*"
-return ::= "return"
-semicolon ::= ";"
-size ::= "size"
-stringliteral ::= #"('.*?')|(".*?")"
-then ::= "then"
-times ::= "*"
-true ::= "true"
+if ::= 'if'
+integerliteral ::= "[0-9]+"
+lessthan ::= '<'
+lessthanequals ::= '<='
+minus ::= '-'
+mod ::= '%'
+morethan ::= '>'
+morethanequals ::= '>='
+not ::= '!'
+notequals ::= '<>'
+ob ::= '['
+of ::= 'of'
+op ::= '('
+or ::= 'or'
+plus ::= '+'
+procedure ::= 'procedure'
+program ::= 'program'
+read ::= 'read'
+realliteral ::= "[0-9]+\.[0-9]*"
+return ::= 'return'
+semicolon ::= ';'
+size ::= 'size'
+stringliteral ::= "(\".*?\")"
+then ::= 'then'
+times ::= '*'
+true ::= 'true'
 type ::= int | str
-int ::= "integer"
-str ::= "string"
-var ::= "var"
-while ::= "while"
-write ::= "write"
+int ::= 'integer'
+str ::= 'string'
+var ::= 'var'
+while ::= 'while'
+write ::= 'write'
 
-whitespace ::= (_ws_comment | _ws)*
-_ws_comment ::= #"^\{\*.*?\*\}"
-_ws ::= #"^ +"
+whitespace ::= (comment | ws)*
+comment ::= "^\{\*.*?\*\}"
+ws ::= "^ +"

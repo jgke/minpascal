@@ -128,8 +128,7 @@ public class Tokenizer {
             return parseToken();
         } else if (isDigit(c)) {
             return parseIntOrReal();
-        } else if (cToStr(c.getCharacter()).equals("\"") ||
-                (!Configuration.STRICT_MODE && cToStr(c.getCharacter()).equals("'"))) {
+        } else if (cToStr(c.getCharacter()).equals("\"")) {
             return parseString();
         } else if (isLetter(c)) {
             return parseIdentifier();
