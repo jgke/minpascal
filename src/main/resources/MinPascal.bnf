@@ -93,7 +93,7 @@ realliteral ::= "[0-9]+\.[0-9]*"
 return ::= 'return'
 semicolon ::= ';'
 size ::= 'size'
-stringliteral ::= "(\".*?\")"
+stringliteral ::= ""([^"\\]|\\.)*""
 then ::= 'then'
 times ::= '*'
 true ::= 'true'
@@ -105,5 +105,5 @@ while ::= 'while'
 write ::= 'write'
 
 whitespace ::= (comment | ws)*
-comment ::= "^\{\*.*?\*\}"
-ws ::= "^ +"
+comment ::= "\{\*.*?\*\}"
+ws ::= " +"

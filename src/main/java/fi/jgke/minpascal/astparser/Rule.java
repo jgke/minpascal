@@ -1,6 +1,7 @@
 package fi.jgke.minpascal.astparser;
 
 import fi.jgke.minpascal.astparser.parsers.*;
+import fi.jgke.minpascal.util.Regex;
 import lombok.Data;
 
 import java.util.*;
@@ -14,15 +15,15 @@ public class Rule {
     private final String pattern;
 
     public Rule(String rule) {
-        List<String> groups = new Regex("([a-zA-Z_]+) ::= (.*)").getGroups(rule);
-        name = groups.get(1);
-        pattern = groups.get(2);
+        String[] split = rule.split(" ::= ");
+        name = split[0];
+        pattern = split[1];
     }
 
     /* split + Intersperse */
-    // eg. flatmapSplit(flatmapSplit(Arrays.asList("15+23*2+32*12+5"), "*"), "+"
+    // eg. tokenize(tokenize(Arrays.asList("15+23*2+32*12+5"), "*"), "+"
     // -> ["15", "+", "23", "*", "2", "+", "32", "*", "12", "+", "5"]
-    private static List<String> flatmapSplit(List<String> strs, String delimiter) {
+    private static List<String> tokenize(List<String> strs, String delimiter) {
         return strs.stream()
                 .map(str -> Arrays.stream(str.split(Pattern.quote(delimiter), -1)))
                 .flatMap(ss -> ss
@@ -86,16 +87,14 @@ public class Rule {
     }
 
     public Parser getParser() {
-        Regex strRegex = new Regex("^\'.*\'$");
-        Regex regexRegex = new Regex("^\".*\"$");
-        if (strRegex.matches(pattern)) {
-            return new TerminalMatch(name, pattern.substring(1, pattern.length() - 1), false);
-        } else if (regexRegex.matches(pattern)) {
-            return new TerminalMatch(name, pattern.substring(1, pattern.length() - 1), true);
-        }
+        Regex strRegex = new Regex("\'.*?\'$");
+        Regex regexRegex = new Regex("\".*?\"$");
+        boolean isRegex = regexRegex.match(pattern) != -1;
+        if (strRegex.match(pattern) != -1 || isRegex)
+            return new TerminalMatch(name, pattern.substring(1, pattern.length() - 1), isRegex);
         List<String> split = Arrays.asList(pattern.split("\\s+"));
         for (String s : Arrays.asList("!", "[", "]", "|", "(", ")", "*")) {
-            split = flatmapSplit(split, s);
+            split = tokenize(split, s);
         }
         return getParser(new ArrayDeque<>(split));
     }

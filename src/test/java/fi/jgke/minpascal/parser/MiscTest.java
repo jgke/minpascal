@@ -3,7 +3,6 @@ package fi.jgke.minpascal.parser;
 import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TokenType;
-import fi.jgke.minpascal.astparser.AstParser;
 import fi.jgke.minpascal.parser.nodes.*;
 import org.junit.Test;
 
@@ -17,7 +16,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class MiscTest {
     @Test
     public void hashcodes() {
-        new AstParser();
         assertThat("FactorNode can be hashed", new FactorNode(
                 Optional.empty(),
                 Optional.empty(),
