@@ -4,6 +4,7 @@ import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.nodes.ListAstNode;
 import fi.jgke.minpascal.util.Pair;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @AllArgsConstructor
 public class KleeneMatch implements Parser {
+    @Getter
     private final String name;
     private final Parser parser;
 

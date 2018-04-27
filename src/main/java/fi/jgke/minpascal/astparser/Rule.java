@@ -11,12 +11,12 @@ import java.util.stream.Stream;
 
 @Data
 public class Rule {
-    private final String name;
+    private final String _name;
     private final String pattern;
 
     public Rule(String rule) {
         String[] split = rule.split(" ::= ");
-        name = split[0];
+        _name = split[0];
         pattern = split[1];
     }
 
@@ -33,13 +33,13 @@ public class Rule {
                 .collect(Collectors.toList());
     }
 
-    private Parser toJust(List<Parser> parsers) {
-        if (parsers.size() == 1)
+    private Parser toJust(List<Parser> parsers, String name, boolean flatten) {
+        if (parsers.size() <= 1)
             return parsers.get(0);
-        return new JustMatch(parsers, name);
+        return new AndMatch(parsers, name, parsers.size() == 1);
     }
 
-    private Parser getParser(Queue<String> tokens) {
+    private Parser getParser(Queue<String> tokens, String name) {
         List<Parser> parsers = new ArrayList<>();
         loop:
         while (!tokens.isEmpty()) {
@@ -47,19 +47,19 @@ public class Rule {
             switch (remove) {
                 case "[":
                     String myName = tokens.peek();
-                    Parser maybeContent = getParser(tokens);
+                    Parser maybeContent = getParser(tokens, myName);
                     Parser yesContent;
                     yesContent = isTerminating(tokens)
                             ? new Epsilon()
-                            : getParser(tokens);
+                            : getParser(tokens, tokens.peek());
                     parsers.add(new MaybeMatch(myName, maybeContent, yesContent));
                     break;
                 case "(":
-                    parsers.add(getParser(tokens));
+                    parsers.add(getParser(tokens, tokens.peek()));
                     break;
                 case "!":
                     String key = tokens.remove();
-                    parsers.add(new NotMatch(new RuleMatch(key), getParser(tokens)));
+                    parsers.add(new NotMatch(name, new RuleMatch(key), getParser(tokens, tokens.peek())));
                     break;
                 case "*":
                     Parser parser = parsers.get(parsers.size() - 1);
@@ -67,9 +67,22 @@ public class Rule {
                     parsers.add(new KleeneMatch("more", parser));
                     break;
                 case "|":
-                    Parser inner = toJust(parsers);
+                    Parser inner = toJust(parsers, tokens.peek(), true);
+                    String orName = tokens.peek();
                     parsers = new ArrayList<>();
-                    parsers.add(new OrMatch(Arrays.asList(inner, getParser(tokens))));
+                    Parser right = getParser(tokens, tokens.peek());
+                    if (right instanceof AndMatch) {
+                        int size = ((AndMatch) right).getParsers().size();
+                        if (size == 1) {
+                            parsers.add(new OrMatch(orName, Arrays.asList(inner, ((AndMatch) right).getParsers().get(0))));
+                            break;
+                        }
+                    } else if (right instanceof OrMatch) {
+                        ((OrMatch) right).addParserToFront(inner);
+                        parsers.add(right);
+                        break;
+                    }
+                    parsers.add(new OrMatch(orName, Arrays.asList(inner, right)));
                     break;
                 case "]":
                     break loop;
@@ -79,7 +92,7 @@ public class Rule {
                     parsers.add(new RuleMatch(remove));
             }
         }
-        return toJust(parsers);
+        return toJust(parsers, name, false);
     }
 
     private boolean isTerminating(Queue<String> tokens) {
@@ -91,12 +104,12 @@ public class Rule {
         Regex regexRegex = new Regex("\".*?\"$");
         boolean isRegex = regexRegex.match(pattern) != -1;
         if (strRegex.match(pattern) != -1 || isRegex)
-            return new TerminalMatch(name, pattern.substring(1, pattern.length() - 1), isRegex);
+            return new TerminalMatch(_name, pattern.substring(1, pattern.length() - 1), isRegex);
         List<String> split = Arrays.asList(pattern.split("\\s+"));
         for (String s : Arrays.asList("!", "[", "]", "|", "(", ")", "*")) {
             split = tokenize(split, s);
         }
-        return getParser(new ArrayDeque<>(split));
+        return getParser(new ArrayDeque<>(split), _name);
     }
 
 }

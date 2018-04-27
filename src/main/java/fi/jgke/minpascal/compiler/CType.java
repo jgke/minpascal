@@ -1,11 +1,8 @@
 package fi.jgke.minpascal.compiler;
 
 import com.google.common.collect.Streams;
-import fi.jgke.minpascal.exception.CompilerException;
-import fi.jgke.minpascal.parser.nodes.ArrayTypeNode;
-import fi.jgke.minpascal.parser.nodes.FunctionNode;
-import fi.jgke.minpascal.parser.nodes.TypeNode;
-import fi.jgke.minpascal.parser.nodes.VarDeclarationNode;
+import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.compiler.nodes.CFunction;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -42,19 +39,20 @@ public class CType {
         this(me, Optional.empty(), Collections.emptyList());
     }
 
-    public CType(Optional<TypeNode> type, Optional<CType> call, List<CType> siblings) {
+    public CType(Optional<AstNode> type, Optional<CType> call, List<CType> siblings) {
         this(type.map(CType::fromPascal).orElse("int"), call, siblings); // default to int so we can always store the result
     }
 
-    public CType(Optional<TypeNode> type) {
+    public CType(Optional<AstNode> type) {
         this(type.map(CType::fromPascal).orElse("int"));
     }
 
-    public CType(TypeNode typeNode) {
+    public CType(AstNode typeNode) {
         this(Optional.of(typeNode));
     }
 
-    public static CType fromFunction(FunctionNode node) {
+    public static CType fromFunction(CFunction node) {
+        /*
         CType returnValue = new CType(node.getReturnType());
         List<VarDeclarationNode> declarations = node.getParams().getDeclarations();
         List<CType> params = declarations.stream()
@@ -70,9 +68,13 @@ public class CType {
                 Optional.of(returnValue),
                 params
         );
+        */
+        throw new RuntimeException("Not impl");
     }
 
-    private static String fromPascal(TypeNode typeNode) {
+    private static String fromPascal(AstNode typeNode) {
+        throw new RuntimeException("Not impl");
+        /*
         String type = pascalToCMap.get(
                 typeNode.getSimpleType()
                         .orElseGet(typeNode.getArrayType().map(ArrayTypeNode::getType)::get)
@@ -82,6 +84,7 @@ public class CType {
         }
         type += typeNode.getArrayType().map(arrayTypeNode -> " *").orElse("");
         return type;
+        */
     }
 
     @Override

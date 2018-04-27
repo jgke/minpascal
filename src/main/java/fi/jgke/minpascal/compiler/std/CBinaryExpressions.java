@@ -1,7 +1,6 @@
 package fi.jgke.minpascal.compiler.std;
 
 import fi.jgke.minpascal.compiler.CType;
-import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.data.TokenType;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.exception.OperatorError;
@@ -67,14 +66,14 @@ public class CBinaryExpressions {
         );
     }
 
-    public static CExpressionResult apply(CExpressionResult left, Token<Void> operator, CExpressionResult right) {
+    public static CExpressionResult apply(CExpressionResult left, TokenType operator, CExpressionResult right) {
         if (!nest.containsKey(left.getType()) ||
-                !nest.get(left.getType()).containsKey(operator.getType()) ||
-                !nest.get(left.getType()).get(operator.getType()).containsKey(right.getType())) {
-            throw new OperatorError(left.getType(), operator, right.getType());
+                !nest.get(left.getType()).containsKey(operator) ||
+                !nest.get(left.getType()).get(operator).containsKey(right.getType())) {
+            throw new OperatorError(left.getType(), operator.name(), right.getType());
         }
         return nest.get(left.getType())
-                .get(operator.getType())
+                .get(operator)
                 .get(right.getType())
                 .apply(left, operator, right);
     }

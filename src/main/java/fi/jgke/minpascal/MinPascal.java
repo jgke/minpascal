@@ -15,12 +15,9 @@
  */
 package fi.jgke.minpascal;
 
-import fi.jgke.minpascal.compiler.Compiler;
-import fi.jgke.minpascal.data.Token;
 import fi.jgke.minpascal.astparser.AstParser;
-import fi.jgke.minpascal.parser.base.Parser;
-import fi.jgke.minpascal.parser.nodes.BlockNode;
-import fi.jgke.minpascal.tokenizer.Tokenizer;
+import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.compiler.Compiler;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -31,18 +28,12 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 public class MinPascal {
 
     public static String compile(String content) throws IOException {
-        Tokenizer tokenizer = new Tokenizer(content);
-        Parser parser = new Parser();
-
-        Stream<Token<?>> tokenize = tokenizer.tokenize();
-        BlockNode tree = parser.parse(tokenize);
-        AstParser.parse(content);
-        return Compiler.compile(tree);
+        AstNode parse = AstParser.parse(content);
+        return Compiler.compile(parse);
     }
 
     public static int app(String[] args, PrintWriter out, PrintWriter err) {

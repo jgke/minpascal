@@ -1,13 +1,26 @@
 package fi.jgke.minpascal.astparser.nodes;
 
-import lombok.Data;
+import fi.jgke.minpascal.exception.CompilerException;
 
-@Data
-public class EmptyNode implements AstNode {
-    private final String name;
+import java.util.Optional;
+
+public class EmptyNode extends AstNode {
+    public EmptyNode(String name) {
+        super(name);
+    }
 
     @Override
     public String toString() {
-        return "EmptyNode:" + name;
+        return "EmptyNode:" + getName();
+    }
+
+    @Override
+    public Object getContent() {
+        throw new CompilerException("No content in an empty node");
+    }
+
+    @Override
+    public Optional<AstNode> toOptional() {
+        return Optional.empty();
     }
 }

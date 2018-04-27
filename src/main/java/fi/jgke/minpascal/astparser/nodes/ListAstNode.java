@@ -1,29 +1,30 @@
 package fi.jgke.minpascal.astparser.nodes;
 
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import fi.jgke.minpascal.util.OptionalList;
 
-public class ListAstNode implements AstNode {
-    private final String name;
+import java.util.List;
+
+public class ListAstNode extends AstNode {
     private final List<AstNode> content;
 
     public ListAstNode(String name, List<AstNode> content) {
-        this.name = name;
-        this.content = content.stream()
-                .filter(p -> !((p instanceof EmptyNode) && p.getName().equals("_epsilon")))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public AstNode list(Consumer<List<AstNode>> handler) {
-        handler.accept(content);
-        return HandledAstNode.instance;
+        super(name);
+        this.content = content;//content.stream() .filter(p -> !((p instanceof EmptyNode) && p.getName().equals("_epsilon"))) .collect(Collectors.toList());
     }
 
     @Override
     public String toString() {
         String s = content.toString();
-        return ":" + name + " (" + s.substring(1, s.length()-1) + ")";
+        return (availableSet ? "?:" : "L:") + getName() + " (" + s.substring(1, s.length() - 1) + ")";
+    }
+
+    @Override
+    public Object getContent() {
+        return content;
+    }
+
+    @Override
+    public OptionalList<AstNode> getList() {
+        return new OptionalList<>(content);
     }
 }

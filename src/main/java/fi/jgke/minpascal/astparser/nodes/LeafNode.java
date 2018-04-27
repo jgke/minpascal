@@ -1,22 +1,23 @@
 package fi.jgke.minpascal.astparser.nodes;
 
-import lombok.AllArgsConstructor;
+import java.util.Collections;
 
-import java.util.function.Consumer;
+public class LeafNode extends AstNode {
+    private final Object content;
 
-@AllArgsConstructor
-public class LeafNode implements AstNode {
-    private final String name;
-    private final String content;
-
-    @Override
-    public AstNode leaf(Consumer<String> fn) {
-        fn.accept(content);
-        return HandledAstNode.instance;
+    public LeafNode(String name, Object content) {
+        super(name);
+        this.content = content;
+        this.setAvailableNames(Collections.singleton(name));
     }
 
     @Override
     public String toString() {
-        return ":" + name + '~' + content;
+        return ".:" + getName() + '~' + content;
+    }
+
+    @Override
+    public Object getContent() {
+        return content;
     }
 }

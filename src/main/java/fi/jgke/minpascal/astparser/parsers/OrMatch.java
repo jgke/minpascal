@@ -1,17 +1,21 @@
 package fi.jgke.minpascal.astparser.parsers;
 
-import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class OrMatch implements Parser {
+    @Getter
     private final List<Parser> parsers;
+    private final Set<String> names;
 
-    public OrMatch(List<Parser> parsers) {
+    public OrMatch(String name, List<Parser> parsers) {
         if (parsers.size() > 1) {
             Parser maybeOr = parsers.get(1);
             if (maybeOr instanceof OrMatch) {
@@ -20,23 +24,36 @@ public class OrMatch implements Parser {
                 parsers = newParsers;
             }
         }
-        this.parsers = parsers;
+        this.parsers = new ArrayList<>(parsers);
+        this.names = parsers.stream()
+                .map(Parser::getName)
+                .collect(Collectors.toSet());
     }
 
-    private static Supplier<CompilerException> parseFailure(List<Parser> parsers) {
-        return () -> {
-            throw new CompilerException("Parse failure, expected any of " + parsers);
-        };
+    public void addParserToFront(Parser parser) {
+        parsers.add(0, parser);
+        names.add(parser.getName());
+    }
+
+    @Override
+    public String getName() {
+        throw new UnsupportedOperationException();
+    }
+
+    private static CompilerException parseFailure(List<Parser> parsers) {
+        return new CompilerException("Parse failure, expected any of " + parsers);
     }
 
     @Override
     public Pair<AstNode, String> parse(String str) {
         for (Parser p : parsers) {
             if (p.parses(str)) {
-                return p.parse(str);
+                Pair<AstNode, String> parse = p.parse(str);
+                parse.getLeft().setAvailableNames(names);
+                return parse;
             }
         }
-        throw parseFailure(parsers).get();
+        throw parseFailure(parsers);
     }
 
     @Override

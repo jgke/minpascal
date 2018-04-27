@@ -16,14 +16,11 @@
 package fi.jgke.minpascal.compiler;
 
 import com.google.common.collect.Streams;
-import fi.jgke.minpascal.compiler.std.CExpressionResult;
-import fi.jgke.minpascal.compiler.std.StdIO;
-import fi.jgke.minpascal.data.Token;
-import fi.jgke.minpascal.exception.CompilerException;
-import fi.jgke.minpascal.parser.nodes.*;
+import fi.jgke.minpascal.compiler.nodes.CBlock;
+import fi.jgke.minpascal.compiler.nodes.CFunction;
+import fi.jgke.minpascal.compiler.nodes.CVariable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -72,10 +69,11 @@ public class CBuilder {
         return this;
     }
 
-    private CBuilder startFunction(String name, List<String> argumentNames, CType type) {
+    private CBuilder startFunction(String name, List<CVariable> arguments, CType type) {
         IdentifierContext.addIdentifier(name, type);
         IdentifierContext.push();
         this.append("");
+        List<String> argumentNames = arguments.stream().map(CVariable::getIdentifier).collect(Collectors.toList());
         this.append(type.toFunctionDeclaration(argumentNames, name));
         Streams.forEachPair(argumentNames.stream(), type.getSibling().stream(), IdentifierContext::addIdentifier);
         this.append(" {", false);
@@ -119,18 +117,21 @@ public class CBuilder {
                 "\n" + this.builder.toString();
     }
 
-    public void addFunction(String identifier, FunctionNode functionNode) {
+    public void addFunction(String identifier, CFunction functionNode) {
         CBuilder cBuilder = new CBuilder()
-                .startFunction(identifier, functionNode.getParams().getDeclarations().stream()
-                                .flatMap(varDeclarationNode -> varDeclarationNode.getIdentifiers().stream()
-                                        .map(Token::getValue))
-                                .collect(Collectors.toList()),
+                .startFunction(identifier, functionNode.getParameters(),
                         CType.fromFunction(functionNode));
-        functionNode.getBody().getChildren().forEach(cBuilder::addStatement);
+        functionNode.getStatements().getContents()
+                .forEach(cBuilder::addStatement);
         cBuilder.endFunctionBody();
         this.functions.add(cBuilder);
     }
 
+    private void addStatement(CBlock.Content content) {
+        throw new RuntimeException("Not impl");
+    }
+
+/*
     private Void addBlock(BlockNode body) {
         this.append("{\n");
         body.getChildren().forEach(this::addStatement);
@@ -138,7 +139,7 @@ public class CBuilder {
         return null;
     }
 
-    private void addStatement(StatementNode statementNode) {
+    private void addStatement(AstNode statementNode) {
         statementNode.getDeclarationNode().ifPresent(this::addDeclaration);
         statementNode.getSimple().ifPresent(this::addSimple);
         statementNode.getStructured().ifPresent(this::addStructured);
@@ -280,4 +281,5 @@ public class CBuilder {
                 ));
         declarationNode.getFunctionNode().ifPresent(functionNode -> this.addFunction(functionNode.getIdentifier().getValue(), functionNode));
     }
+    */
 }

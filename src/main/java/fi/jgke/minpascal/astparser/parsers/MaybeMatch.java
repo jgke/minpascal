@@ -5,27 +5,27 @@ import fi.jgke.minpascal.astparser.nodes.EmptyNode;
 import fi.jgke.minpascal.astparser.nodes.ListAstNode;
 import fi.jgke.minpascal.util.Pair;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-import java.util.Optional;
-
-import static fi.jgke.minpascal.util.OptionalUtils.toList;
+import java.util.Arrays;
 
 @AllArgsConstructor
 public class MaybeMatch implements Parser {
+    @Getter
     private final String name;
     private final Parser maybeThis;
     private final Parser yesThis;
 
     @Override
     public Pair<AstNode, String> parse(String str) {
-        Optional<AstNode> inner = Optional.of(new EmptyNode(name));
+        AstNode inner = new EmptyNode(name);
         if (maybeThis.parses(str)) {
             Pair<AstNode, String> parse = maybeThis.parse(str);
             str = parse.getRight();
-            inner = Optional.of(parse.getLeft());
+            inner = parse.getLeft();
         }
         Pair<AstNode, String> parse = yesThis.parse(str);
-        return new Pair<>(new ListAstNode(name, toList(inner, Optional.of(parse.getLeft()))), parse.getRight());
+        return new Pair<>(new ListAstNode(name, Arrays.asList(inner, parse.getLeft())), parse.getRight());
     }
 
     @Override

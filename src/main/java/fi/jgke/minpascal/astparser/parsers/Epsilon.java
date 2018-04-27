@@ -14,4 +14,14 @@ public class Epsilon implements Parser {
     public boolean parses(String str) {
         return true;
     }
+
+    @Override
+    public String getName() {
+        return "epsilon";
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

@@ -27,7 +27,7 @@ public class AstParser {
                         .replaceAll("\n(?![^ ])", " ").split("\n"))
                         .filter(rule -> !rule.isEmpty())
                         .map(Rule::new)
-                        .collect(Collectors.toMap(Rule::getName, Rule::getParser));
+                        .collect(Collectors.toMap(Rule::get_name, Rule::getParser));
             } catch (IOException | NullPointerException e) {
                 throw new CompilerException(e);
             }
@@ -36,7 +36,7 @@ public class AstParser {
         }
     }
 
-    public static void parse(String s) {
+    public static AstNode parse(String s) {
         Pair<AstNode, String> parse = rules.get("S").parse(s.replaceAll("\n", " "));
 
         if (!parse.getRight().trim().isEmpty()) {
@@ -44,5 +44,6 @@ public class AstParser {
         }
         //System.out.println(formatTree(parse.getLeft().toString()));
         //System.out.println(parse.getLeft().toString());
+        return parse.getLeft();
     }
 }

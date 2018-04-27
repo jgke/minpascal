@@ -1,21 +1,14 @@
 package fi.jgke.minpascal.compiler.std;
 
+import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.astparser.nodes.LeafNode;
 import fi.jgke.minpascal.compiler.CType;
-import fi.jgke.minpascal.compiler.IdentifierContext;
-import fi.jgke.minpascal.data.Token;
-import fi.jgke.minpascal.exception.CompilerException;
-import fi.jgke.minpascal.exception.TypeError;
-import fi.jgke.minpascal.parser.nodes.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static fi.jgke.minpascal.compiler.IdentifierContext.genIdentifier;
 
 @Data
 @AllArgsConstructor
@@ -25,29 +18,20 @@ public class CExpressionResult {
     private final List<String> temporaries;
     private final List<String> post;
 
-    public static CExpressionResult fromExpression(ExpressionNode arg) {
-        return getType(arg);
+    public static CExpressionResult fromExpression(AstNode arg) {
+        throw new RuntimeException("not impl");
     }
 
-    private static <T> CExpressionResult getType(T left, Optional<Token<Void>> operator, Optional<T> right, Function<T, CExpressionResult> get) {
+    private static <T> CExpressionResult getType(T left, Optional<LeafNode> operator, Optional<T> right, Function<T, CExpressionResult> get) {
         //noinspection ConstantConditions
         return operator.map(
-                op -> CBinaryExpressions.apply(get.apply(left), op, get.apply(right.get()))
+                op -> CBinaryExpressions.apply(get.apply(left),
+                        CBinaryExpressionFnPrivate.getOperator(op.getContent().toString()),
+                        get.apply(right.get()))
         ).orElse(get.apply(left));
     }
 
-    private static CExpressionResult getType(ExpressionNode arg) {
-        return getType(arg.getLeft(), arg.getOperator(), arg.getRight(), CExpressionResult::getType);
-    }
-
-    private static CExpressionResult getType(SimpleExpressionNode arg) {
-        return getType(arg.getLeft(), arg.getAddingOperator(), arg.getRight(), CExpressionResult::getType);
-    }
-
-    private static CExpressionResult getType(TermNode arg) {
-        return getType(arg.getLeft(), arg.getOperator(), arg.getRight(), CExpressionResult::getType);
-    }
-
+    /*
     private static CExpressionResult getType(FactorNode factor) {
         return factor.map(
                 CExpressionResult::toExpression,
@@ -66,8 +50,7 @@ public class CExpressionResult {
         return new CExpressionResult(type, identifier, Collections.emptyList(), Collections.emptyList());
     }
 
-    private static CExpressionResult toExpression(CallNode call) {
-        String fn = call.getIdentifier().getValue();
+    private static CExpressionResult fromCall(String identifier, AstNode call) {
         List<CExpressionResult> expressions = call.getArguments().getArguments().stream()
                 .map(CExpressionResult::fromExpression)
                 .collect(Collectors.toList());
@@ -81,9 +64,9 @@ public class CExpressionResult {
                 .map(CExpressionResult::getIdentifier)
                 .collect(Collectors.joining(", "));
         String result = genIdentifier();
-        CType type = IdentifierContext.getType(fn).getCall()
-                .orElseThrow(() -> new TypeError(call.getIdentifier().getPosition(), "Identifier " + fn + " is not a function"));
-        temporaries.add(type.toDeclaration(result) + " = " + fn + "(" + arguments + ");");
+        CType type = IdentifierContext.getType(identifier).getCall()
+                .orElseThrow(() -> new TypeError(call.getIdentifier().getPosition(), "Identifier " + identifier + " is not a function"));
+        temporaries.add(type.toDeclaration(result) + " = " + identifier + "(" + arguments + ");");
         return new CExpressionResult(type, result, temporaries, post);
     }
 
@@ -97,12 +80,14 @@ public class CExpressionResult {
                 Collections.emptyList());
     }
 
-    private static CExpressionResult getLiteralType(LiteralNode literalNode) {
-        return literalNode.map(
-                i -> toExpression(CType.CINTEGER, i),
-                d -> toExpression(CType.CDOUBLE, d),
-                s -> toExpression(CType.CSTRING, '"' + s + '"'),
-                b -> toExpression(CType.CBOOLEAN, b)
-        );
+    private static CExpressionResult getLiteralType(AstNode literalNode) {
+        return literalNode.<CExpressionResult>toMap()
+                .map("realliteral", d -> toExpression(CType.CDOUBLE, Double.parseDouble(d.getContentString())))
+                .map("integerliteral", d -> toExpression(CType.CINTEGER, Integer.parseInt(d.getContentString())))
+                .map("stringliteral", d -> toExpression(CType.CSTRING, '"' + d.getContentString() + '"'))
+                .map("true", t -> toExpression(CType.CBOOLEAN, "true"))
+                .map("false", t -> toExpression(CType.CBOOLEAN, "false"))
+                .unwrap();
     }
+    */
 }

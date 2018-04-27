@@ -1,65 +1,60 @@
 package fi.jgke.minpascal.astparser.parsers;
 
-import fi.jgke.minpascal.exception.CompilerException;
-import fi.jgke.minpascal.util.Regex;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.nodes.LeafNode;
+import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
+import fi.jgke.minpascal.util.Regex;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 public class TerminalMatch implements Parser {
+    @Getter
     private final String name;
     private final String pattern;
-    private final boolean regex;
-    private final Regex compiled;
+    private final Optional<Regex> compiled;
 
     public TerminalMatch(String name, String pattern, boolean regex) {
         this.name = name;
         this.pattern = pattern;
-        this.regex = regex;
         if(regex) {
-            this.compiled = new Regex(pattern);
+            this.compiled = Optional.of(new Regex(pattern));
         } else {
-            this.compiled = null;
+            this.compiled = Optional.empty();
         }
     }
 
     @Override
     public Pair<AstNode, String> parse(String str) {
-        List<String> groups;
-        String match;
-        String rest;
+        Pair<AstNode, String> pair;
         try {
-            if (regex) {
-                assert compiled != null;
-                int matchLength = compiled.match(str);
-                match = str.substring(0, matchLength);
-                rest = str.substring(matchLength);
-            } else {
+            pair = this.compiled.<Pair<AstNode, String>>map(regex -> {
+                int matchLength = regex.match(str);
+                return new Pair<>(new LeafNode(name,
+                        str.substring(0, matchLength)),
+                        str.substring(matchLength));
+            }).orElseGet(() -> {
                 if (!str.startsWith(this.pattern)) {
                     throw new IllegalArgumentException();
                 }
-                match = this.pattern;
-                rest = str.substring(this.pattern.length());
-            }
-        } catch (IllegalStateException e) {
+                return new Pair<>(new LeafNode(name, this.pattern), str.substring(this.pattern.length()));
+            });
+        } catch (IllegalStateException|StringIndexOutOfBoundsException e) {
             System.out.println("No match when parsing " + name + " (" + this.pattern + ')');
             System.out.println(str);
             throw new CompilerException(e);
         }
-        return new Pair<>(new LeafNode(name, match), rest);
+        return pair;
     }
 
     @Override
     public boolean parses(String str) {
-        if (regex) {
-            return compiled.match(str) != -1;
-        } else {
-            return str.startsWith(pattern);
-        }
+        return compiled
+                .map(regex -> regex.match(str) != -1)
+                .orElse(str.startsWith(pattern));
     }
 
     @Override

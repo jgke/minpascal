@@ -1,7 +1,7 @@
 package fi.jgke.minpascal.compiler.std;
 
 import fi.jgke.minpascal.compiler.CType;
-import fi.jgke.minpascal.data.Token;
+import fi.jgke.minpascal.data.TokenType;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,12 +12,12 @@ import static fi.jgke.minpascal.compiler.IdentifierContext.genIdentifier;
 
 @FunctionalInterface
 public interface CBinaryExpressionFn {
-    CExpressionResult apply(CExpressionResult left, Token<Void> op, CExpressionResult right);
+    CExpressionResult apply(CExpressionResult left, TokenType op, CExpressionResult right);
 
     static CBinaryExpressionFn std(CType type) {
         return (left, op, right) -> {
             String combined = left.getIdentifier() + " " +
-                    CBinaryExpressionFnPrivate.getOperator(op.getType()) + " " +
+                    CBinaryExpressionFnPrivate.getFormat(op) + " " +
                     right.getIdentifier() + ";";
             String newId = genIdentifier();
             List<String> tmp = Stream.of(

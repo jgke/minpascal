@@ -3,12 +3,12 @@ Program ::= program identifier semicolon Block dot
 Block ::= begin Statement (semicolon [Statement])* end
 Statement ::= SimpleStatement | StructuredStatement | Declaration
 
-SimpleStatement ::= identifier IdentifierStatement
+SimpleStatement ::= IdentifierStatement
                     | ReturnStatement
                     | ReadStatement
                     | WriteStatement
                     | AssertStatement
-IdentifierStatement ::= AssignmentStatement | Call
+IdentifierStatement ::= identifier (AssignmentStatement | Call)
 ReturnStatement ::= return Expression
 ReadStatement ::= read op [ReadVariable (comma ReadVariable)*] cp
 ReadVariable ::= identifier [ob Expression cb]
@@ -104,6 +104,7 @@ var ::= 'var'
 while ::= 'while'
 write ::= 'write'
 
-whitespace ::= (comment | ws)*
+whitespace ::= comment | ws | eps
+eps ::= ""
 comment ::= "\{\*.*?\*\}"
 ws ::= " +"

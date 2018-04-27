@@ -15,7 +15,7 @@
  */
 package fi.jgke.minpascal.compiler;
 
-import fi.jgke.minpascal.parser.nodes.BlockNode;
+import fi.jgke.minpascal.astparser.nodes.AstNode;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +27,7 @@ public class Compiler {
         this.output = output;
     }
 
-    private Compiler block(BlockNode root) {
+    private Compiler block(AstNode root) {
         CRootBlock cRootBlock = new CRootBlock(// @formatter:off
                 Arrays.asList("stdio.h", "stdlib.h", "stdbool.h", "string.h"),
                 Arrays.asList(
@@ -59,7 +59,7 @@ public class Compiler {
                         "}"),
                 // @formatter:on
                 Collections.emptyList(),
-                Collections.singletonList(RootBuilder.parse(root))
+                Collections.emptyList()
         );
 
         cRootBlock.getLibraries().forEach(output::macroImport);
@@ -74,7 +74,7 @@ public class Compiler {
         return this;
     }
 
-    public static String compile(BlockNode root) {
+    public static String compile(AstNode root) {
         return new Compiler(new CBuilder()).block(root).toString();
     }
 
