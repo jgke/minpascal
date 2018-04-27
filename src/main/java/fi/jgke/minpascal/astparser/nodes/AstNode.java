@@ -56,7 +56,7 @@ public abstract class AstNode {
     }
 
     public <T> MappingAstNode<T> toMap() {
-        return new MappingAstNode<>(this);
+        throw new UnsupportedOperationException();
     }
 
     public Optional<AstNode> toOptional() {
@@ -72,5 +72,6 @@ public abstract class AstNode {
 
     public void debug() {
         System.out.println(formatTree(this.toString()));
+        System.out.flush();
     }
 }

@@ -43,8 +43,6 @@ public class TerminalMatch implements Parser {
                 return new Pair<>(new LeafNode(name, this.pattern), str.substring(this.pattern.length()));
             });
         } catch (IllegalStateException|StringIndexOutOfBoundsException e) {
-            System.out.println("No match when parsing " + name + " (" + this.pattern + ')');
-            System.out.println(str);
             throw new CompilerException(e);
         }
         return pair;

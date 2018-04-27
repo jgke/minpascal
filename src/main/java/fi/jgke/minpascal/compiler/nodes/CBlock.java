@@ -3,6 +3,7 @@ package fi.jgke.minpascal.compiler.nodes;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import lombok.Data;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -19,11 +20,15 @@ public class CBlock {
     private final List<Content> contents;
 
     public static CBlock parse(AstNode root) {
-        root.debug();
-        root.toMap()
-                .map("ProcedureDeclaration", notImplemented())
+        root.getFirstChild("Statement").debug();
+
+        Content content = root.getFirstChild("Statement").<Content>toMap()
+                .map("SimpleStatement", CBlock::fromSimple)
+                .map("Declaration", notImplemented())
+                .map("StructuredStatement", notImplemented())
                 .unwrap();
-        throw new RuntimeException("not impl");
+
+        return new CBlock(Collections.singletonList(content));
         /*
         root.getList().stream()
                 .map(statementNode -> null);statementNode.map(
@@ -34,9 +39,15 @@ public class CBlock {
                 );*/
     }
 
-    private static Function<AstNode, Object> notImplemented() {
+    private static Content fromSimple(AstNode simple) {
+        return simple.<Content>toMap()
+                .map("IdentifierStatement", notImplemented())
+                .unwrap();
+    }
+
+    private static <T> Function<AstNode, T> notImplemented() {
         return $ -> {
-            throw new RuntimeException("not impl");
+            throw new RuntimeException("not impl " + $.getName());
         };
     }
 }

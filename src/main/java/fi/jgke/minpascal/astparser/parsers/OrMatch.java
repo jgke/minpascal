@@ -1,16 +1,19 @@
 package fi.jgke.minpascal.astparser.parsers;
 
 import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.astparser.nodes.ListAstNode;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class OrMatch implements Parser {
+    private String name;
     @Getter
     private final List<Parser> parsers;
     private final Set<String> names;
@@ -28,11 +31,13 @@ public class OrMatch implements Parser {
         this.names = parsers.stream()
                 .map(Parser::getName)
                 .collect(Collectors.toSet());
+        this.name = name;
     }
 
-    public void addParserToFront(Parser parser) {
+    public void addParserToFront(Parser parser, String newName) {
         parsers.add(0, parser);
         names.add(parser.getName());
+        this.name = newName;
     }
 
     @Override
@@ -49,8 +54,9 @@ public class OrMatch implements Parser {
         for (Parser p : parsers) {
             if (p.parses(str)) {
                 Pair<AstNode, String> parse = p.parse(str);
-                parse.getLeft().setAvailableNames(names);
-                return parse;
+                ListAstNode listAstNode = new ListAstNode(name, Collections.singletonList(parse.getLeft()));
+                listAstNode.setAvailableNames(names);
+                return new Pair<>(listAstNode, parse.getRight());
             }
         }
         throw parseFailure(parsers);

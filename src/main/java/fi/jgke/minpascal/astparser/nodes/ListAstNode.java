@@ -20,11 +20,16 @@ public class ListAstNode extends AstNode {
 
     @Override
     public Object getContent() {
-        return content;
+        return this;
     }
 
     @Override
     public OptionalList<AstNode> getList() {
         return new OptionalList<>(content);
+    }
+
+    public <T> MappingAstNode<T> toMap() {
+        assert content.size() == 1;
+        return new MappingAstNode<>(this, content.get(0));
     }
 }

@@ -67,8 +67,8 @@ public class Rule {
                     parsers.add(new KleeneMatch("more", parser));
                     break;
                 case "|":
-                    Parser inner = toJust(parsers, tokens.peek(), true);
                     String orName = tokens.peek();
+                    Parser inner = toJust(parsers, tokens.peek(), true);
                     parsers = new ArrayList<>();
                     Parser right = getParser(tokens, tokens.peek());
                     if (right instanceof AndMatch) {
@@ -78,7 +78,7 @@ public class Rule {
                             break;
                         }
                     } else if (right instanceof OrMatch) {
-                        ((OrMatch) right).addParserToFront(inner);
+                        ((OrMatch) right).addParserToFront(inner, name);
                         parsers.add(right);
                         break;
                     }
@@ -109,7 +109,9 @@ public class Rule {
         for (String s : Arrays.asList("!", "[", "]", "|", "(", ")", "*")) {
             split = tokenize(split, s);
         }
-        return getParser(new ArrayDeque<>(split), _name);
+        Parser parser = getParser(new ArrayDeque<>(split), _name);
+        //System.out.println(_name + " ::= " + parser);
+        return parser;
     }
 
 }
