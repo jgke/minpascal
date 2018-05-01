@@ -68,7 +68,7 @@ public class Rule {
                     break;
                 case "|":
                     String orName = tokens.peek();
-                    Parser inner = toJust(parsers, tokens.peek(), true);
+                    Parser inner = toJust(parsers, parsers.get(0).getName(), true);
                     parsers = new ArrayList<>();
                     Parser right = getParser(tokens, tokens.peek());
                     if (right instanceof AndMatch) {
@@ -110,7 +110,7 @@ public class Rule {
             split = tokenize(split, s);
         }
         Parser parser = getParser(new ArrayDeque<>(split), _name);
-        //System.out.println(_name + " ::= " + parser);
+        System.out.println(_name + " ::= " + parser);
         return parser;
     }
 

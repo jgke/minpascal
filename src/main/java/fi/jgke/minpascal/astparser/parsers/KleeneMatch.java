@@ -6,9 +6,7 @@ import fi.jgke.minpascal.util.Pair;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @AllArgsConstructor
 public class KleeneMatch implements Parser {
@@ -25,7 +23,10 @@ public class KleeneMatch implements Parser {
             astNodes.add(parse.getLeft());
             pair = new Pair<>(astNodes, parse.getRight());
         }
-        return new Pair<>(new ListAstNode(name, pair.getLeft()), pair.getRight());
+        ListAstNode listAstNode = new ListAstNode(name, pair.getLeft());
+        List<String> strings = Arrays.asList(name, parser.getName());
+        listAstNode.setAvailableNames(new HashSet<>(strings));
+        return new Pair<>(listAstNode, pair.getRight());
     }
 
     @Override

@@ -4,7 +4,6 @@ import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.nodes.ListAstNode;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
-import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +13,6 @@ import java.util.stream.Collectors;
 
 public class OrMatch implements Parser {
     private String name;
-    @Getter
     private final List<Parser> parsers;
     private final Set<String> names;
 

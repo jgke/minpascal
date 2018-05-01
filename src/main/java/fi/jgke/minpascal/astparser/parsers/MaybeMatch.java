@@ -23,6 +23,8 @@ public class MaybeMatch implements Parser {
             Pair<AstNode, String> parse = maybeThis.parse(str);
             str = parse.getRight();
             inner = parse.getLeft();
+        } else if (yesThis instanceof Epsilon) {
+            return new Pair<>(new EmptyNode(name), str);
         }
         Pair<AstNode, String> parse = yesThis.parse(str);
         return new Pair<>(new ListAstNode(name, Arrays.asList(inner, parse.getLeft())), parse.getRight());

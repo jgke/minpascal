@@ -128,7 +128,7 @@ public class CBuilder {
     }
 
     private void addStatement(CBlock.Content content) {
-        throw new RuntimeException("Not impl");
+        this.append(content.getData());
     }
 
 /*

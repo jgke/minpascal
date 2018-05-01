@@ -2,6 +2,7 @@ package fi.jgke.minpascal.util;
 
 import fi.jgke.minpascal.exception.CompilerException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -47,5 +48,13 @@ public class OptionalUtils {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
+    }
+
+    public static <T> List<T> toList(T collection, Function<T, Optional<T>> more) {
+        List<T> list = new ArrayList<>();
+        Optional<T> next = Optional.of(collection);
+        while ((next = more.apply(next.get())).isPresent())
+            list.add(next.get());
+        return list;
     }
 }

@@ -24,7 +24,7 @@ public class CFunction {
     public static CFunction fromBlock(AstNode block) {
         return new CFunction("main",
                 Collections.emptyList(),
-                CType.CVOID,
+                CType.CINTEGER,
                 CBlock.parse(block));
     }
 }

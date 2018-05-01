@@ -3,19 +3,15 @@ Program ::= program identifier semicolon Block dot
 Block ::= begin Statement (semicolon [Statement])* end
 Statement ::= SimpleStatement | StructuredStatement | Declaration
 
-SimpleStatement ::= IdentifierStatement
-                    | ReturnStatement
-                    | ReadStatement
-                    | WriteStatement
+// read and write are handled in the compiler as "normal" function calls
+SimpleStatement ::= ReturnStatement
                     | AssertStatement
-IdentifierStatement ::= identifier (AssignmentStatement | Call)
+                    | IdentifierStatement
+IdentifierStatement ::= identifier IdentifierStatementContent
+IdentifierStatementContent ::= AssignmentStatement | Arguments
 ReturnStatement ::= return Expression
-ReadStatement ::= read op [ReadVariable (comma ReadVariable)*] cp
-ReadVariable ::= identifier [ob Expression cb]
-WriteStatement ::= write Arguments
 AssertStatement ::= assert op Expression cp
 AssignmentStatement ::= [ob Expression cb] assign Expression
-Call ::= Arguments
 
 StructuredStatement ::= Block | If | While
 If ::= if Expression then Statement [else Statement]
@@ -36,13 +32,14 @@ Expression ::= SimpleExpression [RelOp SimpleExpression]
 SimpleExpression ::= [Sign] Term [AddOp Term]
 Term ::= Factor [MulOp Factor]
 Factor ::= SubFactor [SizeExpression]
-SubFactor ::= Variable [Call]
+SubFactor ::= Variable [Arguments]
              | Literal
              | op Expression cp
              | not Factor
 Variable ::= identifier [ob Expression cb]
 SizeExpression ::= dot size
-Literal ::= realliteral | integerliteral | stringliteral | true | false
+// 'true' and 'false' are treated as variables
+Literal ::= realliteral | integerliteral | stringliteral
 
 RelOp ::= equals | notequals | lessthan | lessthanequals | morethan | morethanequals
 Sign ::= plus | minus
@@ -102,7 +99,7 @@ int ::= 'integer'
 str ::= 'string'
 var ::= 'var'
 while ::= 'while'
-write ::= 'write'
+write ::= 'writeln'
 
 whitespace ::= comment | ws | eps
 eps ::= ""

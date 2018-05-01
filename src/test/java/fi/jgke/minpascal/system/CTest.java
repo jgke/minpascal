@@ -94,7 +94,13 @@ public class CTest {
 
                 AtomicReference<String> valgrindOutput = new AtomicReference<>("");
 
-                returncode = exec("valgrind --error-exitcode=1 " + base,
+                // this fails on windows but w/e
+                boolean hasValgrind = exec("which valgrind",
+                        path.getParent().toFile(), mutOutput::set, valgrindOutput::set) == 0;
+
+                String valgrind = hasValgrind ? "valgrind --error-exitcode=1 " : "";
+
+                returncode = exec(valgrind + base,
                         path.getParent().toFile(), mutOutput::set, valgrindOutput::set);
                 if (returncode != 0) {
                     stripPrint(valgrindOutput.get());

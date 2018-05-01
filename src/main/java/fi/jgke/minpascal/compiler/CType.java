@@ -3,6 +3,7 @@ package fi.jgke.minpascal.compiler;
 import com.google.common.collect.Streams;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.compiler.nodes.CFunction;
+import fi.jgke.minpascal.compiler.nodes.CVariable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -52,24 +53,13 @@ public class CType {
     }
 
     public static CType fromFunction(CFunction node) {
-        /*
-        CType returnValue = new CType(node.getReturnType());
-        List<VarDeclarationNode> declarations = node.getParams().getDeclarations();
-        List<CType> params = declarations.stream()
-                .flatMap(subNode -> subNode.getIdentifiers().stream()
-                        .map($ -> subNode.getType()))
-                .map(CType::new)
-                .collect(Collectors.toList());
-        return new CType(
-                declarations.size() == 0
-                        ? Optional.empty()
-                        : Optional.ofNullable(declarations.get(0))
-                        .map(VarDeclarationNode::getType),
-                Optional.of(returnValue),
-                params
-        );
-        */
-        throw new RuntimeException("Not impl");
+        List<CVariable> parameters = node.getParameters();
+        CType returnType = node.getReturnType();
+        return new CType(Optional.empty(),
+                Optional.of(returnType),
+                parameters.stream()
+                        .map(CVariable::getType)
+                        .collect(Collectors.toList()));
     }
 
     private static String fromPascal(AstNode typeNode) {
@@ -135,8 +125,8 @@ public class CType {
     }
 
     public String defaultValue() {
-        if(this.equals(CINTEGER) || this.equals(CBOOLEAN)) return "0";
-        if(this.equals(CDOUBLE)) return "0.0d";
+        if (this.equals(CINTEGER) || this.equals(CBOOLEAN)) return "0";
+        if (this.equals(CDOUBLE)) return "0.0d";
         return "NULL";
     }
 }
