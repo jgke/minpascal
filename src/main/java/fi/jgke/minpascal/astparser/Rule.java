@@ -110,7 +110,7 @@ public class Rule {
             split = tokenize(split, s);
         }
         Parser parser = getParser(new ArrayDeque<>(split), _name);
-        System.out.println(_name + " ::= " + parser);
+        //System.out.println(_name + " ::= " + parser);
         return parser;
     }
 

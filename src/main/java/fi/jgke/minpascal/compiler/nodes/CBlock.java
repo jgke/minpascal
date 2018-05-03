@@ -1,14 +1,19 @@
 package fi.jgke.minpascal.compiler.nodes;
 
 import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.compiler.CType;
+import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.compiler.std.CExpressionResult;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static fi.jgke.minpascal.compiler.std.CExpressionResult.formatExpressions;
+import static fi.jgke.minpascal.compiler.std.CExpressionResult.getArguments;
 
 @Data
 public class CBlock {
@@ -25,45 +30,110 @@ public class CBlock {
     private final List<Content> contents;
 
     public static CBlock parse(AstNode root) {
-        List<Content> content = root.getFirstChild("Statement").<List<Content>>toMap()
+        IdentifierContext.push();
+        Stream<Content> content = fromStatement(root.getFirstChild("Statement"));
+        Stream<Content> moreStatements = root.getFirstChild("more").toOptional()
+                .flatMap(mmore -> mmore.toOptional()
+                        .map(more -> more
+                                .getList().stream().flatMap(s -> s
+                                        .getFirstChild("Statement")
+                                        .toOptional().map(m -> m.getList().stream()
+                                                .map(AstNode::toOptional)
+                                                .flatMap(inner -> inner
+                                                        .map(CBlock::fromStatement)
+                                                        .orElse(Stream.empty())))
+                                        .orElse(Stream.empty()))))
+                .orElse(Stream.empty());
+        List<Content> collect = Stream.concat(content, moreStatements)
+                .collect(Collectors.toList());
+        IdentifierContext.pop();
+
+        return new CBlock(collect);
+    }
+
+    public static Stream<Content> fromStatement(AstNode statement) {
+        return statement.<Stream<Content>>toMap()
                 .map("SimpleStatement", CBlock::fromSimple)
-                .map("Declaration", notImplemented())
+                .map("Declaration", CBlock::fromDeclaration)
                 .map("StructuredStatement", CBlock::fromStructured)
                 .unwrap();
-
-        return new CBlock(content);
-        /*
-        root.getList().stream()
-                .map(statementNode -> null);statementNode.map(
-                        simple -> new Content(Optional.empty(), Optional.empty(), Optional.of(Statement.parse(simple))),
-                        structuredStatement -> new Content(Optional.empty(), Optional.empty(), Optional.of(Statement.parse(structuredStatement))),
-                        declaration -> null
-                        )
-                );*/
     }
 
-    private static List<Content> fromStructured(AstNode astNode) {
-        return astNode.<List<Content>>toMap()
-                .map("Block", notImplemented())
-                .map("If", CBlock::fromIf)
-                .map("While", notImplemented())
+    private static Stream<Content> fromDeclaration(AstNode astNode) {
+        return astNode.<Stream<Content>>toMap()
+                .map("VarDeclaration", CBlock::varDeclaration)
+                .map("ProcedureDeclaration", notImplemented())
+                .map("FunctionDeclaration", notImplemented())
                 .unwrap();
     }
 
-    private static List<Content> fromIf(AstNode astNode) {
-        astNode.debug();
-        throw new RuntimeException();
+    private static Stream<Content> varDeclaration(AstNode astNode) {
+        String identifier = astNode.getFirstChild("identifier").getContentString();
+        CType type = CType.fromTypeNode(astNode.getFirstChild("Type"));
+        List<String> more = astNode.getFirstChild("more").toOptional()
+                .map(t -> t.getList().stream()
+                        .map(c -> c.getFirstChild("identifier").getContentString()))
+                .orElse(Stream.empty())
+                .collect(Collectors.toList());
+        Stream.concat(Stream.of(identifier), more.stream())
+                .forEach(ident -> IdentifierContext.addIdentifier(ident, type));
+        return Stream.concat(Stream.of(identifier), more.stream())
+                .map(ident -> new Content(type.toDeclaration(ident) + ";"));
     }
 
-    private static List<Content> fromSimple(AstNode simple) {
-        return simple.<List<Content>>toMap()
+    private static Stream<Content> fromStructured(AstNode astNode) {
+        return astNode.<Stream<Content>>toMap()
+                .map("Block", notImplemented())
+                .map("If", CBlock::fromIf)
+                .map("While", CBlock::fromWhile)
+                .unwrap();
+    }
+
+    private static Stream<Content> fromWhile(AstNode astNode) {
+        AstNode condition = astNode.getFirstChild("Expression");
+        AstNode body = astNode.getFirstChild("Statement");
+        CExpressionResult conditionResult = CExpressionResult.fromExpression(condition);
+        String whileStart = IdentifierContext.genIdentifier("whileStart");
+        String whileEnd = IdentifierContext.genIdentifier("whileEnd");
+        String whileBlock = formatExpressions(
+                Collections.singletonList(conditionResult),
+                $ -> String.format("%s: if(!%s) goto %s;\n", whileStart, conditionResult.getIdentifier(), whileEnd)
+                        + format(fromStatement(body))
+                        + "goto " + whileStart + ";\n"
+                        + whileEnd + ":;");
+        return Stream.of(new Content(whileBlock));
+    }
+
+    private static Stream<Content> fromIf(AstNode astNode) {
+        AstNode condition = astNode.getFirstChild("Expression");
+        AstNode body = astNode.getFirstChild("Statement");
+        Stream<Content> elseBody = astNode.getFirstChild("else")
+                .toOptional().map(m -> m.getFirstChild("else").getFirstChild("Statement"))
+                .map(CBlock::fromStatement)
+                .orElse(Stream.empty());
+        CExpressionResult conditionResult = CExpressionResult.fromExpression(condition);
+        String ifFalse = IdentifierContext.genIdentifier("ifFalse");
+        String ifEnd = IdentifierContext.genIdentifier("ifEnd");
+        String ifBlock = formatExpressions(
+                Collections.singletonList(conditionResult),
+                $ -> String.format("if(!%s) goto %s;\n", conditionResult.getIdentifier(), ifFalse)
+                        + format(fromStatement(body))
+                        + "goto " + ifEnd + ";"
+                        + ifFalse + ":;"
+                        + format(elseBody)
+                        + ifEnd + ":;");
+        return Stream.of(new Content(ifBlock));
+    }
+
+    private static Stream<Content> fromSimple(AstNode simple) {
+        return simple.<Stream<Content>>toMap()
                 .map("IdentifierStatement", CBlock::fromIdentifier)
                 .map("ReturnStatement", notImplemented())
                 .map("AssertStatement", notImplemented())
                 .unwrap();
     }
 
-    private static List<Content> fromIdentifier(AstNode identifierStatement) {
+    private static Stream<Content> fromIdentifier(AstNode identifierStatement) {
         String identifier = identifierStatement
                 .getFirstChild("identifier")
                 .getContentString();
@@ -71,89 +141,53 @@ public class CBlock {
             return fromWrite(identifierStatement
                     .getFirstChild("IdentifierStatementContent")
                     .getFirstChild("Arguments"));
-        } else if(identifier.equals("println")) {
+        } else if (identifier.equals("println")) {
             throw new RuntimeException();
         }
         return identifierStatement
-                .getFirstChild("IdentifierStatementContent").<List<Content>>toMap()
+                .getFirstChild("IdentifierStatementContent").<Stream<Content>>toMap()
                 .map("AssignmentStatement", notImplemented())
                 .map("Arguments", CBlock.fromCall(identifier))
                 .unwrap();
     }
 
-    private static List<Content> fromWrite(AstNode writeNode) {
-        List<AstNode> astNodes = getArguments(writeNode);
-        List<CExpressionResult> collect = astNodes.stream()
-                .map(CExpressionResult::fromExpression)
-                .collect(Collectors.toList());
+    private static Stream<Content> fromWrite(AstNode writeNode) {
+        List<CExpressionResult> collect = getArguments(writeNode);
 
-        StringBuilder fmt = new StringBuilder();
-        List<String> args = new ArrayList<>();
-        List<List<String>> steps = new ArrayList<>();
-        List<String> post = new ArrayList<>();
+        String fmt = collect.stream()
+                .map(result -> result.getType().toFormat() + " ")
+                .collect(Collectors.joining());
 
-        for (CExpressionResult result : collect) {
-            fmt.append(result.getType().toFormat()).append(" ");
-            args.add(result.getIdentifier());
-            steps.add(result.getTemporaries());
-            post.addAll(result.getPost());
-        }
-
-        String pre = steps.stream()
-                .map(list -> list.stream()
-                        .collect(Collectors.joining("\n")) + "\n")
-                .collect(Collectors.joining("\n")) + "\n";
-        String print = "printf(\"" + fmt.toString().trim() + "\\n\", " + args.stream().collect(Collectors.joining(", ")) + ");\n";
-        String clean = post.stream().collect(Collectors.joining("\n")) + "\n";
-        return Collections.singletonList(new Content(pre + print + clean));
+        String print = "printf(\"" + fmt.trim() + "\\n\", " + collect.stream()
+                .map(CExpressionResult::getIdentifier)
+                .collect(Collectors.joining(", ")) + ");\n";
+        String total = formatExpressions(collect, $ -> print);
+        return Stream.of(new Content(total));
     }
 
-    private static Function<AstNode, List<Content>> fromCall(String identifier) {
+    private static Function<AstNode, Stream<Content>> fromCall(String identifier) {
         return argumentsNode -> {
-            List<AstNode> astNodes = getArguments(argumentsNode);
-            List<CExpressionResult> collect = astNodes.stream()
-                    .map(CExpressionResult::fromExpression)
-                    .collect(Collectors.toList());
+            List<CExpressionResult> collect = getArguments(argumentsNode);
 
-            List<String> args = new ArrayList<>();
-            List<List<String>> steps = new ArrayList<>();
-            List<String> post = new ArrayList<>();
+            String total = formatExpressions(
+                    collect,
+                    expressions -> identifier + "(" + expressions.stream()
+                            .map(CExpressionResult::getIdentifier)
+                            .collect(Collectors.joining(", ")) + ");\n");
 
-            for (CExpressionResult result : collect) {
-                args.add(result.getIdentifier());
-                steps.add(result.getTemporaries());
-                post.addAll(result.getPost());
-            }
-
-            String pre = steps.stream()
-                    .map(list -> list.stream()
-                            .collect(Collectors.joining("\n")) + "\n")
-                    .collect(Collectors.joining("\n")) + "\n";
-            String print = identifier + "(" + args.stream().collect(Collectors.joining(", ")) + ");\n";
-            String clean = post.stream().collect(Collectors.joining("\n")) + "\n";
-            return Collections.singletonList(new Content(pre + print + clean));
+            return Stream.of(new Content(total));
         };
-    }
-
-    private static List<AstNode> getArguments(AstNode argumentsNode) {
-        return argumentsNode
-                .getFirstChild("Arguments")
-                .getFirstChild("Expression")
-                .toOptional().map(
-                        node -> {
-                            AstNode expression = node.getFirstChild("Expression");
-                            List<AstNode> more = expression.getFirstChild("more").getList();
-                            List<AstNode> expressions = new ArrayList<>();
-                            expressions.add(node.getFirstChild("Expression").getFirstChild("Expression"));
-                            expressions.addAll(more);
-                            return expressions;
-                        }
-                ).orElse(Collections.emptyList());
     }
 
     private static <T> Function<AstNode, T> notImplemented() {
         return $ -> {
             throw new RuntimeException("not impl " + $.getName());
         };
+    }
+
+    private static String format(Stream<Content> blocks) {
+        return blocks
+                .map(c -> c.data)
+                .collect(Collectors.joining());
     }
 }

@@ -101,7 +101,7 @@ var ::= 'var'
 while ::= 'while'
 write ::= 'writeln'
 
-whitespace ::= comment | ws | eps
-eps ::= ""
-comment ::= "\{\*.*?\*\}"
-ws ::= " +"
+whitespace ::= _comment | _ws | _epsilon
+_epsilon ::= ""
+_comment ::= "\{\*.*?\*\}"
+_ws ::= " +"

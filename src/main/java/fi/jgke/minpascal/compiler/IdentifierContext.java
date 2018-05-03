@@ -12,6 +12,12 @@ public class IdentifierContext {
     private static List<Map<String, CType>> identifiers = new ArrayList<>();
     private static int identifierNumber = 0;
 
+    static {
+        push();
+        addIdentifier("true", CType.CBOOLEAN);
+        addIdentifier("false", CType.CBOOLEAN);
+    }
+
     public static CType getType(String identifier) {
         for (int i = identifiers.size() - 1; i >= 0; i--) {
             if (identifiers.get(i).containsKey(identifier.toLowerCase())) {

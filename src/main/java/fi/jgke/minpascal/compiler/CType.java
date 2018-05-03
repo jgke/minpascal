@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.compiler.nodes.CFunction;
 import fi.jgke.minpascal.compiler.nodes.CVariable;
+import fi.jgke.minpascal.exception.CompilerException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -40,41 +41,35 @@ public class CType {
         this(me, Optional.empty(), Collections.emptyList());
     }
 
-    public CType(Optional<AstNode> type, Optional<CType> call, List<CType> siblings) {
-        this(type.map(CType::fromPascal).orElse("int"), call, siblings); // default to int so we can always store the result
-    }
-
-    public CType(Optional<AstNode> type) {
-        this(type.map(CType::fromPascal).orElse("int"));
-    }
-
-    public CType(AstNode typeNode) {
-        this(Optional.of(typeNode));
-    }
-
     public static CType fromFunction(CFunction node) {
         List<CVariable> parameters = node.getParameters();
         CType returnType = node.getReturnType();
-        return new CType(Optional.empty(),
+        return new CType("void",
                 Optional.of(returnType),
                 parameters.stream()
                         .map(CVariable::getType)
                         .collect(Collectors.toList()));
     }
 
-    private static String fromPascal(AstNode typeNode) {
-        throw new RuntimeException("Not impl");
-        /*
-        String type = pascalToCMap.get(
-                typeNode.getSimpleType()
-                        .orElseGet(typeNode.getArrayType().map(ArrayTypeNode::getType)::get)
-                        .getType().getValue().toLowerCase());
+    private static String getType(AstNode simpleTypeNode) {
+        return simpleTypeNode.<String>toMap()
+                .map("int", AstNode::getContentString)
+                .map("str", AstNode::getContentString)
+                .unwrap();
+    }
+
+    public static CType fromTypeNode(AstNode typeNode) {
+        String type = typeNode.<String>toMap()
+                .map("SimpleType", CType::getType)
+                .map("ArrayType", atype -> getType(atype.getFirstChild("SimpleType").getFirstChild("type")))
+                .unwrap();
+        type = pascalToCMap.getOrDefault(type, null);
         if (type == null) {
             throw new CompilerException("Invalid type " + typeNode);
         }
-        type += typeNode.getArrayType().map(arrayTypeNode -> " *").orElse("");
-        return type;
-        */
+        type += typeNode.getFirstChild("ArrayType").toOptional()
+                .map(arrayTypeNode -> " *").orElse("");
+        return new CType(type);
     }
 
     @Override

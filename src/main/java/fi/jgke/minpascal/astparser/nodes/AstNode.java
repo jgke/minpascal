@@ -4,10 +4,7 @@ import fi.jgke.minpascal.exception.CompilerException;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static fi.jgke.minpascal.util.Formatter.formatTree;
@@ -37,7 +34,7 @@ public abstract class AstNode {
     }
 
     public List<AstNode> getList() {
-        throw new UnsupportedOperationException();
+        return Collections.singletonList((AstNode)getContent());
     }
 
     public <T> MappingAstNode<T> toMap() {
@@ -57,8 +54,9 @@ public abstract class AstNode {
                 ));
     }
 
-    public void debug() {
+    public AstNode debug() {
         System.out.println(formatTree(this.toString()));
         System.out.flush();
+        return this;
     }
 }

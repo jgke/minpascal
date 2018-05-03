@@ -3,15 +3,19 @@ package fi.jgke.minpascal.compiler.std;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.nodes.LeafNode;
 import fi.jgke.minpascal.compiler.CType;
+import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.exception.CompilerException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static fi.jgke.minpascal.compiler.IdentifierContext.genIdentifier;
 
@@ -26,11 +30,10 @@ public class CExpressionResult {
     public static CExpressionResult fromExpression(AstNode arg) {
         AstNode left = arg.getFirstChild("SimpleExpression");
         AstNode relOp = arg.getFirstChild("RelOp");
-        left.debug();
         return relOp.toOptional().map(rel ->
                 getType(fromSimple(left),
-                        rel.getFirstChild("RelOp"),
-                        fromSimple(rel.getFirstChild("SimpleExpression")))
+                        rel.getFirstChild("RelOp").getFirstChild("RelOp"),
+                        fromSimple(rel.getFirstChild("RelOp").getFirstChild("SimpleExpression")))
         ).orElse(fromSimple(left));
     }
 
@@ -40,7 +43,6 @@ public class CExpressionResult {
                 .toOptional()
                 .map(CExpressionResult::getSign);
         AstNode left = simple.getFirstChild("Term");
-        left.debug();
         CExpressionResult result = left.getFirstChild("AddOp").toOptional()
                 .map(add -> getType(fromTerm(left),
                         add.getFirstChild("AddOp"),
@@ -80,11 +82,33 @@ public class CExpressionResult {
         AstNode factor = term.getFirstChild("Factor");
         AstNode subFactor = factor.getFirstChild("SubFactor");
         return subFactor.<CExpressionResult>toMap()
-                .map("Variable", notImplemented())
+                .map("Variable", CExpressionResult::fromVariable)
                 .map("Literal", CExpressionResult::getLiteralType)
                 .map("op", notImplemented())
                 .map("not", notImplemented())
                 .unwrap();
+    }
+
+    private static CExpressionResult fromVariable(AstNode astNode) {
+        String identifier = astNode
+                .getFirstChild("Variable")
+                .getFirstChild("identifier").getContentString();
+        return astNode.getFirstChild("Arguments").toOptional()
+                .map(args -> fromCall(identifier, args))
+                .orElseGet(() -> new CExpressionResult(IdentifierContext.getType(identifier),
+                        identifier,
+                        Collections.emptyList(),
+                        Collections.emptyList()));
+    }
+
+    private static CExpressionResult fromPureVariable(AstNode astNode) {
+        String identifier = astNode
+                .getFirstChild("Variable")
+                .getFirstChild("identifier").getContentString();
+        return new CExpressionResult(IdentifierContext.getType(identifier),
+                identifier,
+                Collections.emptyList(),
+                Collections.emptyList());
     }
 
     private static Function<AstNode, CExpressionResult> notImplemented() {
@@ -127,11 +151,10 @@ public class CExpressionResult {
         var.getArrayAccessInteger().ifPresent($ -> notImplemented());
         return new CExpressionResult(type, identifier, Collections.emptyList(), Collections.emptyList());
     }
+    */
 
     private static CExpressionResult fromCall(String identifier, AstNode call) {
-        List<CExpressionResult> expressions = call.getArguments().getArguments().stream()
-                .map(CExpressionResult::fromExpression)
-                .collect(Collectors.toList());
+        List<CExpressionResult> expressions = CExpressionResult.getArguments(call);
         List<String> temporaries = expressions.stream()
                 .flatMap(e -> e.getTemporaries().stream())
                 .collect(Collectors.toList());
@@ -143,15 +166,10 @@ public class CExpressionResult {
                 .collect(Collectors.joining(", "));
         String result = genIdentifier();
         CType type = IdentifierContext.getType(identifier).getCall()
-                .orElseThrow(() -> new TypeError(call.getIdentifier().getPosition(), "Identifier " + identifier + " is not a function"));
+                .orElseThrow(() -> new CompilerException("Identifier not found"));
         temporaries.add(type.toDeclaration(result) + " = " + identifier + "(" + arguments + ");");
         return new CExpressionResult(type, result, temporaries, post);
     }
-
-    private static CExpressionResult notImplemented() {
-        throw new CompilerException("Not implemented");
-    }
-    */
 
     private static CExpressionResult toExpression(CType type, Object value) {
         String id = genIdentifier();
@@ -165,5 +183,36 @@ public class CExpressionResult {
                 .map("integerliteral", d -> toExpression(CType.CINTEGER, Integer.parseInt(d.getContentString())))
                 .map("stringliteral", d -> toExpression(CType.CSTRING, d.getContentString()))
                 .unwrap();
+    }
+
+    public static String formatExpressions(List<CExpressionResult> expressions,
+                                           Function<List<CExpressionResult>, Object> core) {
+        List<List<String>> steps = new ArrayList<>();
+        List<String> post = new ArrayList<>();
+
+        for (CExpressionResult result : expressions) {
+            steps.add(result.getTemporaries());
+            post.addAll(result.getPost());
+        }
+
+        String pre = steps.stream()
+                .map(list -> list.stream()
+                        .collect(Collectors.joining("\n")) + "\n")
+                .collect(Collectors.joining("\n")) + "\n";
+        String clean = post.stream().collect(Collectors.joining("\n")) + "\n";
+        return pre + core.apply(expressions) + clean;
+    }
+
+    public static List<CExpressionResult> getArguments(AstNode argumentsNode) {
+        return argumentsNode
+                .getFirstChild("Arguments")
+                .getFirstChild("Expression")
+                .toOptional()
+                .map(node -> node.getFirstChild("Expression"))
+                .map(node -> Stream.concat(Stream.of(node.getFirstChild("Expression")),
+                        node.getFirstChild("more").getList().stream())
+                ).orElse(Stream.empty())
+                .map(CExpressionResult::fromExpression)
+                .collect(Collectors.toList());
     }
 }
