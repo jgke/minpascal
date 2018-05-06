@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 
@@ -29,13 +31,13 @@ public class SystemTest {
 
         MinPascal.compile(content);
     }
-/*
-    @Test
+
+   // @Test
     public void helloWorldMpp() {
         int code = MinPascal.app(new String[]{"helloWorld.mpp"}, new PrintWriter(System.out), new PrintWriter(System.err));
         assertThat(code, is(equalTo(0)));
     }
-    */
+
 
     @Test
     public void helloWorldInFile() throws IOException, InterruptedException {

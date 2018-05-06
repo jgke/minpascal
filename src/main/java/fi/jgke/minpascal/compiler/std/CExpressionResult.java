@@ -1,7 +1,6 @@
 package fi.jgke.minpascal.compiler.std;
 
 import fi.jgke.minpascal.astparser.nodes.AstNode;
-import fi.jgke.minpascal.astparser.nodes.LeafNode;
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.exception.CompilerException;
@@ -44,10 +43,10 @@ public class CExpressionResult {
                 .map(CExpressionResult::getSign);
         AstNode left = simple.getFirstChild("Term");
         CExpressionResult result = left.getFirstChild("AddOp").toOptional()
-                .map(add -> getType(fromTerm(left),
+                .map(add -> getType(fromTerm(left.getFirstChild("Term")),
                         add.getFirstChild("AddOp"),
-                        fromTerm(add.getFirstChild("Term"))
-                )).orElse(fromTerm(left));
+                        fromTerm(add.getFirstChild("AddOp").getFirstChild("Term"))
+                )).orElse(fromTerm(left.getFirstChild("Term")));
         sign.ifPresent(addSign(result));
         return result;
     }
@@ -68,18 +67,16 @@ public class CExpressionResult {
         };
     }
 
-    private static CExpressionResult fromTerm(AstNode term) {
-        AstNode left = term.getFirstChild("Term");
-        AstNode relOp = term.getFirstChild("AddOp");
+    private static CExpressionResult fromTerm(AstNode left) {
+        AstNode relOp = left.getFirstChild("MulOp");
         return relOp.toOptional().map(rel ->
-                getType(fromFactor(left),
+                getType(fromFactor(left.getFirstChild("Factor")),
                         rel.getFirstChild("MulOp"),
-                        fromFactor(rel.getFirstChild("Factor")))
-        ).orElse(fromFactor(left));
+                        fromFactor(rel.getFirstChild("MulOp").getFirstChild("Factor")))
+        ).orElse(fromFactor(left.getFirstChild("Factor")));
     }
 
-    private static CExpressionResult fromFactor(AstNode term) {
-        AstNode factor = term.getFirstChild("Factor");
+    private static CExpressionResult fromFactor(AstNode factor) {
         AstNode subFactor = factor.getFirstChild("SubFactor");
         return subFactor.<CExpressionResult>toMap()
                 .map("Variable", CExpressionResult::fromVariable)
@@ -101,16 +98,6 @@ public class CExpressionResult {
                         Collections.emptyList()));
     }
 
-    private static CExpressionResult fromPureVariable(AstNode astNode) {
-        String identifier = astNode
-                .getFirstChild("Variable")
-                .getFirstChild("identifier").getContentString();
-        return new CExpressionResult(IdentifierContext.getType(identifier),
-                identifier,
-                Collections.emptyList(),
-                Collections.emptyList());
-    }
-
     private static Function<AstNode, CExpressionResult> notImplemented() {
         return $ -> {
             throw new RuntimeException();
@@ -124,35 +111,6 @@ public class CExpressionResult {
                 .unwrap();
     }
 
-    private static <T> CExpressionResult getType(T left, Optional<LeafNode> operator, Optional<T> right, Function<T, CExpressionResult> get) {
-        //noinspection ConstantConditions
-        return operator.map(
-                op -> CBinaryExpressions.apply(get.apply(left),
-                        CBinaryExpressionFnPrivate.getOperator(op.getContent().toString()),
-                        get.apply(right.get()))
-        ).orElse(get.apply(left));
-    }
-
-    /*
-    private static CExpressionResult getType(FactorNode factor) {
-        return factor.map(
-                CExpressionResult::toExpression,
-                CExpressionResult::toExpression,
-                CExpressionResult::getType,
-                not -> CExpressionResult.getType(not.getFactor()),
-                CExpressionResult::getLiteralType,
-                sizeNode -> notImplemented()
-        );
-    }
-
-    private static CExpressionResult toExpression(VariableNode var) {
-        String identifier = var.getIdentifier().getValue();
-        CType type = IdentifierContext.getType(identifier);
-        var.getArrayAccessInteger().ifPresent($ -> notImplemented());
-        return new CExpressionResult(type, identifier, Collections.emptyList(), Collections.emptyList());
-    }
-    */
-
     private static CExpressionResult fromCall(String identifier, AstNode call) {
         List<CExpressionResult> expressions = CExpressionResult.getArguments(call);
         List<String> temporaries = expressions.stream()
@@ -165,7 +123,7 @@ public class CExpressionResult {
                 .map(CExpressionResult::getIdentifier)
                 .collect(Collectors.joining(", "));
         String result = genIdentifier();
-        CType type = IdentifierContext.getType(identifier).getCall()
+        CType type = IdentifierContext.getType(identifier).getReturnType()
                 .orElseThrow(() -> new CompilerException("Identifier not found"));
         temporaries.add(type.toDeclaration(result) + " = " + identifier + "(" + arguments + ");");
         return new CExpressionResult(type, result, temporaries, post);

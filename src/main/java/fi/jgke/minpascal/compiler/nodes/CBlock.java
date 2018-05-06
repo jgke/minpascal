@@ -4,6 +4,7 @@ import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.compiler.std.CExpressionResult;
+import fi.jgke.minpascal.util.Pair;
 import lombok.Data;
 
 import java.util.Collections;
@@ -62,9 +63,48 @@ public class CBlock {
     private static Stream<Content> fromDeclaration(AstNode astNode) {
         return astNode.<Stream<Content>>toMap()
                 .map("VarDeclaration", CBlock::varDeclaration)
-                .map("ProcedureDeclaration", notImplemented())
-                .map("FunctionDeclaration", notImplemented())
+                .map("ProcedureDeclaration", functionDeclaration(CType.CVOID))
+                .map("FunctionDeclaration", CBlock::functionDeclaration)
                 .unwrap();
+    }
+
+    private static Stream<Content> functionDeclaration(AstNode node) {
+        CType type = CType.fromTypeNode(node.getFirstChild("Type"));
+        return functionDeclaration(type).apply(node);
+    }
+
+    private static Function<AstNode, Stream<Content>> functionDeclaration(CType returnType) {
+        return node -> {
+            List<Pair<String, CType>> collect = Stream.concat(
+                    node.getFirstChild("Parameters")
+                            .getFirstChild("Parameter")
+                            .getFirstChild("Parameter").toOptional()
+                            .map(p -> p.getFirstChild("Parameter").getFirstChild("var"))
+                            .map(Collections::singletonList)
+                            .orElse(Collections.emptyList())
+                            .stream(),
+                    node.getFirstChild("Parameters")
+                            .getFirstChild("Parameter")
+                            .getFirstChild("Parameter").toOptional()
+                            .map(m -> m
+                                    .getFirstChild("more").getList().stream())
+                            .orElse(Stream.empty())
+            ).map(n -> new Pair<>(n.getFirstChild("identifier")
+                    .getFirstChild("identifier")
+                    .getContentString(),
+                    CType.fromTypeNode(n.getFirstChild("identifier").getFirstChild("Type"))
+            )).collect(Collectors.toList());
+            List<CType> parameters = collect.stream().map(Pair::getRight).collect(Collectors.toList());
+            CType ftype = new CType(returnType, parameters);
+            String identifier = node.getFirstChild("identifier").getContentString();
+            IdentifierContext.addIdentifier(identifier, ftype);
+            return Stream.of(new Content("void " + identifier + "("
+                    + collect.stream().map(p -> p.getRight().toDeclaration(p.getLeft()))
+                    .collect(Collectors.joining(", "))
+                    + ") {\n" +
+                    format(CBlock.parse(node.getFirstChild("Block")).contents.stream()) +
+                    "\n}\n"));
+        };
     }
 
     private static Stream<Content> varDeclaration(AstNode astNode) {
@@ -128,12 +168,21 @@ public class CBlock {
     private static Stream<Content> fromSimple(AstNode simple) {
         return simple.<Stream<Content>>toMap()
                 .map("IdentifierStatement", CBlock::fromIdentifier)
-                .map("ReturnStatement", notImplemented())
+                .map("ReturnStatement", CBlock::fromReturn)
                 .map("AssertStatement", notImplemented())
                 .unwrap();
     }
 
+    private static Stream<Content> fromReturn(AstNode astNode) {
+        CExpressionResult result = CExpressionResult.fromExpression(astNode.getFirstChild("Expression"));
+        return Stream.of(new Content(
+                result.getTemporaries().stream().collect(Collectors.joining(";\n"))
+                        + "return " + result.getIdentifier() + ";\n"
+        ));
+    }
+
     private static Stream<Content> fromIdentifier(AstNode identifierStatement) {
+        identifierStatement.debug();
         String identifier = identifierStatement
                 .getFirstChild("identifier")
                 .getContentString();

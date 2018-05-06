@@ -75,7 +75,7 @@ public class CBuilder {
         this.append("");
         List<String> argumentNames = arguments.stream().map(CVariable::getIdentifier).collect(Collectors.toList());
         this.append(type.toFunctionDeclaration(argumentNames, name));
-        Streams.forEachPair(argumentNames.stream(), type.getSibling().stream(), IdentifierContext::addIdentifier);
+        Streams.forEachPair(argumentNames.stream(), type.getParameters().stream(), IdentifierContext::addIdentifier);
         this.append(" {", false);
         indentation++;
         return this;

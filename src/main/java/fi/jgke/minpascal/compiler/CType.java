@@ -25,8 +25,8 @@ public class CType {
     public static final CType CVOID = new CType("void");
 
     private final String me;
-    private final Optional<CType> call;
-    private final List<CType> sibling;
+    private final Optional<CType> returnType;
+    private final List<CType> parameters;
 
     private static final Map<String, String> pascalToCMap;
 
@@ -37,6 +37,10 @@ public class CType {
         pascalToCMap.put("string", "char *");
     }
 
+    public CType(CType returnType, List<CType> parameters) {
+        this("void", Optional.of(returnType), parameters);
+    }
+
     public CType(String me) {
         this(me, Optional.empty(), Collections.emptyList());
     }
@@ -44,8 +48,7 @@ public class CType {
     public static CType fromFunction(CFunction node) {
         List<CVariable> parameters = node.getParameters();
         CType returnType = node.getReturnType();
-        return new CType("void",
-                Optional.of(returnType),
+        return new CType(returnType,
                 parameters.stream()
                         .map(CVariable::getType)
                         .collect(Collectors.toList()));
@@ -74,7 +77,7 @@ public class CType {
 
     @Override
     public String toString() {
-        return call
+        return returnType
                 .map($ -> formatFunctionPointer(""))
                 .orElse(me);
     }
@@ -87,30 +90,30 @@ public class CType {
 
     // returnType (*identifier)(args)
     private String formatFunctionPointer(String identifier) {
-        assert call.isPresent();
-        return call.get().toString() + " (*" + identifier + ")" + formatCall(sibling);
+        assert returnType.isPresent();
+        return returnType.get().toString() + " (*" + identifier + ")" + formatCall(parameters);
     }
 
     // returnType (*identifier)(args)
     // type identifier
     public String toDeclaration(String identifier) {
-        return this.call
+        return this.returnType
                 .map($ -> formatFunctionPointer(identifier))
                 .orElseGet(() -> this.toString() + " " + identifier);
     }
 
     public String toFunctionDeclaration(List<String> argumentIdentifiers, String name) {
-        assert call.isPresent();
-        assert argumentIdentifiers.size() == sibling.size();
+        assert returnType.isPresent();
+        assert argumentIdentifiers.size() == parameters.size();
         return
-                call.get().toString() + " " + name + "(" +
-                        Streams.zip(sibling.stream(), argumentIdentifiers.stream(),
+                returnType.get().toString() + " " + name + "(" +
+                        Streams.zip(parameters.stream(), argumentIdentifiers.stream(),
                                 (type, identifier) -> type.toString() + " " + identifier
                         ).collect(Collectors.joining(", ")) + ")";
     }
 
     public String toFormat() {
-        if (call.isPresent() || sibling.size() > 0)
+        if (returnType.isPresent() || parameters.size() > 0)
             return "%p";
         if (this.equals(CINTEGER)) return "%d";
         if (this.equals(CDOUBLE)) return "%f";
