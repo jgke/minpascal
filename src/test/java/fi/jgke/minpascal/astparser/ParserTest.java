@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 public class ParserTest {
-
     @Test
     public void simpleTest() {
         initDefaultParsers();
