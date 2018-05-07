@@ -52,7 +52,7 @@ public class OrMatch implements Parser {
         for (Parser p : parsers) {
             if (p.parses(str)) {
                 Pair<AstNode, String> parse = p.parse(str);
-                ListAstNode listAstNode = new ListAstNode(name, Collections.singletonList(parse.getLeft()));
+                ListAstNode listAstNode = new ListAstNode(p.getName(), Collections.singletonList(parse.getLeft()));
                 listAstNode.setAvailableNames(names);
                 return new Pair<>(listAstNode, parse.getRight());
             }

@@ -45,10 +45,14 @@ public abstract class AstNode {
         return Optional.of(this);
     }
 
-    public AstNode getFirstChild(String withName) {
+    public Optional<AstNode> getOptionalChild(String withName) {
         return getList().stream()
                 .filter(o -> o.getName().equals(withName))
-                .findFirst()
+                .findFirst();
+    }
+
+    public AstNode getFirstChild(String withName) {
+        return getOptionalChild(withName)
                 .orElseThrow(() -> new CompilerException("Child " + withName + " not found, available: "
                         + getList().stream().map(AstNode::getName).collect(Collectors.joining(", ")) + "/" + availableNames.toString()
                 ));

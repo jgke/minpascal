@@ -82,7 +82,7 @@ public class Rule {
                         parsers.add(right);
                         break;
                     }
-                    parsers.add(new OrMatch(orName, Arrays.asList(inner, right)));
+                    parsers.add(new OrMatch(inner.getName(), Arrays.asList(inner, right)));
                     break;
                 case "]":
                     break loop;

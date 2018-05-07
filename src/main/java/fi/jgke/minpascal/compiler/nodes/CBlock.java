@@ -9,6 +9,7 @@ import lombok.Data;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,9 +64,13 @@ public class CBlock {
     private static Stream<Content> fromDeclaration(AstNode astNode) {
         return astNode.<Stream<Content>>toMap()
                 .map("VarDeclaration", CBlock::varDeclaration)
-                .map("ProcedureDeclaration", functionDeclaration(CType.CVOID))
+                .map("ProcedureDeclaration", CBlock::procedureDeclaration)
                 .map("FunctionDeclaration", CBlock::functionDeclaration)
                 .unwrap();
+    }
+
+    private static Stream<Content> procedureDeclaration(AstNode astNode) {
+        return functionDeclaration(CType.CVOID).apply(astNode);
     }
 
     private static Stream<Content> functionDeclaration(AstNode node) {
@@ -98,12 +103,16 @@ public class CBlock {
             CType ftype = new CType(returnType, parameters);
             String identifier = node.getFirstChild("identifier").getContentString();
             IdentifierContext.addIdentifier(identifier, ftype);
-            return Stream.of(new Content("void " + identifier + "("
+            IdentifierContext.push();
+            collect.forEach(p -> IdentifierContext.addIdentifier(p.getLeft(), p.getRight()));
+            Stream<Content> block = Stream.of(new Content("void " + identifier + "("
                     + collect.stream().map(p -> p.getRight().toDeclaration(p.getLeft()))
                     .collect(Collectors.joining(", "))
                     + ") {\n" +
                     format(CBlock.parse(node.getFirstChild("Block")).contents.stream()) +
                     "\n}\n"));
+            IdentifierContext.pop();
+            return block;
         };
     }
 
@@ -182,7 +191,6 @@ public class CBlock {
     }
 
     private static Stream<Content> fromIdentifier(AstNode identifierStatement) {
-        identifierStatement.debug();
         String identifier = identifierStatement
                 .getFirstChild("identifier")
                 .getContentString();
@@ -195,13 +203,31 @@ public class CBlock {
         }
         return identifierStatement
                 .getFirstChild("IdentifierStatementContent").<Stream<Content>>toMap()
-                .map("AssignmentStatement", notImplemented())
+                .map("AssignmentStatement", CBlock.assignmentStatement(identifier))
                 .map("Arguments", CBlock.fromCall(identifier))
                 .unwrap();
     }
 
+    private static Function<AstNode, Stream<Content>> assignmentStatement(String identifier) {
+        return assignmentStatement -> assignmentStatement
+                .getFirstChild("ob")
+                .getOptionalChild("ob")
+                .<Stream<Content>>flatMap(ob -> {
+                    ob.toOptional().map(o -> notImplemented().apply(o));
+                    return Optional.empty();
+                })
+                .orElseGet(() -> {
+                    CExpressionResult expression = CExpressionResult.fromExpression(assignmentStatement.getFirstChild("ob")
+                            .getFirstChild("assign")
+                            .getFirstChild("Expression"));
+                    return Stream.concat(expression.getTemporaries().stream(),
+                            Stream.of(identifier + " = " + expression.getIdentifier() + ";"))
+                            .map(Content::new);
+                });
+    }
+
     private static Stream<Content> fromWrite(AstNode writeNode) {
-        List<CExpressionResult> collect = getArguments(writeNode);
+        List<CExpressionResult> collect = getArguments(writeNode.getFirstChild("Arguments"));
 
         String fmt = collect.stream()
                 .map(result -> result.getType().toFormat() + " ")

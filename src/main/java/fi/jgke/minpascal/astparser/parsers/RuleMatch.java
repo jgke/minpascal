@@ -14,7 +14,7 @@ public class RuleMatch implements Parser {
 
     @Override
     public Pair<AstNode, String> parse(String str) {
-        Pair<AstNode, String> parse = AstParser.rules.get(rule).parse(str);
+        Pair<AstNode, String> parse = AstParser.getRules().get(rule).parse(str);
         if (Character.isLowerCase(rule.charAt(0))) {
             parse.getLeft().setName(rule);
         }
@@ -27,7 +27,7 @@ public class RuleMatch implements Parser {
 
     @Override
     public boolean parses(String str) {
-        return AstParser.rules.get(rule).parses(str);
+        return AstParser.getRules().get(rule).parses(str);
     }
 
     @Override

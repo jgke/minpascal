@@ -4,6 +4,8 @@ import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.parsers.Parser;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,9 +18,11 @@ import java.util.stream.Collectors;
 
 /* Parse the BNF */
 public class AstParser {
-    public static final Map<String, Parser> rules;
+    @Getter
+    @Setter
+    private static Map<String, Parser> rules;
 
-    static {
+    public static void initDefaultParsers() {
         URL resource = AstParser.class.getClassLoader().getResource("MinPascal.bnf");
         if (resource != null) {
             try (InputStream inputStream = resource.openStream();
@@ -37,6 +41,7 @@ public class AstParser {
     }
 
     public static AstNode parse(String s) {
+        initDefaultParsers();
         Pair<AstNode, String> parse = rules.get("S").parse(s.replaceAll("\n", " "));
 
         if (!parse.getRight().trim().isEmpty()) {

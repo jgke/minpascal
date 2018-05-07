@@ -28,14 +28,17 @@ public class IdentifierContext {
     }
 
     public static void push() {
+        //System.out.println("Push");
         identifiers.add(new HashMap<>());
     }
 
     public static void pop() {
+        //System.out.println("Pop");
         identifiers.remove(identifiers.size()-1);
     }
 
     public static void addIdentifier(String identifier, CType type) {
+        //System.out.println("Add " + identifier);
         if(identifiers.get(identifiers.size()-1).containsKey(identifier.toLowerCase()))
             throw new IdentifierAlreadyExists(identifier);
         identifiers.get(identifiers.size()-1).put(identifier.toLowerCase(), type);

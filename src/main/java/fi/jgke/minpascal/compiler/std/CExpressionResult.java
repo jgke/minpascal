@@ -112,7 +112,7 @@ public class CExpressionResult {
     }
 
     private static CExpressionResult fromCall(String identifier, AstNode call) {
-        List<CExpressionResult> expressions = CExpressionResult.getArguments(call);
+        List<CExpressionResult> expressions = CExpressionResult.getArguments(call.getFirstChild("Arguments"));
         List<String> temporaries = expressions.stream()
                 .flatMap(e -> e.getTemporaries().stream())
                 .collect(Collectors.toList());
@@ -162,15 +162,15 @@ public class CExpressionResult {
     }
 
     public static List<CExpressionResult> getArguments(AstNode argumentsNode) {
-        return argumentsNode
-                .getFirstChild("Arguments")
-                .getFirstChild("Expression")
-                .toOptional()
-                .map(node -> node.getFirstChild("Expression"))
-                .map(node -> Stream.concat(Stream.of(node.getFirstChild("Expression")),
-                        node.getFirstChild("more").getList().stream())
-                ).orElse(Stream.empty())
+        argumentsNode.debug();
+        Optional<AstNode> astNode = argumentsNode.getFirstChild("Expression")
+                .getFirstChild("Expression").toOptional();
+        return astNode.map(args -> Stream.concat(Stream.of(args.getFirstChild("Expression")),
+                args.getFirstChild("more")
+                        .getList().stream()
+                        .map(m -> m.getFirstChild("Expression")))
                 .map(CExpressionResult::fromExpression)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 }

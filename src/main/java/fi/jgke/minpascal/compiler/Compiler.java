@@ -66,7 +66,7 @@ public class Compiler {
         cRootBlock.getStdFunctions().forEach(output::append);
 
         IdentifierContext.push();
-//       root.debug();
+        //root.debug();
         RootBuilder rootBuilder = new RootBuilder(root);
         rootBuilder.build(output);
         IdentifierContext.pop();

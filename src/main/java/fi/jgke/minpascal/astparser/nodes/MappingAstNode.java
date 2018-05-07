@@ -30,6 +30,8 @@ public class MappingAstNode<T> {
         if (!names.isEmpty()) {
             throw new CompilerException("Unhandled node(s): " + names);
         }
+        if(child instanceof ListAstNode && child.getAvailableNames().contains(child.getName()))
+            return mappers.get(child.getName()).apply(child.getFirstChild(child.getName()));
         return mappers.get(child.getName()).apply(child);
     }
 }

@@ -64,13 +64,13 @@ public class CType {
     public static CType fromTypeNode(AstNode typeNode) {
         String type = typeNode.<String>toMap()
                 .map("SimpleType", CType::getType)
-                .map("ArrayType", atype -> getType(atype.getFirstChild("SimpleType").getFirstChild("type")))
+                .map("ArrayType", atype -> getType(atype.getFirstChild("SimpleType")))
                 .unwrap();
         type = pascalToCMap.getOrDefault(type, null);
         if (type == null) {
             throw new CompilerException("Invalid type " + typeNode);
         }
-        type += typeNode.getFirstChild("ArrayType").toOptional()
+        type += typeNode.getOptionalChild("ArrayType")
                 .map(arrayTypeNode -> " *").orElse("");
         return new CType(type);
     }

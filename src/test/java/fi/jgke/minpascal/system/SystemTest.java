@@ -32,7 +32,7 @@ public class SystemTest {
         MinPascal.compile(content);
     }
 
-   // @Test
+    @Test
     public void helloWorldMpp() {
         int code = MinPascal.app(new String[]{"helloWorld.mpp"}, new PrintWriter(System.out), new PrintWriter(System.err));
         assertThat(code, is(equalTo(0)));
