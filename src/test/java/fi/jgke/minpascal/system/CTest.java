@@ -103,7 +103,10 @@ public class CTest {
                 returncode = exec(valgrind + base,
                         path.getParent().toFile(), mutOutput::set, valgrindOutput::set);
                 if (returncode != 0) {
+                    System.err.println(valgrind + base);
+                    System.err.println(path.getParent().toFile());
                     stripPrint(valgrindOutput.get());
+                    stripPrint(mutOutput.get());
                 }
                 assertThat(returncode, is(equalTo(0)));
                 assertThat(mutOutput.get(), is(equalTo(output)));

@@ -82,6 +82,6 @@ public class SystemTest {
                 Files.delete(target);
             }
         }
-        Thread.sleep(200);
+        Thread.sleep(500);
     }
 }
