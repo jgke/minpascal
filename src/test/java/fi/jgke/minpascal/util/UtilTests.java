@@ -43,6 +43,13 @@ public class UtilTests {
         assertThat(Formatter.formatTree(input), is(equalTo("[\n  foo{bar} \n  baz (\n    quz;\n    baq;\n    \n  )\n  \n]\n")));
     }
 
+    @Test
+    public void pairTest() {
+        Pair<Integer, String> foo = new Pair<>(1, "foo");
+        assertThat(foo.getLeft(), is(equalTo(1)));
+        assertThat(foo.getRight(), is(equalTo("foo")));
+    }
+
     @SuppressWarnings("unused")
     private <T, U> T unreachable(U u) {
         throw new RuntimeException();
