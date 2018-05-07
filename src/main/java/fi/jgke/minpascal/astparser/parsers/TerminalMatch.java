@@ -5,12 +5,10 @@ import fi.jgke.minpascal.astparser.nodes.LeafNode;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
 import fi.jgke.minpascal.util.Regex;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Optional;
 
-@AllArgsConstructor
 public class TerminalMatch implements Parser {
     @Getter
     private final String name;
@@ -35,31 +33,27 @@ public class TerminalMatch implements Parser {
             str = whitespace.parse(str).getRight();
         }
         String finalStr = str;
-        try {
-            pair = this.compiled.<Pair<AstNode, String>>map(regex -> {
-                int matchLength = regex.match(finalStr);
-                if(matchLength < 0) {
-                    throw new CompilerException(
-                            "Parse error at " + name
-                                    + ", could not match '" + pattern
-                                    + "' for string '" + finalStr + "'");
-                }
-                return new Pair<>(new LeafNode(name,
-                                               finalStr.substring(0, matchLength)),
-                                  finalStr.substring(matchLength));
-            }).orElseGet(() -> {
-                if (!finalStr.startsWith(this.pattern)) {
-                    throw new CompilerException(
-                            "Parse error at " + name
-                                    + ", could not match '" + pattern
-                                    + "' for string '" + finalStr + "'");
-                }
-                return new Pair<>(new LeafNode(name, this.pattern),
-                                  finalStr.substring(this.pattern.length()));
-            });
-        } catch (IllegalStateException | StringIndexOutOfBoundsException e) {
-            throw new CompilerException(e);
-        }
+        pair = this.compiled.<Pair<AstNode, String>>map(regex -> {
+            int matchLength = regex.match(finalStr);
+            if (matchLength < 0) {
+                throw new CompilerException(
+                        "Parse error at " + name
+                                + ", could not match '" + pattern
+                                + "' for string '" + finalStr + "'");
+            }
+            return new Pair<>(new LeafNode(name,
+                    finalStr.substring(0, matchLength)),
+                    finalStr.substring(matchLength));
+        }).orElseGet(() -> {
+            if (!finalStr.startsWith(this.pattern)) {
+                throw new CompilerException(
+                        "Parse error at " + name
+                                + ", could not match '" + pattern
+                                + "' for string '" + finalStr + "'");
+            }
+            return new Pair<>(new LeafNode(name, this.pattern),
+                    finalStr.substring(this.pattern.length()));
+        });
         str = pair.getRight();
         if (!this.name.startsWith("_") && !this.name.equals("whitespace") &&
                 whitespace.parses(pair.getRight())) {
