@@ -31,6 +31,8 @@ dependencies {
     testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
 }
 
+mainClassName = "fi.jgke.minpascal.MinPascal"
+
 jacoco {
     toolVersion = "0.8.1"
 }
