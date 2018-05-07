@@ -84,7 +84,11 @@ public class CBlock {
                     node.getFirstChild("Parameters")
                             .getFirstChild("Parameter")
                             .getFirstChild("Parameter").toOptional()
-                            .map(p -> p.getFirstChild("Parameter").getFirstChild("var"))
+                            .map(p -> {
+                                AstNode var = p.getFirstChild("Parameter").getFirstChild("var");
+                                var.getFirstChild("var").toOptional().ifPresent($ -> notImplemented().apply(null));
+                                return var;
+                            })
                             .map(Collections::singletonList)
                             .orElse(Collections.emptyList())
                             .stream(),

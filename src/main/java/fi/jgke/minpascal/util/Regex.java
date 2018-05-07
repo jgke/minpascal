@@ -1,12 +1,9 @@
 package fi.jgke.minpascal.util;
 
-import lombok.Data;
-import lombok.Getter;
 import lombok.ToString;
 
 import java.util.*;
 
-@Data
 // Limited, non-backtracking regex-like
 public class Regex {
     private final Pattern pattern;
@@ -33,7 +30,6 @@ public class Regex {
         END
     }
 
-    @Getter
     @ToString
     private class Pattern {
         private final Type type;
@@ -65,10 +61,10 @@ public class Regex {
         private int getMatches(String str) {
             int matchSize = 0;
             int position = 0;
-            switch (getType()) {
+            switch (type) {
                 case STRING:
-                    if (str.startsWith(getTerminal())) {
-                        return getTerminal().length();
+                    if (str.startsWith(terminal)) {
+                        return terminal.length();
                     }
                     return -1;
                 case ANY:
@@ -80,6 +76,10 @@ public class Regex {
                     assert content != null;
                     while (!str.isEmpty()) {
                         for (Pattern subPattern : content) {
+                            if(matchSize + position >= str.length()) {
+                                position = 0;
+                                break;
+                            }
                             int subSize = subPattern.getMatches(str.substring(matchSize + position));
                             if (subSize == -1) {
                                 position = 0;
@@ -92,13 +92,13 @@ public class Regex {
                         matchSize += position;
                         position = 0;
                     }
-                    if (getType().equals(Type.KLEENE_PLUS) && matchSize == 0)
+                    if (type.equals(Type.KLEENE_PLUS) && matchSize == 0)
                         return -1;
                     return matchSize;
                 case KLEENE_LAZY:
                     int lazySize;
                     assert content != null;
-                    while ((lazySize = getLazyMatch().getMatches(str.substring(position))) == -1) {
+                    while ((lazySize = lazyMatch.getMatches(str.substring(position))) == -1) {
                         for (Pattern subPattern : content) {
                             int subSize = subPattern.getMatches(str.substring(position));
                             if (subSize == -1) {
@@ -111,7 +111,9 @@ public class Regex {
                             break;
                         matchSize += position;
                     }
-                    return position + lazySize;
+                    if(lazySize > 0)
+                        return position + lazySize;
+                    return position;
                 case CONCAT:
                     assert content != null;
                     for (Pattern subPattern : content) {
@@ -146,6 +148,7 @@ public class Regex {
                     }
                     return -1;
             }
+            // unreachable
             throw new RuntimeException("unreachable code");
         }
     }
@@ -215,7 +218,7 @@ public class Regex {
                                 break;
                             }
                             Character rangeEnd = queue.remove();
-                            for (char i = rangeStart; i < rangeEnd; i++) {
+                            for (char i = rangeStart; i <= rangeEnd; i++) {
                                 group.add(new Pattern("" + i));
                             }
                         }
