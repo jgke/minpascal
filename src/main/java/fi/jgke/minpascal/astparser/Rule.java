@@ -36,7 +36,7 @@ public class Rule {
     private Parser toJust(List<Parser> parsers, String name, boolean flatten) {
         if (parsers.size() <= 1)
             return parsers.get(0);
-        return new AndMatch(parsers, name, parsers.size() == 1);
+        return new AndMatch(name, parsers);
     }
 
     private Parser getParser(Queue<String> tokens, String name) {
@@ -59,30 +59,29 @@ public class Rule {
                     break;
                 case "!":
                     String key = tokens.remove();
-                    parsers.add(new NotMatch(name, new RuleMatch(key), getParser(tokens, tokens.peek())));
+                    parsers.add(new NotMatch(new RuleMatch(key), getParser(tokens, tokens.peek())));
                     break;
                 case "*":
                     Parser parser = parsers.get(parsers.size() - 1);
                     parsers.remove(parsers.size() - 1);
-                    parsers.add(new KleeneMatch("more", parser));
+                    parsers.add(new KleeneMatch(parser));
                     break;
                 case "|":
-                    String orName = tokens.peek();
                     Parser inner = toJust(parsers, parsers.get(0).getName(), true);
                     parsers = new ArrayList<>();
                     Parser right = getParser(tokens, tokens.peek());
                     if (right instanceof AndMatch) {
                         int size = ((AndMatch) right).getParsers().size();
                         if (size == 1) {
-                            parsers.add(new OrMatch(orName, Arrays.asList(inner, ((AndMatch) right).getParsers().get(0))));
+                            parsers.add(new OrMatch(Arrays.asList(inner, ((AndMatch) right).getParsers().get(0))));
                             break;
                         }
                     } else if (right instanceof OrMatch) {
-                        ((OrMatch) right).addParserToFront(inner, name);
+                        ((OrMatch) right).addParserToFront(inner);
                         parsers.add(right);
                         break;
                     }
-                    parsers.add(new OrMatch(inner.getName(), Arrays.asList(inner, right)));
+                    parsers.add(new OrMatch(Arrays.asList(inner, right)));
                     break;
                 case "]":
                     break loop;

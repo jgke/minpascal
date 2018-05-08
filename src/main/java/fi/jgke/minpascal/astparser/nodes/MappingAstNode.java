@@ -4,7 +4,11 @@ import fi.jgke.minpascal.exception.CompilerException;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Delegate;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 @AllArgsConstructor
@@ -20,6 +24,17 @@ public class MappingAstNode<T> {
             throw new CompilerException("Name " + name + " not found (supported: " + parent.getAvailableNames() + ")");
         }
         mappers.put(name, handler);
+        return this;
+    }
+
+    public MappingAstNode<T> chain(String name, Consumer<AstNode> handler) {
+        if (!parent.getAvailableNames().contains(name)) {
+            throw new CompilerException("Name " + name + " not found (supported: " + parent.getAvailableNames() + ")");
+        }
+        mappers.put(name, child -> {
+            handler.accept(child);
+            return null;
+        });
         return this;
     }
 

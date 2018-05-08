@@ -1,15 +1,12 @@
 package fi.jgke.minpascal.astparser.parsers;
 
-import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 @AllArgsConstructor
 public class NotMatch implements Parser {
-    @Getter
-    private final String name;
     private final Parser notThis;
     private final Parser yesThis;
 
@@ -18,6 +15,10 @@ public class NotMatch implements Parser {
         if(notThis.parses(str))
             throw new CompilerException("NotMatch.parse called when notThis matches");
         return yesThis.parse(str);
+    }
+
+    public String getName() {
+        return yesThis.getName();
     }
 
     @Override

@@ -12,14 +12,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class OrMatch implements Parser {
-    private String name;
     private final List<Parser> parsers;
     private final Set<String> names;
 
-    public OrMatch(String name, List<Parser> parsers) {
+    public OrMatch(List<Parser> parsers) {
         if (parsers.size() > 1) {
             Parser maybeOr = parsers.get(1);
             if (maybeOr instanceof OrMatch) {
+                assert parsers.size() == 2;
                 List<Parser> newParsers = new ArrayList<>(((OrMatch) maybeOr).parsers);
                 newParsers.add(0, parsers.get(0));
                 parsers = newParsers;
@@ -29,13 +29,11 @@ public class OrMatch implements Parser {
         this.names = parsers.stream()
                 .map(Parser::getName)
                 .collect(Collectors.toSet());
-        this.name = name;
     }
 
-    public void addParserToFront(Parser parser, String newName) {
+    public void addParserToFront(Parser parser) {
         parsers.add(0, parser);
         names.add(parser.getName());
-        this.name = newName;
     }
 
     @Override

@@ -33,13 +33,13 @@ public class ParserSmokeTest {
         Pair<AstNode, String> parse;
         parse = new RuleMatch("A").parse("B");
         assertThat(parse.getRight(), is(equalTo("")));
-        parse.getLeft().debug().toMap()
+        parse.getLeft().toMap()
                 .map("B", $ -> null)
                 .map("C", $ -> assertFalse())
                 .unwrap();
         parse = new RuleMatch("A").parse("C");
         assertThat(parse.getRight(), is(equalTo("")));
-        parse.getLeft().debug().toMap()
+        parse.getLeft().toMap()
                 .map("C", $ -> null)
                 .map("B", $ -> assertFalse())
                 .unwrap();

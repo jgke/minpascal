@@ -18,7 +18,7 @@ public class MaybeMatch implements Parser {
 
     @Override
     public Pair<AstNode, String> parse(String str) {
-        AstNode inner = new EmptyNode(name);
+        AstNode inner = new EmptyNode(maybeThis.getName());
         if (maybeThis.parses(str)) {
             Pair<AstNode, String> parse = maybeThis.parse(str);
             str = parse.getRight();

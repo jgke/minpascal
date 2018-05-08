@@ -9,16 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AndMatch implements Parser {
+    private final String name;
     @Getter
     private final List<Parser> parsers;
-    private final String name;
     private static final Parser whitespace = new RuleMatch("whitespace");
-    private final boolean noWhitespace;
 
-    public AndMatch(List<Parser> parsers, String name, boolean noWhitespace) {
-        this.parsers = parsers;
+    public AndMatch(String name, List<Parser> parsers) {
         this.name = name;
-        this.noWhitespace = noWhitespace;
+        this.parsers = parsers;
     }
 
     public String getName() {
@@ -29,15 +27,10 @@ public class AndMatch implements Parser {
     public Pair<AstNode, String> parse(String str) {
         List<AstNode> nodes = new ArrayList<>();
         for (Parser p : parsers) {
-            if(!noWhitespace) {
-                str = whitespace.parse(str).getRight();
-            }
+            str = whitespace.parse(str).getRight();
             Pair<AstNode, String> pair = p.parse(str);
             nodes.add(pair.getLeft());
             str = pair.getRight();
-        }
-        if(Character.isLowerCase(name.charAt(0)) && nodes.size() == 1) {
-            return new Pair<>(nodes.get(0), str);
         }
         return new Pair<>(new ListAstNode(name, nodes), str);
     }
