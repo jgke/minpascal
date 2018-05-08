@@ -73,7 +73,7 @@ public class Regex {
                     return 1;
                 case KLEENE:
                 case KLEENE_PLUS:
-                    assert content != null;
+                    if (content == null) throw new AssertionError();
                     while (!str.isEmpty()) {
                         for (Pattern subPattern : content) {
                             if(matchSize + position >= str.length()) {
@@ -97,7 +97,7 @@ public class Regex {
                     return matchSize;
                 case KLEENE_LAZY:
                     int lazySize;
-                    assert content != null;
+                    if (content == null) throw new AssertionError();
                     while ((lazySize = lazyMatch.getMatches(str.substring(position))) == -1) {
                         for (Pattern subPattern : content) {
                             int subSize = subPattern.getMatches(str.substring(position));
@@ -115,7 +115,7 @@ public class Regex {
                         return position + lazySize;
                     return position;
                 case CONCAT:
-                    assert content != null;
+                    if (content == null) throw new AssertionError();
                     for (Pattern subPattern : content) {
                         int subSize = subPattern.getMatches(str.substring(position));
                         if (subSize == -1) {
@@ -125,7 +125,7 @@ public class Regex {
                     }
                     return position;
                 case GROUP:
-                    assert content != null;
+                    if (content == null) throw new AssertionError();
                     for (Pattern subPattern : content) {
                         int subSize = subPattern.getMatches(str.substring(position));
                         if (subSize != -1) {
@@ -134,7 +134,7 @@ public class Regex {
                     }
                     return -1;
                 case NEG_GROUP:
-                    assert content != null;
+                    if (content == null) throw new AssertionError();
                     for (Pattern subPattern : content) {
                         int subSize = subPattern.getMatches(str.substring(position));
                         if (subSize != -1) {

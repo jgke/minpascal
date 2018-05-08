@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 public abstract class CheckCallableTest {
     private List<Consumer<?>> calledConsumers;
-    private List<Function<?,?>> calledFunctions;
+    private List<Function<?, ?>> calledFunctions;
 
     @SuppressWarnings("unchecked")
     private <T> Consumer<T> spyConsumer(Consumer<T> consumer) {
@@ -29,7 +29,7 @@ public abstract class CheckCallableTest {
     @SuppressWarnings("unchecked")
     private <T, R> Function<T, R> spyFunction(Function<T, R> function) {
         @SuppressWarnings("unchecked")
-        Function<T,R> spy = (Function<T,R>) Mockito.spy(Function.class);
+        Function<T, R> spy = (Function<T, R>) Mockito.spy(Function.class);
         Mockito.doAnswer(it -> {
             T item = (T) it.getArguments()[0];
             // Pass it to the real consumer so it gets processed.
@@ -55,9 +55,9 @@ public abstract class CheckCallableTest {
         return fn;
     }
 
-    public <A, B>Function<A, B> calledFunction(Function<A, B> fn) {
-      Mockito.spy(fn);
-      calledFunctions.add(fn);
-      return fn;
+    public <A, B> Function<A, B> calledFunction(Function<A, B> fn) {
+        fn = spyFunction(fn);
+        calledFunctions.add(fn);
+        return fn;
     }
 }

@@ -27,8 +27,8 @@ public class ListAstNode extends AstNode {
     }
 
     public <T> MappingAstNode<T> toMap() {
-        assert content.size() == 1;
-        assert availableSet;
+        if (content.size() != 1) throw new AssertionError();
+        if (!availableSet) throw new AssertionError();
         return new MappingAstNode<>(this, content.get(0));
     }
 }

@@ -1,31 +1,19 @@
 package fi.jgke.minpascal.astparser;
 
-import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.nodes.LeafNode;
 import fi.jgke.minpascal.astparser.nodes.ListAstNode;
+import fi.jgke.minpascal.exception.CompilerException;
 import org.junit.Test;
-import org.mockito.Mockito;
 
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.function.Consumer;
+import java.util.HashSet;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class NodeTests extends CheckCallableTest {
-    private Consumer<AstNode> spyConsumer(Consumer<AstNode> consumer) {
-        @SuppressWarnings("unchecked")
-        Consumer<AstNode> spy = (Consumer<AstNode>) Mockito.spy(Consumer.class);
-        Mockito.doAnswer(it -> {
-            AstNode item = (AstNode) it.getArguments()[0];
-            // Pass it to the real consumer so it gets processed.
-            consumer.accept(item);
-            return null;
-        }).when(spy).accept(Mockito.any(AstNode.class));
-        return spy;
-    }
-
     @Test
     public void listNodeTests() {
         LeafNode leafNode = new LeafNode("bar", "baz");
@@ -34,7 +22,49 @@ public class NodeTests extends CheckCallableTest {
         assertThat(listAstNode.getList().size(), is(equalTo(1)));
         assertThat(listAstNode.getList().get(0), is(equalTo(leafNode)));
         listAstNode.toMap()
-                .chain("bar", calledConsumer($ -> {}))
+                .chain("bar", calledConsumer($ -> {
+                }))
+                .unwrap();
+        listAstNode.toMap()
+                .map("bar", calledFunction($ -> $))
+                .unwrap();
+
+        listAstNode = new ListAstNode("foo", Collections.singletonList(leafNode));
+        listAstNode.setAvailableNames(new HashSet<>(Arrays.asList("bar", "qux")));
+        assertThat(listAstNode.getList().size(), is(equalTo(1)));
+        assertThat(listAstNode.getList().get(0), is(equalTo(leafNode)));
+        listAstNode.toMap()
+                .chain("bar", calledConsumer($ -> {
+                }))
+                .chain("qux", $ -> assertThat("Unreachable", false))
+                .unwrap();
+        listAstNode.toMap()
+                .map("bar", calledFunction($ -> $))
+                .map("qux", $ -> {
+                    assertThat("Unreachable", false);
+                    return $;
+                })
+                .unwrap();
+    }
+
+    @Test(expected = AssertionError.class)
+    public void listMapFails() {
+        LeafNode leafNode = new LeafNode("bar", "baz");
+        new ListAstNode("foo", Collections.singletonList(leafNode))
+                .toMap()
+                .chain("bar", $ -> {
+                })
+                .unwrap();
+    }
+
+    @Test(expected = CompilerException.class)
+    public void incompleteMap() {
+        LeafNode leafNode = new LeafNode("bar", "baz");
+        ListAstNode foo = new ListAstNode("foo", Collections.singletonList(leafNode));
+        foo.setAvailableNames(new HashSet<>(Arrays.asList("foo", "bar")));
+        foo.toMap()
+                .chain("bar", $ -> {
+                })
                 .unwrap();
     }
 }

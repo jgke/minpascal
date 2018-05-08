@@ -19,7 +19,7 @@ public class OrMatch implements Parser {
         if (parsers.size() > 1) {
             Parser maybeOr = parsers.get(1);
             if (maybeOr instanceof OrMatch) {
-                assert parsers.size() == 2;
+                if (parsers.size() != 2) throw new AssertionError();
                 List<Parser> newParsers = new ArrayList<>(((OrMatch) maybeOr).parsers);
                 newParsers.add(0, parsers.get(0));
                 parsers = newParsers;

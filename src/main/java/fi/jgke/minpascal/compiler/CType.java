@@ -90,7 +90,7 @@ public class CType {
 
     // returnType (*identifier)(args)
     private String formatFunctionPointer(String identifier) {
-        assert returnType.isPresent();
+        if (!returnType.isPresent()) throw new AssertionError();
         return returnType.get().toString() + " (*" + identifier + ")" + formatCall(parameters);
     }
 
@@ -103,8 +103,8 @@ public class CType {
     }
 
     public String toFunctionDeclaration(List<String> argumentIdentifiers, String name) {
-        assert returnType.isPresent();
-        assert argumentIdentifiers.size() == parameters.size();
+        if (!returnType.isPresent()) throw new AssertionError();
+        if (argumentIdentifiers.size() != parameters.size()) throw new AssertionError();
         return
                 returnType.get().toString() + " " + name + "(" +
                         Streams.zip(parameters.stream(), argumentIdentifiers.stream(),
