@@ -2,7 +2,6 @@ package fi.jgke.minpascal.astparser.nodes;
 
 import fi.jgke.minpascal.exception.CompilerException;
 import lombok.AllArgsConstructor;
-import lombok.experimental.Delegate;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +12,6 @@ import java.util.function.Function;
 
 @AllArgsConstructor
 public class MappingAstNode<T> {
-    @Delegate
     private final AstNode parent;
     private final AstNode child;
 

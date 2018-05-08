@@ -67,4 +67,40 @@ public class NodeTests extends CheckCallableTest {
                 })
                 .unwrap();
     }
+
+    @Test(expected = CompilerException.class)
+    public void invalidChainCall() {
+        LeafNode leafNode = new LeafNode("bar", "baz");
+        new ListAstNode("foo", Collections.singletonList(leafNode))
+                .setAvailableNames(new HashSet<>(Arrays.asList("foo", "bar")))
+                .toMap()
+                .chain("foo", $ -> {
+                })
+                .chain("bag", $ -> {
+                })
+                .unwrap();
+    }
+
+    @Test(expected = CompilerException.class)
+    public void invalidMapCall() {
+        LeafNode leafNode = new LeafNode("bar", "baz");
+        ListAstNode foo = new ListAstNode("foo", Collections.singletonList(leafNode));
+        foo.setAvailableNames(new HashSet<>(Arrays.asList("foo", "bar")));
+        foo.toMap()
+                .map("foo", $ -> $)
+                .map("bag", $ -> $)
+                .unwrap();
+    }
+
+    @Test
+    public void unwrapMapCall() {
+        LeafNode leafNode = new LeafNode("bar", "baz");
+        ListAstNode foo = new ListAstNode("Foo", Collections.singletonList(leafNode));
+        new ListAstNode("Foo", Collections.singletonList(foo))
+                .setAvailableNames(new HashSet<>(Arrays.asList("Foo", "bar")))
+                .toMap()
+                .chain("Foo", f -> assertThat(f.getFirstChild("bar").getContentString(), is(equalTo("baz"))))
+                .map("bar", $ -> $)
+                .unwrap();
+    }
 }

@@ -4,14 +4,12 @@ import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.exception.CompilerException;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,21 +17,48 @@ import java.util.stream.Stream;
 import static fi.jgke.minpascal.compiler.IdentifierContext.genIdentifier;
 
 @Data
-@AllArgsConstructor
 public class CExpressionResult {
     private final CType type;
     private String identifier;
     private final List<String> temporaries;
     private final List<String> post;
 
+    public CExpressionResult(CType type, String identifier, List<String> temporaries, List<String> post) {
+        this.type = type;
+        this.identifier = identifier;
+        this.temporaries = new ArrayList<>(temporaries);
+        this.post = new ArrayList<>(post);
+    }
+
     public static CExpressionResult fromExpression(AstNode arg) {
         AstNode left = arg.getFirstChild("SimpleExpression");
         AstNode relOp = arg.getFirstChild("RelOp");
         return relOp.toOptional().map(rel ->
                 getType(fromSimple(left),
-                        rel.getFirstChild("RelOp").getFirstChild("RelOp"),
+                        getRelOp(rel),
                         fromSimple(rel.getFirstChild("RelOp").getFirstChild("SimpleExpression")))
         ).orElse(fromSimple(left));
+    }
+
+    private static String getAddOp(AstNode node) {
+        return node.getFirstChild("AddOp").getFirstChild("AddOp")
+                .<String>toMap()
+                .map("plus", AstNode::getContentString)
+                .map("minus", AstNode::getContentString)
+                .map("or", AstNode::getContentString)
+                .unwrap();
+    }
+
+    private static String getRelOp(AstNode node) {
+        return node.getFirstChild("RelOp").getFirstChild("RelOp")
+                .<String>toMap()
+                .map("lessthanequals", AstNode::getContentString)
+                .map("morethanequals", AstNode::getContentString)
+                .map("lessthan", AstNode::getContentString)
+                .map("morethan", AstNode::getContentString)
+                .map("notequals", AstNode::getContentString)
+                .map("equals", AstNode::getContentString)
+                .unwrap();
     }
 
     private static CExpressionResult fromSimple(AstNode simple) {
@@ -42,36 +67,46 @@ public class CExpressionResult {
                 .toOptional()
                 .map(CExpressionResult::getSign);
         AstNode left = simple.getFirstChild("Term");
-        CExpressionResult result = left.getFirstChild("AddOp").toOptional()
-                .map(add -> getType(fromTerm(left.getFirstChild("Term")),
-                        add.getFirstChild("AddOp"),
+        return left.getFirstChild("AddOp").toOptional()
+                .map(add -> getType(
+                        addSign(sign).apply(fromTerm(left.getFirstChild("Term"))),
+                        getAddOp(add),
                         fromTerm(add.getFirstChild("AddOp").getFirstChild("Term"))
-                )).orElse(fromTerm(left.getFirstChild("Term")));
-        sign.ifPresent(addSign(result));
-        return result;
+                )).orElse(addSign(sign).apply(fromTerm(left.getFirstChild("Term"))));
     }
 
-    private static CExpressionResult getType(CExpressionResult left, AstNode op, CExpressionResult right) {
-        return null;
+    private static CExpressionResult getType(CExpressionResult left, String op, CExpressionResult right) {
+        return CBinaryExpressions.apply(left, CBinaryExpressionFnPrivate.getOperator(op), right);
     }
 
-    private static Consumer<String> addSign(CExpressionResult result) {
-        return s -> {
+    private static Function<CExpressionResult, CExpressionResult> addSign(Optional<String> sign) {
+        return result -> sign.map(s -> {
             CType type = result.getType();
             if (!type.equals(CType.CINTEGER) &&
                     !type.equals(CType.CDOUBLE))
                 throw new CompilerException("Type error");
             String id = genIdentifier();
-            result.temporaries.add(type.toDeclaration(id) + " = " + s + result.getIdentifier());
+            result.temporaries.add(type.toDeclaration(id) + " = " + s + " " + result.getIdentifier());
             result.identifier = id;
-        };
+            return result;
+        }).orElse(result);
+    }
+
+    private static String getMulOp(AstNode node) {
+        return node.getFirstChild("MulOp").getFirstChild("MulOp")
+                .<String>toMap()
+                .map("times", AstNode::getContentString)
+                .map("mod", AstNode::getContentString)
+                .map("divide", AstNode::getContentString)
+                .map("and", AstNode::getContentString)
+                .unwrap();
     }
 
     private static CExpressionResult fromTerm(AstNode left) {
         AstNode relOp = left.getFirstChild("MulOp");
         return relOp.toOptional().map(rel ->
                 getType(fromFactor(left.getFirstChild("Factor")),
-                        rel.getFirstChild("MulOp"),
+                        getMulOp(rel),
                         fromFactor(rel.getFirstChild("MulOp").getFirstChild("Factor")))
         ).orElse(fromFactor(left.getFirstChild("Factor")));
     }
