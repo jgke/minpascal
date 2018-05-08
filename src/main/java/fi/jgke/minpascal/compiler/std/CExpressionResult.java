@@ -162,7 +162,6 @@ public class CExpressionResult {
     }
 
     public static List<CExpressionResult> getArguments(AstNode argumentsNode) {
-        argumentsNode.debug();
         Optional<AstNode> astNode = argumentsNode.getFirstChild("Expression")
                 .getFirstChild("Expression").toOptional();
         return astNode.map(args -> Stream.concat(Stream.of(args.getFirstChild("Expression")),
