@@ -1,5 +1,6 @@
 package fi.jgke.minpascal.compiler.nodes;
 
+import com.google.common.collect.Streams;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
@@ -74,48 +75,45 @@ public class CBlock {
     }
 
     private static Stream<Content> functionDeclaration(AstNode node) {
-        CType type = CType.fromTypeNode(node.getFirstChild("Type"));
+        CType type = CType.fromTypeNode(node.getFirstChild("Type"), false);
         return functionDeclaration(type).apply(node);
+    }
+
+    private static Pair<Pair<String, String>, CType> getParameter(AstNode astNode) {
+        astNode = astNode.getFirstChild("var");
+        astNode.debug();
+        boolean ptr = astNode.getFirstChild("var").toOptional().isPresent();
+        astNode.debug();
+        AstNode identifier = astNode.getFirstChild("identifier");
+        String id = identifier.getFirstChild("identifier").getContentString();
+        String ptrStr = ptr ? "*" : "";
+        return new Pair<>(new Pair<>(id, ptrStr + id), CType.fromTypeNode(identifier.getFirstChild("Type"), ptr));
     }
 
     private static Function<AstNode, Stream<Content>> functionDeclaration(CType returnType) {
         return node -> {
-            List<Pair<String, CType>> collect = Stream.concat(
-                    node.getFirstChild("Parameters")
-                            .getFirstChild("Parameter")
-                            .getFirstChild("Parameter").toOptional()
-                            .map(p -> {
-                                AstNode var = p.getFirstChild("Parameter").getFirstChild("var");
-                                var.getFirstChild("var").toOptional().ifPresent($ -> notImplemented().apply(null));
-                                return var;
-                            })
-                            .map(Collections::singletonList)
-                            .orElse(Collections.emptyList())
-                            .stream(),
-                    node.getFirstChild("Parameters")
-                            .getFirstChild("Parameter")
-                            .getFirstChild("Parameter").toOptional()
-                            .map(m -> m
-                                    .getFirstChild("more").getList().stream())
-                            .orElse(Stream.empty())
-            ).map(n -> new Pair<>(n.getFirstChild("identifier")
-                    .getFirstChild("identifier")
-                    .getContentString(),
-                    CType.fromTypeNode(n.getFirstChild("identifier").getFirstChild("Type"))
-            )).collect(Collectors.toList());
+            AstNode params = node.getFirstChild("Parameters")
+                    .getFirstChild("Parameter")
+                    .getFirstChild("Parameter");
+            List<Pair<Pair<String, String>, CType>> collect = params.getFirstChild("Parameter").toOptional()
+                    .map(CBlock::getParameter)
+                    .map(m -> Stream.concat(Stream.of(m), params.getFirstChild("more").getList().stream()
+                            .map(more -> getParameter(more.getFirstChild("Parameter")))))
+                    .orElse(Stream.empty())
+                    .collect(Collectors.toList());
             List<CType> parameters = collect.stream().map(Pair::getRight).collect(Collectors.toList());
             CType ftype = new CType(returnType, parameters);
             String identifier = node.getFirstChild("identifier").getContentString();
             IdentifierContext.addIdentifier(identifier, ftype);
             IdentifierContext.push();
-            collect.forEach(p -> IdentifierContext.addIdentifier(p.getLeft(), p.getRight()));
+            collect.forEach(p -> IdentifierContext.addIdentifier(p.getLeft().getLeft(), p.getLeft().getRight(), p.getRight()));
             Stream<Content> block = Stream.of(new Content(
                     ftype.toFunctionDeclaration(
-                            collect.stream().map(Pair::getLeft).collect(Collectors.toList()),
+                            collect.stream().map(p -> p.getLeft().getLeft()).collect(Collectors.toList()),
                             identifier)
-                    + " {\n" +
-                    format(CBlock.parse(node.getFirstChild("Block")).contents.stream()) +
-                    "\n}\n"));
+                            + " {\n" +
+                            format(CBlock.parse(node.getFirstChild("Block")).contents.stream()) +
+                            "\n}\n"));
             IdentifierContext.pop();
             return block;
         };
@@ -123,7 +121,7 @@ public class CBlock {
 
     private static Stream<Content> varDeclaration(AstNode astNode) {
         String identifier = astNode.getFirstChild("identifier").getContentString();
-        CType type = CType.fromTypeNode(astNode.getFirstChild("Type"));
+        CType type = CType.fromTypeNode(astNode.getFirstChild("Type"), false);
         List<String> more = astNode.getFirstChild("more").toOptional()
                 .map(t -> t.getList().stream()
                         .map(c -> c.getFirstChild("identifier").getContentString()))
@@ -199,11 +197,11 @@ public class CBlock {
         String identifier = identifierStatement
                 .getFirstChild("identifier")
                 .getContentString();
-        if (identifier.equals("writeln")) {
+        if (identifier.toLowerCase().equals("writeln")) {
             return fromWrite(identifierStatement
                     .getFirstChild("IdentifierStatementContent")
                     .getFirstChild("Arguments"));
-        } else if (identifier.equals("println")) {
+        } else if (identifier.toLowerCase().equals("println")) {
             throw new RuntimeException();
         }
         return identifierStatement
@@ -226,7 +224,7 @@ public class CBlock {
                             .getFirstChild("assign")
                             .getFirstChild("Expression"));
                     return Stream.concat(expression.getTemporaries().stream(),
-                            Stream.of(identifier + " = " + expression.getIdentifier() + ";"))
+                            Stream.of(IdentifierContext.getRealName(identifier) + " = " + expression.getIdentifier() + ";"))
                             .map(Content::new);
                 });
     }
@@ -249,11 +247,17 @@ public class CBlock {
         return argumentsNode -> {
             List<CExpressionResult> collect = getArguments(argumentsNode);
 
+            String pre = identifier + "(";
+            String delimit = ", ";
+            String post = ");\n";
+
             String total = formatExpressions(
                     collect,
-                    expressions -> identifier + "(" + expressions.stream()
-                            .map(CExpressionResult::getIdentifier)
-                            .collect(Collectors.joining(", ")) + ");\n");
+                    expressions ->
+                            Streams.zip(expressions.stream(), IdentifierContext.getType(identifier).getParameters().stream(),
+                                    (a, b) -> b.getPtrTo().map(to -> "&" + a.getIdentifier())
+                                            .orElse(a.getIdentifier()))
+                                    .collect(Collectors.joining(delimit, pre, post)));
 
             return Stream.of(new Content(total));
         };

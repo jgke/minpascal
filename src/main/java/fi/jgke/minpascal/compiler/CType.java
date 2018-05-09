@@ -27,6 +27,7 @@ public class CType {
     private final String me;
     private final Optional<CType> returnType;
     private final List<CType> parameters;
+    private final Optional<CType> ptrTo;
 
     private static final Map<String, String> pascalToCMap;
 
@@ -38,11 +39,19 @@ public class CType {
     }
 
     public CType(CType returnType, List<CType> parameters) {
-        this("void", Optional.of(returnType), parameters);
+        this("void", Optional.of(returnType), parameters, Optional.empty());
     }
 
     public CType(String me) {
-        this(me, Optional.empty(), Collections.emptyList());
+        this(me, Optional.empty(), Collections.emptyList(), Optional.empty());
+    }
+
+    public CType(String me, Optional<CType> returnType, List<CType> parameters) {
+        this(me, returnType, parameters, Optional.empty());
+    }
+
+    public static CType ptrTo(CType cType) {
+        return new CType(null, Optional.empty(), Collections.emptyList(), Optional.of(cType));
     }
 
     public static CType fromFunction(CFunction node) {
@@ -58,10 +67,11 @@ public class CType {
         return simpleTypeNode.<String>toMap()
                 .map("int", AstNode::getContentString)
                 .map("str", AstNode::getContentString)
+                .map("real", AstNode::getContentString)
                 .unwrap();
     }
 
-    public static CType fromTypeNode(AstNode typeNode) {
+    public static CType fromTypeNode(AstNode typeNode, boolean ptr) {
         String type = typeNode.<String>toMap()
                 .map("SimpleType", CType::getType)
                 .map("ArrayType", atype -> getType(atype.getFirstChild("SimpleType")))
@@ -72,14 +82,18 @@ public class CType {
         }
         type += typeNode.getOptionalChild("ArrayType")
                 .map(arrayTypeNode -> " *").orElse("");
-        return new CType(type);
+        CType cType = new CType(type);
+        if (ptr) {
+            cType = CType.ptrTo(cType);
+        }
+        return cType;
     }
 
     @Override
     public String toString() {
         return returnType
                 .map($ -> formatFunctionPointer(""))
-                .orElse(me);
+                .orElse(getMe());
     }
 
     private static String formatCall(List<CType> types) {
@@ -108,7 +122,9 @@ public class CType {
         return
                 returnType.get().toString() + " " + name + "(" +
                         Streams.zip(parameters.stream(), argumentIdentifiers.stream(),
-                                (type, identifier) -> type.toString() + " " + identifier
+                                (type, identifier) ->
+                                        type.getPtrTo().map(to -> to.toString() + " *" + identifier
+                                        ).orElseGet(() -> type.toString() + " " + identifier)
                         ).collect(Collectors.joining(", ")) + ")";
     }
 
@@ -126,5 +142,15 @@ public class CType {
         if (this.equals(CINTEGER) || this.equals(CBOOLEAN)) return "0";
         if (this.equals(CDOUBLE)) return "0.0d";
         return "NULL";
+    }
+
+    public CType dereferenceMaybe() {
+        return this.ptrTo.orElse(this);
+    }
+
+    private String getMe() {
+        if (this.me == null)
+            throw new NullPointerException();
+        return this.me;
     }
 }

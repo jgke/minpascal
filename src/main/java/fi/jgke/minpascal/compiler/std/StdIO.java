@@ -41,11 +41,12 @@ public class StdIO {
     }
 
     private static String readVariable(AstNode variableNode) {
-        CType type = IdentifierContext.getType(variableNode.getContentString());
+        String identifier = variableNode.getContentString();
+        CType type = IdentifierContext.getType(identifier);
         String fmtFormat = "scanf(\"" + type.toFormat() + "\", &";
         if (type.equals(CType.CSTRING)) {
             fmtFormat = "_builtin_scanstring(&";
         }
-        return fmtFormat + variableNode.getContentString() + ");\n";
+        return fmtFormat + IdentifierContext.getRealName(identifier) + ");\n";
     }
 }

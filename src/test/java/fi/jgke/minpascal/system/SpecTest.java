@@ -27,4 +27,33 @@ public class SpecTest {
                 "  end.";
         testCompiledOutput(s, "Function call\n10\n");
     }
+
+    /*
+     * A var parameter is passed by reference, i.e. its address is passed, and
+     * inside the subroutine the parameter name acts as a synonym for the
+     * variable given as an argument. A called procedure or function can freely
+     * read and write a variable that the caller passed in the argument list.
+     */
+    @Test
+    public void two() {
+        String s = "program Hello; " +
+                "function foo (x : integer): integer; " +
+                "begin " +
+                "    x :=  5 + x; " +
+                "end " +
+                "function bar (var y : integer): integer; " +
+                "begin " +
+                "    y :=  5 + y; " +
+                "end " +
+                "begin " +
+                "  var x: integer;" +
+                "  x := 5;" +
+                "  WriteLn(x);" +
+                "  foo(x);" +
+                "  WriteLn(x);" +
+                "  bar(x);" +
+                "  WriteLn(x);" +
+                "end.";
+        testCompiledOutput(s, "5\n5\n10\n");
+    }
 }

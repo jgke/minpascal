@@ -67,14 +67,14 @@ public class CBinaryExpressions {
     }
 
     public static CExpressionResult apply(CExpressionResult left, TokenType operator, CExpressionResult right) {
-        if (!nest.containsKey(left.getType()) ||
+        if (!nest.containsKey(left.getType().dereferenceMaybe()) ||
                 !nest.get(left.getType()).containsKey(operator) ||
-                !nest.get(left.getType()).get(operator).containsKey(right.getType())) {
-            throw new OperatorError(left.getType(), operator.name(), right.getType());
+                !nest.get(left.getType()).get(operator).containsKey(right.getType().dereferenceMaybe())) {
+            throw new OperatorError(left.getType().dereferenceMaybe(), operator.name(), right.getType().dereferenceMaybe());
         }
-        return nest.get(left.getType())
+        return nest.get(left.getType().dereferenceMaybe())
                 .get(operator)
-                .get(right.getType())
+                .get(right.getType().dereferenceMaybe())
                 .apply(left, operator, right);
     }
 }

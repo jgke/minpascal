@@ -1,5 +1,6 @@
 package fi.jgke.minpascal.compiler.std;
 
+import com.google.common.collect.Streams;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
@@ -128,7 +129,7 @@ public class CExpressionResult {
         return astNode.getFirstChild("Arguments").toOptional()
                 .map(args -> fromCall(identifier, args))
                 .orElseGet(() -> new CExpressionResult(IdentifierContext.getType(identifier),
-                        identifier,
+                        IdentifierContext.getRealName(identifier),
                         Collections.emptyList(),
                         Collections.emptyList()));
     }
@@ -154,13 +155,18 @@ public class CExpressionResult {
         List<String> post = expressions.stream()
                 .flatMap(e -> e.getPost().stream())
                 .collect(Collectors.toList());
-        String arguments = expressions.stream()
-                .map(CExpressionResult::getIdentifier)
-                .collect(Collectors.joining(", "));
+        System.out.println(IdentifierContext.getType(identifier));
+        System.out.println(expressions.stream().map(CExpressionResult::getIdentifier).collect(Collectors.toList()));
+        String arguments =
+                Streams.zip(expressions.stream(), IdentifierContext.getType(identifier).getParameters().stream(),
+                        (a, b) -> b.getPtrTo().map(to -> "&" + a.getIdentifier())
+                                .orElse(a.getIdentifier()))
+                        .collect(Collectors.joining(", "));
+        System.out.println(arguments);
         String result = genIdentifier();
         CType type = IdentifierContext.getType(identifier).getReturnType()
                 .orElseThrow(() -> new CompilerException("Identifier not found"));
-        temporaries.add(type.toDeclaration(result) + " = " + identifier + "(" + arguments + ");");
+        temporaries.add(type.toDeclaration(result) + " = " + IdentifierContext.getRealName(identifier) + "(" + arguments + ");");
         return new CExpressionResult(type, result, temporaries, post);
     }
 

@@ -49,4 +49,15 @@ public class ParserSmokeTest {
         assertThat(false, is(equalTo(true)));
         return null;
     }
+
+    @Test
+    public void testParameters() {
+        initDefaultParsers();
+        RuleMatch p = new RuleMatch("Parameters");
+        p.parse("()").getLeft().debug();
+        p.parse("(x: real)").getLeft().debug();
+        p.parse("(x: real, y: real)").getLeft().debug();
+        p.parse("(x: real, y: real, z: real)").getLeft().debug();
+        p.parse("(x: real, y: real, z: real, t: real)").getLeft().debug();
+    }
 }
