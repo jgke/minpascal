@@ -59,7 +59,11 @@ public abstract class AstNode {
     }
 
     public AstNode debug() {
-        System.out.println(formatTree(this.toString()));
+        return debug(-1);
+    }
+
+    public AstNode debug(int limit) {
+        System.out.println(formatTree(this.toString(), limit));
         System.out.flush();
         return this;
     }

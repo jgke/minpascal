@@ -111,10 +111,10 @@ public class CBuilder {
 
     public String toString(Stream<CBuilder> builders) {
         return imports.stream().collect(Collectors.joining("")) +
+                "\n" + this.builder.toString() + "\n" +
                 builders
                         .map(cBuilder -> cBuilder.toString(Stream.empty()))
-                        .collect(Collectors.joining("\n")) +
-                "\n" + this.builder.toString();
+                        .collect(Collectors.joining("\n"));
     }
 
     public void addFunction(String identifier, CFunction functionNode) {

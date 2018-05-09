@@ -40,7 +40,7 @@ public class UtilTests {
     public void formatterTest() {
         new Formatter();
         String input = "[foo{bar}, baz(quz; baq;)\n]";
-        assertThat(Formatter.formatTree(input), is(equalTo("[\n  foo{bar} \n  baz (\n    quz;\n    baq;\n    \n  )\n  \n]\n")));
+        assertThat(Formatter.formatTree(input, -1), is(equalTo("[\n  foo{bar} \n  baz (\n    quz;\n    baq;\n    \n  )\n  \n]\n")));
     }
 
     @Test

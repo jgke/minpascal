@@ -22,8 +22,6 @@ public class KleeneMatch implements Parser {
             pair = new Pair<>(astNodes, parse.getRight());
         }
         ListAstNode listAstNode = new ListAstNode(name, pair.getLeft());
-        List<String> strings = Arrays.asList(name, parser.getName());
-        listAstNode.setAvailableNames(new HashSet<>(strings));
         return new Pair<>(listAstNode, pair.getRight());
     }
 

@@ -1,5 +1,5 @@
 S ::= Program
-Program ::= program identifier semicolon Block dot
+Program ::= program identifier semicolon Declaration* Block dot
 Block ::= begin Statement (semicolon [Statement])* end
 Statement ::= SimpleStatement | StructuredStatement | Declaration
 

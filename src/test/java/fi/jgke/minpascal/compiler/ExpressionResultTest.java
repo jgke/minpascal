@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static fi.jgke.minpascal.compiler.CType.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -25,7 +26,7 @@ public class ExpressionResultTest {
         throw new RuntimeException();
     }
 
-    private void test(String exp, double expected) {
+    private void test(String exp, double expected, CType expectedType) {
         CExpressionResult expression = CExpressionResult
                 .fromExpression(new RuleMatch("Expression").parse(exp).getLeft());
         Map<String, Double> vars = new HashMap<>();
@@ -45,15 +46,16 @@ public class ExpressionResultTest {
             }
         }
         assertThat(vars.get(expression.getIdentifier()), is(equalTo(expected)));
+        assertThat(expression.getType(), is(equalTo(expectedType)));
     }
 
     @Test
     public void testSimpleTypes() {
         AstParser.initDefaultParsers();
-        test("1 + 1", 2);
-        test("1 + 2", 3);
-        test("-1 + 2", 1);
-        test("-1.5 + 2", 0.5);
-        test("-4/2", -2);
+        test("1 + 1", 2, CINTEGER);
+        test("1 + 2", 3, CINTEGER);
+        test("-1 + 2", 1, CINTEGER);
+        test("-1.5 + 2", 0.5, CDOUBLE);
+        test("-4/2", -2, CINTEGER);
     }
 }

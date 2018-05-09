@@ -23,7 +23,7 @@ public class CTest {
                 "begin\n" +
                 "  writeln (\"Hello world!\");\n" +
                 "end.\n";
-        test(app, "Hello world!\n");
+        testCompiledOutput(app, "Hello world!\n");
     }
 
     @Test
@@ -33,7 +33,7 @@ public class CTest {
                 "  if false then writeln (\"this is not printed\");\n" +
                 "  if true then writeln (\"this is printed\");\n" +
                 "end.\n";
-        test(app, "this is printed\n");
+        testCompiledOutput(app, "this is printed\n");
     }
 
     private static class StreamGobbler implements Runnable {
@@ -52,7 +52,7 @@ public class CTest {
         }
     }
 
-    private int exec(String command, File path, Consumer<String> stdout, Consumer<String> stderr) throws InterruptedException, IOException {
+    private static int exec(String command, File path, Consumer<String> stdout, Consumer<String> stderr) throws InterruptedException, IOException {
         ProcessBuilder builder = new ProcessBuilder();
         builder.directory(path);
         builder.command("sh", "-c", command);
@@ -62,12 +62,14 @@ public class CTest {
         Executors.newSingleThreadExecutor().submit(stdoutGobbler);
         Executors.newSingleThreadExecutor().submit(stderrGobbler);
         int returnCode = process.waitFor();
+        Thread.sleep(100); // give up cpu for output streams... without this, the
+                               // function might return before stdout/stderr has content
         stdout.accept(stdoutGobbler.getStream());
         stderr.accept(stderrGobbler.getStream());
         return returnCode;
     }
 
-    private void test(String input, String output) {
+    public static void testCompiledOutput(String input, String output) {
         try {
             withMppFile(input, path -> {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -86,8 +88,8 @@ public class CTest {
                 assertThat("MinPascal stderr is empty", err.toString(), is(equalTo("")));
                 assertThat(returncode, is(equalTo(0)));
 
-                returncode = exec("gcc " + base + ".c -o " + base,
-                        path.getParent().toFile(), this::stripPrint, this::stripPrint);
+                returncode = exec("gcc " + base + ".c -Werror -o " + base,
+                        path.getParent().toFile(), CTest::stripPrint, CTest::stripPrint);
                 assertThat(returncode, is(equalTo(0)));
 
                 AtomicReference<String> mutOutput = new AtomicReference<>("");
@@ -116,7 +118,7 @@ public class CTest {
         }
     }
 
-    private void stripPrint(String param) {
+    private static void stripPrint(String param) {
         System.err.print(param.trim());
         if (!param.trim().isEmpty()) {
             System.err.println();

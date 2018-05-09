@@ -61,7 +61,7 @@ public class CBlock {
                 .unwrap();
     }
 
-    private static Stream<Content> fromDeclaration(AstNode astNode) {
+    public static Stream<Content> fromDeclaration(AstNode astNode) {
         return astNode.<Stream<Content>>toMap()
                 .map("VarDeclaration", CBlock::varDeclaration)
                 .map("ProcedureDeclaration", CBlock::procedureDeclaration)
@@ -109,10 +109,11 @@ public class CBlock {
             IdentifierContext.addIdentifier(identifier, ftype);
             IdentifierContext.push();
             collect.forEach(p -> IdentifierContext.addIdentifier(p.getLeft(), p.getRight()));
-            Stream<Content> block = Stream.of(new Content("void " + identifier + "("
-                    + collect.stream().map(p -> p.getRight().toDeclaration(p.getLeft()))
-                    .collect(Collectors.joining(", "))
-                    + ") {\n" +
+            Stream<Content> block = Stream.of(new Content(
+                    ftype.toFunctionDeclaration(
+                            collect.stream().map(Pair::getLeft).collect(Collectors.toList()),
+                            identifier)
+                    + " {\n" +
                     format(CBlock.parse(node.getFirstChild("Block")).contents.stream()) +
                     "\n}\n"));
             IdentifierContext.pop();

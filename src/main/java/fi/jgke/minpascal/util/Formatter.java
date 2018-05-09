@@ -1,7 +1,7 @@
 package fi.jgke.minpascal.util;
 
 public class Formatter {
-    public static String formatTree(String tree) {
+    public static String formatTree(String tree, int limit) {
         StringBuilder result = new StringBuilder();
         String s = tree
                 .replaceAll("(?<!~) ", "")
@@ -15,11 +15,13 @@ public class Formatter {
         for (String s1 : s.split("\n")) {
             if (s1.startsWith(")") || s1.startsWith("]"))
                 indent--;
-            for (int i = 0; i < indent; i++) {
-                result.append("  ");
-            }
-            result.append(s1);
-            result.append("\n");
+            if(limit < 0 || indent < limit) {
+                for (int i = 0; i < indent; i++) {
+                    result.append("  ");
+                }
+                result.append(s1);
+                result.append("\n");
+            };
             if (s1.endsWith("(") || s1.endsWith("["))
                 indent++;
         }
