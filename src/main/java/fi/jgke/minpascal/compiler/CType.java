@@ -74,16 +74,19 @@ public class CType {
     public static CType fromTypeNode(AstNode typeNode, boolean ptr) {
         String type = typeNode.<String>toMap()
                 .map("SimpleType", CType::getType)
-                .map("ArrayType", atype -> getType(atype.getFirstChild("SimpleType")))
+                .map("ArrayType", atype -> getType(atype
+                        .getFirstChild("Expression")
+                        .getFirstChild("cb")
+                        .getFirstChild("SimpleType")))
                 .unwrap();
         type = pascalToCMap.getOrDefault(type, null);
         if (type == null) {
             throw new CompilerException("Invalid type " + typeNode);
         }
-        type += typeNode.getOptionalChild("ArrayType")
-                .map(arrayTypeNode -> " *").orElse("");
+        //type += typeNode.getOptionalChild("ArrayType")
+        //        .map(arrayTypeNode -> " *").orElse("");
         CType cType = new CType(type);
-        if (ptr) {
+        if (ptr || typeNode.getOptionalChild("ArrayType").isPresent()) {
             cType = CType.ptrTo(cType);
         }
         return cType;
@@ -110,10 +113,17 @@ public class CType {
 
     // returnType (*identifier)(args)
     // type identifier
-    public String toDeclaration(String identifier) {
-        return this.returnType
+    public String toDeclaration(String identifier, Optional<String> initializer) {
+        String s = this.returnType
                 .map($ -> formatFunctionPointer(identifier))
-                .orElseGet(() -> this.toString() + " " + identifier);
+                .orElseGet(() ->
+                        this.ptrTo.map(to -> to.toString() + " *" + identifier)
+                                .orElseGet(() -> this.toString() + " " + identifier));
+        return initializer.map(id ->
+                s + " = malloc(sizeof(int) * (" + id + " + 1));\n" +
+                        identifier + "[0] = " + id + ";\n" +
+                        identifier + "++")
+                .orElse(s);
     }
 
     public String toFunctionDeclaration(List<String> argumentIdentifiers, String name) {
@@ -129,12 +139,13 @@ public class CType {
     }
 
     public String toFormat() {
-        if (returnType.isPresent() || parameters.size() > 0)
+        CType me = this.dereferenceMaybe();
+        if (me.returnType.isPresent() || me.parameters.size() > 0)
             return "%p";
-        if (this.equals(CINTEGER)) return "%d";
-        if (this.equals(CDOUBLE)) return "%f";
-        if (this.equals(CBOOLEAN)) return "%d";
-        if (this.equals(CSTRING)) return "%s";
+        if (me.equals(CINTEGER)) return "%d";
+        if (me.equals(CDOUBLE)) return "%f";
+        if (me.equals(CBOOLEAN)) return "%d";
+        if (me.equals(CSTRING)) return "%s";
         return "%p";
     }
 

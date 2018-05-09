@@ -60,4 +60,39 @@ public class SpecTest {
                 "end.";
         testCompiledOutput(s, "5\n5\n10\n");
     }
+
+    /*
+     * Mini-Pascal includes a C-style assert statement. If an assertion fails
+     * the system prints out a diagnostic message and halts execution.
+     */
+    @Test
+    public void three() {
+        String s = "program Hello; " +
+                "begin " +
+                "  assert(false);" +
+                "end.";
+        testCompiledOutput(s, "Assertion failed\n", 1);
+    }
+
+    /*
+     * The Mini-Pascal operation a.size only applies to values of type array
+     * of T (where T is a simple type). There are only one-dimensional arrays.
+     * Array types are compatible only if they have the same element type.
+     * Arrays' indices begin with zero. The compatibility of array
+     * indices and array sizes is checked at run time (usually).
+     */
+    @Test
+    public void four() {
+        String s = "program Hello; " +
+                "procedure foo (x: array [] of integer); " +
+                "  begin " +
+                "    writeln (x[0], x.size); " +
+                "  end " +
+                "begin " +
+                "  var x : array [5] of integer;" +
+                "  x[0] := 4;" +
+                "  foo(x);" +
+                "end.";
+        testCompiledOutput(s, "4 5\n");
+    }
 }

@@ -85,7 +85,7 @@ public class CTypeTest {
                                   String expectedIdentifier, String expectedFunction) {
         CType cType = new CType(me, call, siblings);
         assertThat(cType.toString(), is(equalTo(expected)));
-        assertThat(cType.toDeclaration("id"), is(equalTo(expectedIdentifier)));
+        assertThat(cType.toDeclaration("id", Optional.empty()), is(equalTo(expectedIdentifier)));
         if (!expectedFunction.isEmpty()) {
             assertThat(cType.toFunctionDeclaration(
                     Streams.mapWithIndex(siblings.stream(), ($, index) -> "a" + index).collect(Collectors.toList()),

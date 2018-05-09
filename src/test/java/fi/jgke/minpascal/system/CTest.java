@@ -70,6 +70,10 @@ public class CTest {
     }
 
     public static void testCompiledOutput(String input, String output) {
+        testCompiledOutput(input, output, 0);
+    }
+
+    public static void testCompiledOutput(String input, String output, int expectedReturnCode) {
         try {
             withMppFile(input, path -> {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -110,7 +114,7 @@ public class CTest {
                     stripPrint(valgrindOutput.get());
                     stripPrint(mutOutput.get());
                 }
-                assertThat(returncode, is(equalTo(0)));
+                assertThat(returncode, is(equalTo(expectedReturnCode)));
                 assertThat(mutOutput.get(), is(equalTo(output)));
             });
         } catch (IOException | InterruptedException e) {

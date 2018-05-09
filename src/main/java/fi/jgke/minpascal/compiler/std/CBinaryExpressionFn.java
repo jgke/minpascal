@@ -5,6 +5,7 @@ import fi.jgke.minpascal.data.TokenType;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,7 +24,7 @@ public interface CBinaryExpressionFn {
             List<String> tmp = Stream.of(
                     left.getTemporaries(),
                     right.getTemporaries(),
-                    Collections.singletonList(type.toDeclaration(newId) + " = " + combined)
+                    Collections.singletonList(type.toDeclaration(newId, Optional.empty()) + " = " + combined)
             ).flatMap(List::stream).collect(Collectors.toList());
             return new CExpressionResult(type, newId, tmp,
                     Stream.of(left.getPost(), right.getPost())

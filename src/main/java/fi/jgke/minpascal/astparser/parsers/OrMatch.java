@@ -41,8 +41,8 @@ public class OrMatch implements Parser {
         throw new UnsupportedOperationException();
     }
 
-    private static CompilerException parseFailure(List<Parser> parsers) {
-        return new CompilerException("Parse failure, expected any of " + parsers);
+    private static CompilerException parseFailure(List<Parser> parsers, String substring) {
+        return new CompilerException("Parse failure, expected any of " + parsers + " near " + substring);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class OrMatch implements Parser {
                 return new Pair<>(listAstNode, parse.getRight());
             }
         }
-        throw parseFailure(parsers);
+        throw parseFailure(parsers, str);
     }
 
     @Override

@@ -87,7 +87,7 @@ public class CExpressionResult {
                     !type.equals(CType.CDOUBLE))
                 throw new CompilerException("Type error");
             String id = genIdentifier();
-            result.temporaries.add(type.toDeclaration(id) + " = " + s + " " + result.getIdentifier());
+            result.temporaries.add(type.toDeclaration(id, Optional.empty()) + " = " + s + " " + result.getIdentifier());
             result.identifier = id;
             return result;
         }).orElse(result);
@@ -113,13 +113,25 @@ public class CExpressionResult {
     }
 
     private static CExpressionResult fromFactor(AstNode factor) {
+        Optional<String> post = factor.getFirstChild("SizeExpression")
+                .toOptional()
+                .map($ -> "[-1]");
         AstNode subFactor = factor.getFirstChild("SubFactor");
-        return subFactor.<CExpressionResult>toMap()
+        CExpressionResult unwrap = subFactor.<CExpressionResult>toMap()
                 .map("Variable", CExpressionResult::fromVariable)
                 .map("Literal", CExpressionResult::getLiteralType)
                 .map("op", notImplemented())
                 .map("not", notImplemented())
                 .unwrap();
+        if (post.isPresent()) {
+            CType type = unwrap.getType().getPtrTo().get();
+            String s = post.get();
+            String tmp = genIdentifier();
+            ArrayList<String> temps = new ArrayList<>(unwrap.getTemporaries());
+            temps.add(type.toDeclaration(tmp, Optional.empty()) + " = " + unwrap.getIdentifier().substring(1) + s + ";");
+            unwrap = new CExpressionResult(type, tmp, temps, unwrap.getPost());
+        }
+        return unwrap;
     }
 
     private static CExpressionResult fromVariable(AstNode astNode) {
@@ -136,7 +148,7 @@ public class CExpressionResult {
 
     private static Function<AstNode, CExpressionResult> notImplemented() {
         return $ -> {
-            throw new RuntimeException();
+            throw new RuntimeException("not impl " + $);
         };
     }
 
@@ -157,19 +169,21 @@ public class CExpressionResult {
                 .collect(Collectors.toList());
         String arguments =
                 Streams.zip(expressions.stream(), IdentifierContext.getType(identifier).getParameters().stream(),
-                        (a, b) -> b.getPtrTo().map(to -> "&" + a.getIdentifier())
+                        (a, b) -> b.getPtrTo().map(to ->
+                                a.getType().getPtrTo().map($ -> a.getIdentifier())
+                                        .orElse("&" + a.getIdentifier()))
                                 .orElse(a.getIdentifier()))
                         .collect(Collectors.joining(", "));
         String result = genIdentifier();
         CType type = IdentifierContext.getType(identifier).getReturnType()
                 .orElseThrow(() -> new CompilerException("Identifier not found"));
-        temporaries.add(type.toDeclaration(result) + " = " + IdentifierContext.getRealName(identifier) + "(" + arguments + ");");
+        temporaries.add(type.toDeclaration(result, Optional.empty()) + " = " + IdentifierContext.getRealName(identifier) + "(" + arguments + ");");
         return new CExpressionResult(type, result, temporaries, post);
     }
 
     private static CExpressionResult toExpression(CType type, Object value) {
         String id = genIdentifier();
-        return new CExpressionResult(type, id, Collections.singletonList(type.toDeclaration(id) + " = " + value + ";"),
+        return new CExpressionResult(type, id, Collections.singletonList(type.toDeclaration(id, Optional.empty()) + " = " + value + ";"),
                 Collections.emptyList());
     }
 
