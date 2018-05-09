@@ -85,8 +85,8 @@ public class CBlock {
         boolean ptr = astNode.getFirstChild("var").toOptional().isPresent()
                 || astNode.getFirstChild("identifier")
                 .getFirstChild("Type")
-                .getFirstChild("ArrayType")
-                .toOptional().isPresent();
+                .getOptionalChild("ArrayType")
+                .isPresent();
         AstNode identifier = astNode.getFirstChild("identifier");
         String id = identifier.getFirstChild("identifier").getContentString();
         String ptrStr = ptr ? "*" : "";
@@ -134,7 +134,7 @@ public class CBlock {
                         .map(c -> c.getFirstChild("identifier").getContentString()))
                 .orElse(Stream.empty())
                 .collect(Collectors.toList());
-        if (astNode.getFirstChild("Type").getFirstChild("ArrayType").toOptional().isPresent()) {
+        if (astNode.getFirstChild("Type").getOptionalChild("ArrayType").isPresent()) {
             AstNode firstChild = astNode.getFirstChild("Type").getFirstChild("ArrayType")
                     .getFirstChild("ArrayType")
                     .getFirstChild("Expression")
