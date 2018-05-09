@@ -37,15 +37,15 @@ public class IdentifierContext {
     }
 
     public static void push() {
-        System.out.println("Push");
+        //System.out.println("Push");
         identifiers.add(new HashMap<>());
         realNames.add(new HashMap<>());
     }
 
     public static void pop() {
-        System.out.println("Pop");
+        //System.out.println("Pop");
         identifiers.remove(identifiers.size() - 1);
-        realNames.remove(identifiers.size() - 1);
+        realNames.remove(realNames.size() - 1);
     }
 
     public static void addIdentifier(String identifier, CType type) {
@@ -53,7 +53,7 @@ public class IdentifierContext {
     }
 
     public static void addIdentifier(String identifier, String realName, CType type) {
-        System.out.println("Add " + identifier);
+        //System.out.println("Add " + identifier);
         if (identifiers.get(identifiers.size() - 1).containsKey(identifier.toLowerCase()))
             throw new IdentifierAlreadyExists(identifier);
         identifiers.get(identifiers.size() - 1).put(identifier.toLowerCase(), type);

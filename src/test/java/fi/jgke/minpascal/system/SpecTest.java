@@ -41,9 +41,13 @@ public class SpecTest {
                 "begin " +
                 "    x :=  5 + x; " +
                 "end " +
+                "function baz (z : integer): integer; " +
+                "begin " +
+                "    return 5 + z; " +
+                "end " +
                 "function bar (var y : integer): integer; " +
                 "begin " +
-                "    y :=  5 + y; " +
+                "    y :=  baz(y); " +
                 "end " +
                 "begin " +
                 "  var x: integer;" +

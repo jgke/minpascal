@@ -15,11 +15,6 @@
  */
 package fi.jgke.minpascal.compiler;
 
-import com.google.common.collect.Streams;
-import fi.jgke.minpascal.compiler.nodes.CBlock;
-import fi.jgke.minpascal.compiler.nodes.CFunction;
-import fi.jgke.minpascal.compiler.nodes.CVariable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,48 +48,8 @@ public class CBuilder {
         return this;
     }
 
-    public CBuilder standardLibraryFunction(String fn) {
-        this.imports.add(fn);
-        return this;
-    }
-
     public CBuilder macroImport(String library) {
         this.imports.add("#include <" + library + ">\n");
-        return this;
-    }
-
-    private CBuilder addDeclaration(String identifier, CType type) {
-        this.append(type.toDeclaration(identifier)).append(" = " + type.defaultValue() + ";", false);
-        IdentifierContext.addIdentifier(identifier, type);
-        return this;
-    }
-
-    private CBuilder startFunction(String name, List<CVariable> arguments, CType type) {
-        IdentifierContext.addIdentifier(name, type);
-        IdentifierContext.push();
-        this.append("");
-        List<String> argumentNames = arguments.stream().map(CVariable::getIdentifier).collect(Collectors.toList());
-        this.append(type.toFunctionDeclaration(argumentNames, name));
-        Streams.forEachPair(argumentNames.stream(), type.getParameters().stream(), IdentifierContext::addIdentifier);
-        this.append(" {", false);
-        indentation++;
-        return this;
-    }
-
-    private CBuilder endFunctionBody() {
-        indentation--;
-        this.append("}");
-        IdentifierContext.pop();
-        return this;
-    }
-
-    private CBuilder addLabel(String label) {
-        this.append("\n" + label + ":;", false); // left align labels
-        return this;
-    }
-
-    private CBuilder addGoto(String label) {
-        this.append("goto " + label + ";");
         return this;
     }
 
@@ -117,21 +72,7 @@ public class CBuilder {
                         .collect(Collectors.joining("\n"));
     }
 
-    public void addFunction(String identifier, CFunction functionNode) {
-        CBuilder cBuilder = new CBuilder()
-                .startFunction(identifier, functionNode.getParameters(),
-                        CType.fromFunction(functionNode));
-        functionNode.getStatements().getContents()
-                .forEach(cBuilder::addStatement);
-        cBuilder.endFunctionBody();
-        this.functions.add(cBuilder);
-    }
-
-    private void addStatement(CBlock.Content content) {
-        this.append(content.getData());
-    }
-
-/*
+    /*
     private Void addBlock(BlockNode body) {
         this.append("{\n");
         body.getChildren().forEach(this::addStatement);

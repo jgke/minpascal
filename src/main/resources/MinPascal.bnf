@@ -6,9 +6,11 @@ Statement ::= SimpleStatement | StructuredStatement | Declaration
 // read and write are handled in the compiler as "normal" function calls
 SimpleStatement ::= ReturnStatement
                     | AssertStatement
+                    | ReadStatement
                     | IdentifierStatement
-IdentifierStatement ::= identifier IdentifierStatementContent
+IdentifierStatement ::= !read identifier IdentifierStatementContent
 IdentifierStatementContent ::= AssignmentStatement | Arguments
+ReadStatement ::= read op Variable (comma Variable)* cp
 ReturnStatement ::= return Expression
 AssertStatement ::= assert op Expression cp
 AssignmentStatement ::= [ob Expression cb] assign Expression

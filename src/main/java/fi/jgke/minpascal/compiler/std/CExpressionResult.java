@@ -155,14 +155,11 @@ public class CExpressionResult {
         List<String> post = expressions.stream()
                 .flatMap(e -> e.getPost().stream())
                 .collect(Collectors.toList());
-        System.out.println(IdentifierContext.getType(identifier));
-        System.out.println(expressions.stream().map(CExpressionResult::getIdentifier).collect(Collectors.toList()));
         String arguments =
                 Streams.zip(expressions.stream(), IdentifierContext.getType(identifier).getParameters().stream(),
                         (a, b) -> b.getPtrTo().map(to -> "&" + a.getIdentifier())
                                 .orElse(a.getIdentifier()))
                         .collect(Collectors.joining(", "));
-        System.out.println(arguments);
         String result = genIdentifier();
         CType type = IdentifierContext.getType(identifier).getReturnType()
                 .orElseThrow(() -> new CompilerException("Identifier not found"));

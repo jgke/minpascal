@@ -13,7 +13,6 @@ public class RootBuilder {
     }
 
     public void build(CBuilder output) {
-        root.debug(3);
         root.getFirstChild("more").getList().stream()
                 .flatMap(CBlock::fromDeclaration)
                 .forEach(c -> output.append(c.getData()));

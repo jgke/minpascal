@@ -81,9 +81,7 @@ public class CBlock {
 
     private static Pair<Pair<String, String>, CType> getParameter(AstNode astNode) {
         astNode = astNode.getFirstChild("var");
-        astNode.debug();
         boolean ptr = astNode.getFirstChild("var").toOptional().isPresent();
-        astNode.debug();
         AstNode identifier = astNode.getFirstChild("identifier");
         String id = identifier.getFirstChild("identifier").getContentString();
         String ptrStr = ptr ? "*" : "";
@@ -95,12 +93,14 @@ public class CBlock {
             AstNode params = node.getFirstChild("Parameters")
                     .getFirstChild("Parameter")
                     .getFirstChild("Parameter");
-            List<Pair<Pair<String, String>, CType>> collect = params.getFirstChild("Parameter").toOptional()
-                    .map(CBlock::getParameter)
-                    .map(m -> Stream.concat(Stream.of(m), params.getFirstChild("more").getList().stream()
-                            .map(more -> getParameter(more.getFirstChild("Parameter")))))
-                    .orElse(Stream.empty())
-                    .collect(Collectors.toList());
+            List<Pair<Pair<String, String>, CType>> collect = params.toOptional()
+                    .map(p -> p.getFirstChild("Parameter").toOptional()
+                            .map(CBlock::getParameter)
+                            .map(m -> Stream.concat(Stream.of(m), params.getFirstChild("more").getList().stream()
+                                    .map(more -> getParameter(more.getFirstChild("Parameter")))))
+                            .orElse(Stream.empty())
+                            .collect(Collectors.toList()))
+                    .orElse(Collections.emptyList());
             List<CType> parameters = collect.stream().map(Pair::getRight).collect(Collectors.toList());
             CType ftype = new CType(returnType, parameters);
             String identifier = node.getFirstChild("identifier").getContentString();
@@ -181,6 +181,7 @@ public class CBlock {
         return simple.<Stream<Content>>toMap()
                 .map("IdentifierStatement", CBlock::fromIdentifier)
                 .map("ReturnStatement", CBlock::fromReturn)
+                .map("ReadStatement", CBlock::fromRead)
                 .map("AssertStatement", notImplemented())
                 .unwrap();
     }
@@ -194,6 +195,8 @@ public class CBlock {
     }
 
     private static Stream<Content> fromIdentifier(AstNode identifierStatement) {
+        identifierStatement = identifierStatement
+                .getFirstChild("identifier");
         String identifier = identifierStatement
                 .getFirstChild("identifier")
                 .getContentString();
@@ -201,14 +204,38 @@ public class CBlock {
             return fromWrite(identifierStatement
                     .getFirstChild("IdentifierStatementContent")
                     .getFirstChild("Arguments"));
-        } else if (identifier.toLowerCase().equals("println")) {
-            throw new RuntimeException();
+        } else if (identifier.toLowerCase().equals("read")) {
+            return fromRead(identifierStatement
+                    .getFirstChild("IdentifierStatementContent")
+                    .getFirstChild("Arguments"));
         }
         return identifierStatement
                 .getFirstChild("IdentifierStatementContent").<Stream<Content>>toMap()
                 .map("AssignmentStatement", CBlock.assignmentStatement(identifier))
                 .map("Arguments", CBlock.fromCall(identifier))
                 .unwrap();
+    }
+
+    private static String readVariable(String identifier) {
+        CType type = IdentifierContext.getType(identifier);
+        String fmtFormat = "scanf(\"" + type.toFormat() + "\", &";
+        if (type.equals(CType.CSTRING)) {
+            fmtFormat = "_builtin_scanstring(&";
+        }
+        return fmtFormat + IdentifierContext.getRealName(identifier) + ");\n";
+    }
+
+    private static Stream<Content> fromRead(AstNode firstChild) {
+        AstNode variable = firstChild.getFirstChild("Variable");
+        return Stream.concat(Stream.of(variable),
+                firstChild.getFirstChild("more").getList().stream()
+                        .map(child -> child.getFirstChild("Variable")))
+                .map(m -> m.getFirstChild("identifier"))
+                .map(AstNode::getContentString)
+                .map(CBlock::readVariable)
+                .map(Content::new)
+                .collect(Collectors.toList())
+                .stream();
     }
 
     private static Function<AstNode, Stream<Content>> assignmentStatement(String identifier) {
