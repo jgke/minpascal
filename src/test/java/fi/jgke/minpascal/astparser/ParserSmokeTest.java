@@ -29,7 +29,6 @@ public class ParserSmokeTest {
         String B = "B ::= \"B\"";
         String C = "C ::= \"C\"";
         ParserTestUtils.initRules(A, B, C);
-        System.out.println(AstParser.getRules());
         Pair<AstNode, String> parse;
         parse = new RuleMatch("A").parse("B");
         assertThat(parse.getRight(), is(equalTo("")));
@@ -55,9 +54,9 @@ public class ParserSmokeTest {
         initDefaultParsers();
         RuleMatch p = new RuleMatch("Parameters");
         p.parse("()").getLeft().debug();
-        p.parse("(x: real)").getLeft().debug();
-        p.parse("(x: real, y: real)").getLeft().debug();
-        p.parse("(x: real, y: real, z: real)").getLeft().debug();
-        p.parse("(x: real, y: real, z: real, t: real)").getLeft().debug();
+        p.parse("(x: real)").getLeft();
+        p.parse("(x: real, y: real)").getLeft();
+        p.parse("(x: real, y: real, z: real)").getLeft();
+        p.parse("(x: real, y: real, z: real, t: real)").getLeft();
     }
 }

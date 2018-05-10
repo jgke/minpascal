@@ -36,6 +36,7 @@ public class Compiler {
                                 "size_t pos = 0;" +
                                 "int c = 0;" +
                                 "int white = 0;" +
+                                "*str = NULL;" +
                                 "while(1) {" +
                                     "*str = realloc(*str, strSize);" +
                                     "while(pos < strSize-1) {" +

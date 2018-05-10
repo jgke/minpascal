@@ -16,6 +16,7 @@ public class RootBuilder {
         root.getFirstChild("more").getList().stream()
                 .flatMap(CBlock::fromDeclaration)
                 .forEach(c -> output.append(c.getData()));
+        IdentifierContext.pushFunctionContext(CType.CINTEGER);
         output.append("\nint main() {");
         output.append(CBlock.parse(root.getFirstChild("Block")).getContents()
                 .stream().map(CBlock.Content::getData).collect(Collectors.joining("")));

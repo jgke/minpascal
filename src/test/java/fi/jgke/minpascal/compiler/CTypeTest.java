@@ -65,6 +65,8 @@ public class CTypeTest {
         CType type;
 
         type = new CType("int");
+        System.out.println(type);
+        System.out.println(type.equals(CType.CINTEGER));
         assertThat(type.defaultValue(), is(equalTo("0")));
 
         type = new CType("bool");

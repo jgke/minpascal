@@ -11,4 +11,8 @@ public class TypeError extends UserError {
     public TypeError(Position position, String message) {
         super(String.format("Type error: %s near %s", message, position));
     }
+
+    public TypeError(String message) {
+        super(String.format("Type error: %s", message));
+    }
 }

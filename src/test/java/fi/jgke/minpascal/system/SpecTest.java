@@ -1,10 +1,15 @@
 package fi.jgke.minpascal.system;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import static fi.jgke.minpascal.system.CTest.testCompiledOutput;
 
 public class SpecTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10);
+
     /* A Mini-Pascal program consist of series of functions and procedures,
      * and a main block. The subroutines may call each other and may be
      * (mutually) recursive. Within the same scope (procedure, function, or
@@ -40,6 +45,7 @@ public class SpecTest {
                 "function foo (x : integer): integer; " +
                 "begin " +
                 "    x :=  5 + x; " +
+                "    return x; " +
                 "end " +
                 "function baz (z : integer): integer; " +
                 "begin " +
@@ -48,6 +54,7 @@ public class SpecTest {
                 "function bar (var y : integer): integer; " +
                 "begin " +
                 "    y :=  baz(y); " +
+                "    return y; " +
                 "end " +
                 "begin " +
                 "  var x: integer;" +
@@ -71,7 +78,7 @@ public class SpecTest {
                 "begin " +
                 "  assert(false);" +
                 "end.";
-        testCompiledOutput(s, "Assertion failed\n", 1);
+        testCompiledOutput(s, "", "Assertion failed\n", 1);
     }
 
     /*
@@ -94,5 +101,88 @@ public class SpecTest {
                 "  foo(x);" +
                 "end.";
         testCompiledOutput(s, "4 5\n");
+    }
+
+    /*
+     * 5. By default, variables in Pascal are not initialized (with zero or
+     * otherwise); so they may initially contain rubbish values.
+     *    -> doesn't apply on this implementation, everything is initialized
+     */
+
+    /*
+     * A Mini-Pascal program can print numbers and strings via the predefined
+     * special routines read and writeln. The stream-style IO makes conversion
+     * of values from their text representation to their internal numerical
+     * (binary) representation.
+     */
+    @Test
+    public void five() {
+        String s = "program Hello; " +
+                "begin " +
+                "  var x : integer;" +
+                "  read(x);" +
+                "  writeln(x);" +
+                "  var y : string;" +
+                "  read(y);" +
+                "  writeln(y);" +
+                "end.";
+        testCompiledOutput(s, "5\nfoo\n", "5\nfoo\n", 0);
+    }
+
+    /*
+     * Pascal is a case non-sensitive language, which means you can write the
+     * names of variables, functions and procedures in either case.
+     */
+    @Test
+    public void six() {
+        String s = "program Hello; " +
+                "function baz (z : integer): integer; " +
+                "begin " +
+                "    return 5 + z; " +
+                "end " +
+                "begin " +
+                "  var foo : integer;" +
+                "  Foo := 5;" +
+                "  writeln(FOO);" +
+                "  writeln(BAZ(10));" +
+                "end.";
+        testCompiledOutput(s, "5\n15\n");
+    }
+
+    /*
+     *  The Mini-Pascal multiline comments are enclosed within curly brackets
+     *  and asterisks as follows: "{* . . . *}".
+     */
+    @Test
+    public void seven() {
+        String s = "program Hello; " +
+                "begin " +
+                "  writeln(1);" +
+                "{*" +
+                "  writeln(2);" + // not printed
+                "*}" +
+                "end.";
+        testCompiledOutput(s, "1\n");
+    }
+
+    /*
+    * Note that the names Boolean, false, integer, read, real, size, string,
+    * true, writeln are treated in Mini-Pascal as "predefined identifiers",
+    * i.e., it is allowed to use them as regular identifiers in MiniPascal
+    * programs.
+    *
+    * This is bugged here -- read is handled specially in the parser so it
+    * cannot be used as a lvalue, however it can be passed to the read
+    * function :).
+    */
+    @Test
+    public void eight() {
+        String s = "program Hello; " +
+                "begin " +
+                "  var read: integer;" +
+                "  read(read);" +
+                "  writeln(read);" +
+                "end.";
+        testCompiledOutput(s, "5\n", "5\n", 0);
     }
 }

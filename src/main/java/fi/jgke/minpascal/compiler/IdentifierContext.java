@@ -2,16 +2,20 @@ package fi.jgke.minpascal.compiler;
 
 import fi.jgke.minpascal.exception.IdentifierAlreadyExists;
 import fi.jgke.minpascal.exception.IdentifierNotFound;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class IdentifierContext {
     private static List<Map<String, CType>> identifiers = new ArrayList<>();
     private static List<Map<String, String>> realNames = new ArrayList<>();
+    private static Stack<CType> functionContext = new Stack<>();
     private static int identifierNumber = 0;
+    @Getter
+    @Setter
+    private static boolean lastStatementWasReturn = false;
+
 
     static {
         push();
@@ -27,6 +31,7 @@ public class IdentifierContext {
         }
         throw new IdentifierNotFound(identifier);
     }
+
     public static String getRealName(String identifier) {
         for (int i = realNames.size() - 1; i >= 0; i--) {
             if (realNames.get(i).containsKey(identifier.toLowerCase())) {
@@ -66,5 +71,17 @@ public class IdentifierContext {
 
     public static String genIdentifier(String prefix) {
         return "_" + prefix + identifierNumber++;
+    }
+
+    public static CType getFunctionContext() {
+        return functionContext.peek();
+    }
+
+    public static void pushFunctionContext(CType type) {
+        functionContext.push(type);
+    }
+
+    public static void popFunctionContext() {
+        functionContext.pop();
     }
 }

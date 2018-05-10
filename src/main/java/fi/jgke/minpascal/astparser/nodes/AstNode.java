@@ -58,6 +58,7 @@ public abstract class AstNode {
                 ));
     }
 
+    @SuppressWarnings("unused")
     public AstNode debug() {
         return debug(-1);
     }

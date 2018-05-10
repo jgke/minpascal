@@ -7,6 +7,7 @@ import fi.jgke.minpascal.compiler.nodes.CVariable;
 import fi.jgke.minpascal.exception.CompilerException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,10 +15,10 @@ import java.util.stream.Collectors;
 /**
  * C types handled as a linked list
  */
+@EqualsAndHashCode(exclude = "ptrTo")
 @Data
 @AllArgsConstructor
 public class CType {
-
     public static final CType CBOOLEAN = new CType("bool");
     public static final CType CINTEGER = new CType("int");
     public static final CType CDOUBLE = new CType("double");
@@ -160,8 +161,18 @@ public class CType {
     }
 
     private String getMe() {
-        if (this.me == null)
-            throw new NullPointerException();
-        return this.me;
+        return this.dereferenceMaybe().me;
+    }
+
+    public Optional<CType> getReturnType() {
+        return this.dereferenceMaybe().returnType;
+    }
+
+    public List<CType> getParameters() {
+        return this.dereferenceMaybe().parameters;
+    }
+
+    public Optional<CType> getPtrTo() {
+        return ptrTo;
     }
 }

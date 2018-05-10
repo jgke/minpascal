@@ -2,7 +2,9 @@ package fi.jgke.minpascal.system;
 
 import fi.jgke.minpascal.MinPascal;
 import lombok.Getter;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import java.io.*;
 import java.util.concurrent.Executors;
@@ -16,6 +18,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 public class CTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10);
 
     @Test
     public void helloWorld() {
@@ -52,11 +56,13 @@ public class CTest {
         }
     }
 
-    private static int exec(String command, File path, Consumer<String> stdout, Consumer<String> stderr) throws InterruptedException, IOException {
+    private static int exec(String command, File path, String stdin, Consumer<String> stdout, Consumer<String> stderr) throws InterruptedException, IOException {
         ProcessBuilder builder = new ProcessBuilder();
         builder.directory(path);
         builder.command("sh", "-c", command);
         Process process = builder.start();
+        process.getOutputStream().write(stdin.getBytes());
+        process.getOutputStream().flush();
         StreamGobbler stdoutGobbler = new StreamGobbler(process.getInputStream());
         StreamGobbler stderrGobbler = new StreamGobbler(process.getErrorStream());
         Executors.newSingleThreadExecutor().submit(stdoutGobbler);
@@ -70,10 +76,10 @@ public class CTest {
     }
 
     public static void testCompiledOutput(String input, String output) {
-        testCompiledOutput(input, output, 0);
+        testCompiledOutput(input, "", output, 0);
     }
 
-    public static void testCompiledOutput(String input, String output, int expectedReturnCode) {
+    public static void testCompiledOutput(String input, String stdin, String output, int expectedReturnCode) {
         try {
             withMppFile(input, path -> {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -93,7 +99,7 @@ public class CTest {
                 assertThat(returncode, is(equalTo(0)));
 
                 returncode = exec("gcc " + base + ".c -Werror -o " + base,
-                        path.getParent().toFile(), CTest::stripPrint, CTest::stripPrint);
+                        path.getParent().toFile(), "", CTest::stripPrint, CTest::stripPrint);
                 assertThat(returncode, is(equalTo(0)));
 
                 AtomicReference<String> mutOutput = new AtomicReference<>("");
@@ -102,12 +108,12 @@ public class CTest {
 
                 // this fails on windows but w/e
                 boolean hasValgrind = exec("which valgrind",
-                        path.getParent().toFile(), mutOutput::set, valgrindOutput::set) == 0;
+                        path.getParent().toFile(), "", mutOutput::set, valgrindOutput::set) == 0;
 
                 String valgrind = hasValgrind ? "valgrind --error-exitcode=1 " : "";
 
                 returncode = exec(valgrind + base,
-                        path.getParent().toFile(), mutOutput::set, valgrindOutput::set);
+                        path.getParent().toFile(), stdin, mutOutput::set, valgrindOutput::set);
                 if (returncode != 0) {
                     System.err.println(valgrind + base);
                     System.err.println(path.getParent().toFile());

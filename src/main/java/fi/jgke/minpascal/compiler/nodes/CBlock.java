@@ -5,6 +5,7 @@ import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.compiler.std.CExpressionResult;
+import fi.jgke.minpascal.exception.TypeError;
 import fi.jgke.minpascal.util.Pair;
 import lombok.Data;
 
@@ -56,6 +57,7 @@ public class CBlock {
     }
 
     public static Stream<Content> fromStatement(AstNode statement) {
+        IdentifierContext.setLastStatementWasReturn(false);
         return statement.<Stream<Content>>toMap()
                 .map("SimpleStatement", CBlock::fromSimple)
                 .map("Declaration", CBlock::fromDeclaration)
@@ -111,6 +113,7 @@ public class CBlock {
             String identifier = node.getFirstChild("identifier").getContentString();
             IdentifierContext.addIdentifier(identifier, ftype);
             IdentifierContext.push();
+            IdentifierContext.pushFunctionContext(returnType);
             collect.forEach(p -> IdentifierContext.addIdentifier(p.getLeft().getLeft(), p.getLeft().getRight(), p.getRight()));
             Stream<Content> block = Stream.of(new Content(
                     ftype.toFunctionDeclaration(
@@ -119,7 +122,11 @@ public class CBlock {
                             + " {\n" +
                             format(CBlock.parse(node.getFirstChild("Block")).contents.stream()) +
                             "\n}\n"));
+            if (!returnType.equals(CType.CVOID) && !IdentifierContext.isLastStatementWasReturn()) {
+                throw new TypeError("Last statement in function has to be a return statement");
+            }
             IdentifierContext.pop();
+            IdentifierContext.popFunctionContext();
             return block;
         };
     }
@@ -215,7 +222,12 @@ public class CBlock {
     }
 
     private static Stream<Content> fromReturn(AstNode astNode) {
+        IdentifierContext.setLastStatementWasReturn(true);
         CExpressionResult result = CExpressionResult.fromExpression(astNode.getFirstChild("Expression"));
+        if (!result.getType().equals(IdentifierContext.getFunctionContext())) {
+            throw new TypeError("Invalid return type; expected " + IdentifierContext.getFunctionContext()
+                    + " but got " + result.getType());
+        }
         return Stream.of(new Content(
                 result.getTemporaries().stream().collect(Collectors.joining(";\n"))
                         + "return " + result.getIdentifier() + ";\n"

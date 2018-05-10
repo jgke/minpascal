@@ -1,7 +1,10 @@
 package fi.jgke.minpascal.system;
 
 import fi.jgke.minpascal.MinPascal;
+import fi.jgke.minpascal.exception.TypeError;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -14,6 +17,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 
 public class SystemTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10);
+
     @Test
     public void example() throws IOException {
         String content = "program example;" +
@@ -38,6 +44,19 @@ public class SystemTest {
         assertThat(code, is(equalTo(0)));
     }
 
+    @Test(expected = TypeError.class)
+    public void returnTypeMismatch() throws IOException {
+        String content = "program example;" +
+                "function bar (var y : integer): integer; " +
+                "begin " +
+                "    return false; " +
+                "end " +
+                "begin " +
+                "  var x: integer;" +
+                "end.";
+
+        MinPascal.compile(content);
+    }
 
     @Test
     public void helloWorldInFile() throws IOException, InterruptedException {

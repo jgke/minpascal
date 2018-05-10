@@ -191,7 +191,7 @@ public class CExpressionResult {
         return literalNode.<CExpressionResult>toMap()
                 .map("realliteral", d -> toExpression(CType.CDOUBLE, Double.parseDouble(d.getContentString())))
                 .map("integerliteral", d -> toExpression(CType.CINTEGER, Integer.parseInt(d.getContentString())))
-                .map("stringliteral", d -> toExpression(CType.CSTRING, d.getContentString()))
+                .map("stringliteral", d -> toExpression(CType.CSTRING, "_builtin_strdup(" + d.getContentString() + ")"))
                 .unwrap();
     }
 
