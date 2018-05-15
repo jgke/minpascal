@@ -53,19 +53,29 @@ public class SpecTest {
                 "end " +
                 "function bar (var y : integer): integer; " +
                 "begin " +
-                "    y :=  baz(y); " +
+                "    y := baz(y); " +
                 "    return y; " +
+                "end " +
+                "procedure qux (var y : integer); " +
+                "begin " +
+                "    y := bar(y); " +
                 "end " +
                 "begin " +
                 "  var x: integer;" +
                 "  x := 5;" +
+                "  var y: integer;" +
+                "  y := 5;" +
+                "  y := foo(y);" +
+                "  WriteLn(y);" +
+                "  qux(y);" +
+                "  WriteLn(y);" +
                 "  WriteLn(x);" +
                 "  foo(x);" +
                 "  WriteLn(x);" +
                 "  bar(x);" +
                 "  WriteLn(x);" +
                 "end.";
-        testCompiledOutput(s, "5\n5\n10\n");
+        testCompiledOutput(s, "10\n15\n5\n5\n10\n");
     }
 
     /*

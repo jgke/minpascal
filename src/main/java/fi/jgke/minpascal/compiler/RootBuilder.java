@@ -20,6 +20,7 @@ public class RootBuilder {
         output.append("\nint main() {");
         output.append(CBlock.parse(root.getFirstChild("Block")).getContents()
                 .stream().map(CBlock.Content::getData).collect(Collectors.joining("")));
+        output.append("\nreturn 0;");
         output.append("\n}");
     }
 }
