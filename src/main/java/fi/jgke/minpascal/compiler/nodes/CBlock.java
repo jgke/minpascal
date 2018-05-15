@@ -25,11 +25,6 @@ public class CBlock {
     @Data
     public static class Content {
         private final String data;
-        /*
-        private final Optional<CVariable> variableDeclaration;
-        private final Optional<CFunction> functionDeclaration;
-        private final Optional<Statement> statement;
-        */
     }
 
     private final List<Content> contents;
@@ -91,7 +86,7 @@ public class CBlock {
                 .isPresent();
         AstNode identifier = astNode.getFirstChild("identifier");
         String id = identifier.getFirstChild("identifier").getContentString();
-        String ptrStr = ptr ? "*" : "";
+        String ptrStr = "";
         return new Pair<>(new Pair<>(id, ptrStr + id), CType.fromTypeNode(identifier.getFirstChild("Type"), ptr));
     }
 
@@ -160,10 +155,20 @@ public class CBlock {
 
     private static Stream<Content> fromStructured(AstNode astNode) {
         return astNode.<Stream<Content>>toMap()
-                .map("Block", notImplemented())
+                .map("Block", CBlock::fromBlock)
                 .map("If", CBlock::fromIf)
                 .map("While", CBlock::fromWhile)
                 .unwrap();
+    }
+
+    private static Stream<Content> fromBlock(AstNode astNode) {
+        IdentifierContext.push();
+        List<Content> collect = Stream.concat(Stream.of(new Content("{")), Stream.concat(
+                parse(astNode).getContents().stream(),
+                Stream.of(new Content("}"))
+        )).collect(Collectors.toList());
+        IdentifierContext.pop();
+        return collect.stream();
     }
 
     private static Stream<Content> fromWhile(AstNode astNode) {
@@ -224,13 +229,20 @@ public class CBlock {
     private static Stream<Content> fromReturn(AstNode astNode) {
         IdentifierContext.setLastStatementWasReturn(true);
         CExpressionResult result = CExpressionResult.fromExpression(astNode.getFirstChild("Expression"));
-        if (!result.getType().equals(IdentifierContext.getFunctionContext())) {
-            throw new TypeError("Invalid return type; expected " + IdentifierContext.getFunctionContext()
-                    + " but got " + result.getType());
+        String p;
+        p = "";
+        CType type = result.getType();
+        CType functionContext = IdentifierContext.getFunctionContext();
+        if (type.getPtrTo().isPresent() && !functionContext.getPtrTo().isPresent()) {
+            p = "*";
+        }
+        if (!type.equals(functionContext)) {
+            throw new TypeError("Invalid return type; expected " + functionContext
+                    + " but got " + type);
         }
         return Stream.of(new Content(
                 result.getTemporaries().stream().collect(Collectors.joining(";\n"))
-                        + "return " + result.getIdentifier() + ";\n"
+                        + "return " + p + result.getIdentifier() + ";\n"
         ));
     }
 
@@ -275,8 +287,6 @@ public class CBlock {
     }
 
     private static Function<AstNode, Stream<Content>> assignmentStatement(String identifier) {
-        identifier = IdentifierContext.getRealName(identifier);
-        String finalIdentifier = identifier;
         return assignmentStatement -> assignmentStatement
                 .getFirstChild("ob")
                 .getFirstChild("ob")
@@ -284,19 +294,27 @@ public class CBlock {
                 .map(ob -> {
                     CExpressionResult index = CExpressionResult.fromExpression(ob.getFirstChild("Expression"));
                     return Stream.concat(index.getTemporaries().stream().map(Content::new),
-                            assignTo(finalIdentifier + "[" + index.getIdentifier() + "]",
-                                    assignmentStatement)
+                            assignTo(identifier + "[" + index.getIdentifier() + "]",
+                                    assignmentStatement,
+                                    false)
                     );
                 })
                 .orElseGet(() -> assignTo(
-                        finalIdentifier, assignmentStatement));
+                        identifier, assignmentStatement, true));
     }
 
-    private static Stream<Content> assignTo(String identifier, AstNode exp) {
+    private static Stream<Content> assignTo(String identifier, AstNode exp, boolean checkLeftPtr) {
         exp = exp.getFirstChild("ob").getFirstChild("assign").getFirstChild("Expression");
         CExpressionResult expression = CExpressionResult.fromExpression(exp);
+        String p1 = checkLeftPtr && IdentifierContext.getType(identifier).getPtrTo().isPresent()
+                    ? "*" : "";
+        String realIdentifier =
+                checkLeftPtr
+                ? IdentifierContext.getRealName(identifier)
+                : identifier;
+        String p2 = expression.getType().getPtrTo().map($ -> "*").orElse("");
         return Stream.concat(expression.getTemporaries().stream(),
-                Stream.of(identifier + " = " + expression.getIdentifier() + ";"))
+                Stream.of(p1 + realIdentifier + " = " + p2 + expression.getIdentifier() + ";"))
                 .map(Content::new);
     }
 
@@ -308,7 +326,9 @@ public class CBlock {
                 .collect(Collectors.joining());
 
         String print = "printf(\"" + fmt.trim() + "\\n\", " + collect.stream()
-                .map(CExpressionResult::getIdentifier)
+                .map(cExpressionResult ->
+                        (cExpressionResult.getType().getPtrTo().isPresent() ? "*" : "")
+                                + cExpressionResult.getIdentifier())
                 .collect(Collectors.joining(", ")) + ");\n";
         String total = formatExpressions(collect, $ -> print);
         return Stream.of(new Content(total));
@@ -329,7 +349,9 @@ public class CBlock {
                                     (a, b) -> b.getPtrTo().map(to ->
                                             a.getType().getPtrTo().map($ -> a.getIdentifier())
                                                     .orElse("&" + a.getIdentifier()))
-                                            .orElse(a.getIdentifier()))
+                                            .orElse(a.getType().getPtrTo()
+                                                    .map($ -> "*" + a.getIdentifier())
+                                                    .orElse(a.getIdentifier())))
                                     .collect(Collectors.joining(delimit, pre, post)));
 
             return Stream.of(new Content(total));

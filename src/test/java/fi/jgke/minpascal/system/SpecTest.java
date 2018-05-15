@@ -180,8 +180,10 @@ public class SpecTest {
         String s = "program Hello; " +
                 "begin " +
                 "  var read: integer;" +
-                "  read(read);" +
-                "  writeln(read);" +
+                "  begin" +
+                "    read(read);" +
+                "    writeln(read);" +
+                "  end " +
                 "end.";
         testCompiledOutput(s, "5\n", "5\n", 0);
     }

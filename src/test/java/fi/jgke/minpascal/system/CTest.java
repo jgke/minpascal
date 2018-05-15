@@ -40,6 +40,47 @@ public class CTest {
         testCompiledOutput(app, "this is printed\n");
     }
 
+    @Test
+    public void block() {
+        String app = "program Hello;\n" +
+                " begin\n" +
+                " var x: integer;" +
+                " x := 5; " +
+                " begin" +
+                "   var x: integer;" +
+                "   x := 10; " +
+                " end;" +
+                " writeln(x); " +
+                "end.\n";
+        testCompiledOutput(app, "5\n");
+    }
+
+    @Test
+    public void varFunctions() {
+        String app = "program foo;" +
+                " function foo (var x : integer): integer; " +
+                " begin " +
+                "     x :=  5 + x; " +
+                "     return x; " +
+                " end " +
+                " function bar (var y : integer): integer; " +
+                " begin " +
+                "     foo(y); " +
+                "     return y; " +
+                " end " +
+                "begin " +
+                "  var x: integer;" +
+                "  x := 5;" +
+                "  WriteLn(x);" +
+                "  foo(x);" +
+                "  WriteLn(x);" +
+                "  x := 1;" +
+                "  bar(x);" +
+                "  WriteLn(x);" +
+                "end.";
+        testCompiledOutput(app, "5\n10\n6\n");
+    }
+
     private static class StreamGobbler implements Runnable {
         private InputStream inputStream;
         @Getter
@@ -69,7 +110,7 @@ public class CTest {
         Executors.newSingleThreadExecutor().submit(stderrGobbler);
         int returnCode = process.waitFor();
         Thread.sleep(100); // give up cpu for output streams... without this, the
-                               // function might return before stdout/stderr has content
+        // function might return before stdout/stderr has content
         stdout.accept(stdoutGobbler.getStream());
         stderr.accept(stderrGobbler.getStream());
         return returnCode;
@@ -82,19 +123,15 @@ public class CTest {
     public static void testCompiledOutput(String input, String stdin, String output, int expectedReturnCode) {
         try {
             withMppFile(input, path -> {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                PrintWriter outw = new PrintWriter(new PrintStream(out));
                 ByteArrayOutputStream err = new ByteArrayOutputStream();
                 PrintWriter errw = new PrintWriter(new PrintStream(err));
 
                 String base = path.toAbsolutePath().toString().replaceAll(".mpp$", "");
 
                 String[] args = {base + ".mpp", base + ".c"};
-                int returncode = MinPascal.app(args, outw, errw);
+                int returncode = MinPascal.app(args, errw);
 
-                outw.flush();
                 errw.flush();
-                assertThat("MinPascal stdout is empty", out.toString(), is(equalTo("")));
                 assertThat("MinPascal stderr is empty", err.toString(), is(equalTo("")));
                 assertThat(returncode, is(equalTo(0)));
 

@@ -59,7 +59,6 @@ public class Compiler {
                                 "return out;" +
                         "}"),
                 // @formatter:on
-                Collections.emptyList(),
                 Collections.emptyList()
         );
 

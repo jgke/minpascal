@@ -72,9 +72,11 @@ public class CBinaryExpressions {
                 !nest.get(left.getType()).get(operator).containsKey(right.getType().dereferenceMaybe())) {
             throw new OperatorError(left.getType().dereferenceMaybe(), operator.name(), right.getType().dereferenceMaybe());
         }
+        String p1 = left.getType().getPtrTo().map($ -> "*").orElse("");
+        String p2 = right.getType().getPtrTo().map($ -> "*").orElse("");
         return nest.get(left.getType().dereferenceMaybe())
                 .get(operator)
                 .get(right.getType().dereferenceMaybe())
-                .apply(left, operator, right);
+                .apply(p1, left, operator, p2, right);
     }
 }

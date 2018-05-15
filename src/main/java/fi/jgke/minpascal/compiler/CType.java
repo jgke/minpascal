@@ -2,8 +2,6 @@ package fi.jgke.minpascal.compiler;
 
 import com.google.common.collect.Streams;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
-import fi.jgke.minpascal.compiler.nodes.CFunction;
-import fi.jgke.minpascal.compiler.nodes.CVariable;
 import fi.jgke.minpascal.exception.CompilerException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -53,15 +51,6 @@ public class CType {
 
     public static CType ptrTo(CType cType) {
         return new CType(null, Optional.empty(), Collections.emptyList(), Optional.of(cType));
-    }
-
-    public static CType fromFunction(CFunction node) {
-        List<CVariable> parameters = node.getParameters();
-        CType returnType = node.getReturnType();
-        return new CType(returnType,
-                parameters.stream()
-                        .map(CVariable::getType)
-                        .collect(Collectors.toList()));
     }
 
     private static String getType(AstNode simpleTypeNode) {
@@ -130,13 +119,12 @@ public class CType {
     public String toFunctionDeclaration(List<String> argumentIdentifiers, String name) {
         if (!returnType.isPresent()) throw new AssertionError();
         if (argumentIdentifiers.size() != parameters.size()) throw new AssertionError();
-        return
-                returnType.get().toString() + " " + name + "(" +
-                        Streams.zip(parameters.stream(), argumentIdentifiers.stream(),
-                                (type, identifier) ->
-                                        type.getPtrTo().map(to -> to.toString() + " *" + identifier
-                                        ).orElseGet(() -> type.toString() + " " + identifier)
-                        ).collect(Collectors.joining(", ")) + ")";
+        return returnType.get().toString() + " " + name + "(" +
+                Streams.zip(parameters.stream(), argumentIdentifiers.stream(),
+                        (type, identifier) ->
+                                type.getPtrTo().map(to -> to.toString() + " *" + identifier
+                                ).orElseGet(() -> type.toString() + " " + identifier)
+                ).collect(Collectors.joining(", ")) + ")";
     }
 
     public String toFormat() {

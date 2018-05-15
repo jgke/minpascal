@@ -13,13 +13,13 @@ import static fi.jgke.minpascal.compiler.IdentifierContext.genIdentifier;
 
 @FunctionalInterface
 public interface CBinaryExpressionFn {
-    CExpressionResult apply(CExpressionResult left, TokenType op, CExpressionResult right);
+    CExpressionResult apply(String p1, CExpressionResult left, TokenType op, String p2, CExpressionResult right);
 
     static CBinaryExpressionFn std(CType type) {
-        return (left, op, right) -> {
-            String combined = left.getIdentifier() + " " +
+        return (p1, left, op, p2, right) -> {
+            String combined = p1 + left.getIdentifier() + " " +
                     CBinaryExpressionFnPrivate.getFormat(op) + " " +
-                    right.getIdentifier() + ";";
+                    p2 + right.getIdentifier() + ";";
             String newId = genIdentifier();
             List<String> tmp = Stream.of(
                     left.getTemporaries(),
@@ -35,7 +35,7 @@ public interface CBinaryExpressionFn {
     }
 
     static CBinaryExpressionFn str(CType type) {
-        return (left, op, right) -> {
+        return ((p1, left, op, p2, right) -> {
             String template = "" +
                     "size_t %s = snprintf(NULL, 0, %s, %s, %s) + 1;\n" +
                     "char *%s = malloc(%s);\n" +
@@ -56,6 +56,6 @@ public interface CBinaryExpressionFn {
                             .flatMap(List::stream)
                             .collect(Collectors.toList())
             );
-        };
+        });
     }
 }

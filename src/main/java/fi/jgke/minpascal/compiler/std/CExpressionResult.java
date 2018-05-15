@@ -128,7 +128,7 @@ public class CExpressionResult {
             String s = post.get();
             String tmp = genIdentifier();
             ArrayList<String> temps = new ArrayList<>(unwrap.getTemporaries());
-            temps.add(type.toDeclaration(tmp, Optional.empty()) + " = " + unwrap.getIdentifier().substring(1) + s + ";");
+            temps.add(type.toDeclaration(tmp, Optional.empty()) + " = " + unwrap.getIdentifier() + s + ";");
             unwrap = new CExpressionResult(type, tmp, temps, unwrap.getPost());
         }
         return unwrap;
@@ -172,7 +172,8 @@ public class CExpressionResult {
                         (a, b) -> b.getPtrTo().map(to ->
                                 a.getType().getPtrTo().map($ -> a.getIdentifier())
                                         .orElse("&" + a.getIdentifier()))
-                                .orElse(a.getIdentifier()))
+                                .orElse(a.getType().getPtrTo().map($ -> "*").orElse("") +
+                                        a.getIdentifier()))
                         .collect(Collectors.joining(", "));
         String result = genIdentifier();
         CType type = IdentifierContext.getType(identifier).getReturnType()

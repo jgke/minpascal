@@ -40,7 +40,7 @@ public class SystemTest {
 
     @Test
     public void helloWorldMpp() {
-        int code = MinPascal.app(new String[]{"helloWorld.mpp"}, new PrintWriter(System.out), new PrintWriter(System.err));
+        int code = MinPascal.app(new String[]{"helloWorld.mpp"}, new PrintWriter(System.err));
         assertThat(code, is(equalTo(0)));
     }
 
@@ -67,12 +67,10 @@ public class SystemTest {
                 ".";
 
         withMppFile(content, path -> {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            PrintWriter outw = new PrintWriter(new PrintStream(out));
             ByteArrayOutputStream err = new ByteArrayOutputStream();
             PrintWriter errw = new PrintWriter(new PrintStream(err));
             String[] args = {path.toAbsolutePath().toString()};
-            MinPascal.app(args, outw, errw);
+            MinPascal.app(args, errw);
             String output = err.toString();
             assertThat(output, isEmptyString());
         });

@@ -36,12 +36,10 @@ public class MinPascal {
         return Compiler.compile(parse);
     }
 
-    public static int app(String[] args, PrintWriter out, PrintWriter err) {
+    public static int app(String[] args, PrintWriter err) {
         ArgumentParser parser = ArgumentParsers.newFor("minpascal").build()
                 .defaultHelp(true)
                 .description("Compile minipascal files to simplified C.");
-        parser.addArgument("-s", "--strict").setDefault(false)
-                .help("Strict mode - follow specification to the letter");
         parser.addArgument("file").required(true)
                 .help("Input file");
         parser.addArgument("outFile").nargs("?").setDefault((Object) null)
@@ -55,7 +53,6 @@ public class MinPascal {
             return -1;
         }
 
-        Configuration.STRICT_MODE = ns.getBoolean("strict");
         Path source, target;
 
         source = Paths.get(ns.getString("file"));
@@ -70,7 +67,7 @@ public class MinPascal {
         } else {
             if (!source.toString().endsWith(".mpp")) {
                 err.println("Invalid source file parameter: You need to provide a " +
-                                    "target file if you don't have the correct extension (.mpp)");
+                        "target file if you don't have the correct extension (.mpp)");
                 return -1;
             }
             target = Paths.get(source.toString().replaceAll(".mpp$", ".c"));
@@ -91,14 +88,10 @@ public class MinPascal {
 
     public static void main(String[] args) {
         int exitCode;
-        try (PrintWriter out = new PrintWriter(System.out, false)) {
-            try (PrintWriter err = new PrintWriter(System.err, false)) {
-                exitCode = app(args, out, err);
-                err.flush();
-            }
-            out.flush();
+        try (PrintWriter err = new PrintWriter(System.err, false)) {
+            exitCode = app(args, err);
+            err.flush();
         }
         System.exit(exitCode);
     }
-
 }
