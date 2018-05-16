@@ -28,6 +28,9 @@ public class AstParser {
             try (InputStream inputStream = resource.openStream();
                  BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
                 rules = Arrays.stream(bufferedReader.lines().filter(s -> !s.startsWith("//")).collect(Collectors.joining("\n"))
+                        .replaceAll("\\\\\"", "\"")
+                        // these are regexes... so escape the \
+                        .replaceAll("\\\\\\\\", "\\\\")
                         .replaceAll("\n(?![^ ])", " ").split("\n"))
                         .filter(rule -> !rule.isEmpty())
                         .map(Rule::new)
