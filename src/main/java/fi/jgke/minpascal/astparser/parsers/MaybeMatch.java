@@ -19,16 +19,17 @@ public class MaybeMatch implements Parser {
 
     @Override
     public Pair<AstNode, Pair<String, Position>> parse(Pair<String, Position> str) {
-        AstNode inner = new EmptyNode(maybeThis.getName());
+        Position p = str.getRight();
+        AstNode inner = new EmptyNode(maybeThis.getName(), str.getRight());
         if (maybeThis.parses(str.getLeft())) {
             Pair<AstNode, Pair<String, Position>> parse = maybeThis.parse(str);
             str = parse.getRight();
             inner = parse.getLeft();
         } else if (yesThis instanceof Epsilon) {
-            return new Pair<>(new EmptyNode(name), str);
+            return new Pair<>(new EmptyNode(name, p), str);
         }
         Pair<AstNode, Pair<String, Position>> parse = yesThis.parse(str);
-        return new Pair<>(new ListAstNode(name, Arrays.asList(inner, parse.getLeft())), parse.getRight());
+        return new Pair<>(new ListAstNode(name, Arrays.asList(inner, parse.getLeft()), p), parse.getRight());
     }
 
     @Override

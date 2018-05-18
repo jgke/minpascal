@@ -1,5 +1,6 @@
 package fi.jgke.minpascal.compiler;
 
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.IdentifierAlreadyExists;
 import fi.jgke.minpascal.exception.IdentifierNotFound;
 import org.junit.Test;
@@ -11,40 +12,42 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 public class IdentifierContextTest {
+    private final Position p = new Position(0, 0);
+
     @Test
     public void identifierTest() {
         push();
-        addIdentifier("a", CDOUBLE);
+        addIdentifier("a", CDOUBLE, p);
         push();
-        addIdentifier("a", CINTEGER);
-        assertThat(getType("a"), is(equalTo(CINTEGER)));
+        addIdentifier("a", CINTEGER, p);
+        assertThat(getType("a", p), is(equalTo(CINTEGER)));
         pop();
         push();
-        addIdentifier("a", CBOOLEAN);
-        assertThat(getType("a"), is(equalTo(CBOOLEAN)));
+        addIdentifier("a", CBOOLEAN, p);
+        assertThat(getType("a", p), is(equalTo(CBOOLEAN)));
         pop();
-        assertThat(getType("a"), is(equalTo(CDOUBLE)));
+        assertThat(getType("a", p), is(equalTo(CDOUBLE)));
         pop();
     }
 
     @Test
     public void zerolevel() {
-        addIdentifier("foo", CVOID);
+        addIdentifier("foo", CVOID, p);
         push();
-        assertThat(getType("foo"), is(equalTo(CVOID)));
+        assertThat(getType("foo", p), is(equalTo(CVOID)));
         pop();
     }
 
     @Test(expected = IdentifierNotFound.class)
     public void identifierNotFound() {
-        getType("notfound");
+        getType("notfound", p);
     }
 
     @Test(expected = IdentifierAlreadyExists.class)
     public void duplicateIdentifier() {
         push();
-        addIdentifier("x", CBOOLEAN);
-        addIdentifier("x", CBOOLEAN);
+        addIdentifier("x", CBOOLEAN, p);
+        addIdentifier("x", CBOOLEAN, p);
     }
 
     @Test

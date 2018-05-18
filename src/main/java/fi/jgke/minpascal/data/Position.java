@@ -13,9 +13,12 @@ public class Position {
     }
 
     public Position addStr(String s) {
+        if (s.length() > 30) {
+            throw new RuntimeException();
+        }
         if (s.contains("\n")) {
             String[] split = s.split("\n", -1);
-            int length = split[split.length - 1].length();
+            int length = split[split.length - 1].length() + 1;
             int lines = split.length - 1;
             // ignore column here because we want it from the start of the line
             return new Position(line + lines, length);

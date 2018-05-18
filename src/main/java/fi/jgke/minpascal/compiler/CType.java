@@ -2,6 +2,7 @@ package fi.jgke.minpascal.compiler;
 
 import com.google.common.collect.Streams;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.exception.TypeError;
 import lombok.AllArgsConstructor;
@@ -178,9 +179,9 @@ public class CType {
         return false;
     }
 
-    public String assignTo(CType to, String identifier) {
+    public String assignTo(CType to, String identifier, Position position) {
         if (!isAssignable(to)) {
-            throw new TypeError("Cannot assign " + this.formatType() + " to " + to.formatType());
+            throw new TypeError("Cannot assign " + this.formatType() + " to " + to.formatType(), position);
         }
         return this.getPtrTo().map($ ->
                 to.getPtrTo()

@@ -1,6 +1,7 @@
 package fi.jgke.minpascal.compiler.std;
 
 import fi.jgke.minpascal.compiler.CType;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.data.TokenType;
 import fi.jgke.minpascal.exception.OperatorError;
 
@@ -58,11 +59,11 @@ public class CBinaryExpressions {
         );
     }
 
-    public static CExpressionResult apply(CExpressionResult left, TokenType operator, CExpressionResult right) {
+    public static CExpressionResult apply(CExpressionResult left, TokenType operator, CExpressionResult right, Position position) {
         if (!nest.containsKey(left.getType().dereferenceMaybe()) ||
                 !nest.get(left.getType()).containsKey(operator) ||
                 !nest.get(left.getType()).get(operator).containsKey(right.getType().dereferenceMaybe())) {
-            throw new OperatorError(left.getType().dereferenceMaybe(), operator.name(), right.getType().dereferenceMaybe());
+            throw new OperatorError(left.getType().dereferenceMaybe(), operator.name(), right.getType().dereferenceMaybe(), position);
         }
         String p1 = left.getType().getPtrTo().map($ -> "*").orElse("");
         String p2 = right.getType().getPtrTo().map($ -> "*").orElse("");

@@ -3,7 +3,7 @@ package fi.jgke.minpascal.astparser.parsers;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.nodes.LeafNode;
 import fi.jgke.minpascal.data.Position;
-import fi.jgke.minpascal.exception.CompilerException;
+import fi.jgke.minpascal.exception.ParseError;
 import fi.jgke.minpascal.util.Pair;
 import fi.jgke.minpascal.util.Regex;
 import lombok.Getter;
@@ -33,29 +33,24 @@ public class TerminalMatch implements Parser {
         if (!this.name.startsWith("_") && !this.name.equals("whitespace")) {
             str = whitespace.parse(str).getRight();
         }
+        Position matchPosition = str.getRight();
         String finalStr = str.getLeft();
         Pair<String, Position> finalPos = str;
         pair = this.compiled.<Pair<AstNode, Pair<String, Position>>>map(regex -> {
             int matchLength = regex.match(finalStr);
             if (matchLength < 0) {
-                throw new CompilerException(
-                        "Parse error at " + name
-                                + ", could not match '" + pattern
-                                + "' for string '" + finalStr + "' near " + finalPos.getRight());
+                throw new ParseError(pattern, finalStr, finalPos.getRight());
             }
             String content = finalStr.substring(0, matchLength);
-            return new Pair<>(new LeafNode(name, content),
+            return new Pair<>(new LeafNode(name, content, matchPosition),
                     new Pair<>(finalStr.substring(matchLength), finalPos.getRight().addStr(content)));
         }).orElseGet(() -> {
             if (!finalStr.startsWith(this.pattern)) {
-                throw new CompilerException(
-                        "Parse error at " + name
-                                + ", could not match '" + pattern
-                                + "' for string '" + finalStr + "' near " + finalPos.getRight());
+                throw new ParseError(pattern, finalStr, finalPos.getRight());
             }
             String content = finalStr.substring(this.pattern.length());
-            return new Pair<>(new LeafNode(name, this.pattern),
-                    new Pair<>(content, finalPos.getRight().addStr(content)));
+            return new Pair<>(new LeafNode(name, this.pattern, matchPosition),
+                    new Pair<>(content, finalPos.getRight().addStr(this.pattern)));
         });
         Pair<String, Position> wsPos = pair.getRight();
         if (!this.name.startsWith("_") && !this.name.equals("whitespace") &&

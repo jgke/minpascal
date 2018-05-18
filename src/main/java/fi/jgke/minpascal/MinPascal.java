@@ -76,11 +76,11 @@ public class MinPascal {
         try {
             String content = new String(Files.readAllBytes(Paths.get(args[0])));
             String compiled = compile(content);
-            System.out.println(compiled);
+            //System.out.println(compiled);
             Files.write(target, compiled.getBytes());
         } catch (Throwable e) {
-            e.printStackTrace(err);
-            e.printStackTrace();
+            err.println(e.getMessage());
+            err.flush();
             return 1;
         }
         return 0;

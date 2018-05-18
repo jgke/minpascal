@@ -8,7 +8,7 @@ import fi.jgke.minpascal.util.Pair;
 public class Epsilon implements Parser {
     @Override
     public Pair<AstNode, Pair<String, Position>> parse(Pair<String, Position> str) {
-        return new Pair<>(new EmptyNode("_epsilon"), str);
+        return new Pair<>(new EmptyNode("_epsilon", str.getRight()), str);
     }
 
     @Override

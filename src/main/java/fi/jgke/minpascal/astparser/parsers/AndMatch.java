@@ -27,6 +27,7 @@ public class AndMatch implements Parser {
 
     @Override
     public Pair<AstNode, Pair<String, Position>> parse(Pair<String, Position> str) {
+        Position pos = str.getRight();
         List<AstNode> nodes = new ArrayList<>();
         for (Parser p : parsers) {
             str = whitespace.parse(str).getRight();
@@ -34,7 +35,7 @@ public class AndMatch implements Parser {
             nodes.add(pair.getLeft());
             str = pair.getRight();
         }
-        return new Pair<>(new ListAstNode(name, nodes), str);
+        return new Pair<>(new ListAstNode(name, nodes, pos), str);
     }
 
     @Override

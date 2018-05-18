@@ -21,7 +21,7 @@ public class RuleMatch implements Parser {
         }
         if(parse.getLeft().getName().equals(rule))
             return parse;
-        ListAstNode listAstNode = new ListAstNode(rule, Collections.singletonList(parse.getLeft()));
+        ListAstNode listAstNode = new ListAstNode(rule, Collections.singletonList(parse.getLeft()), str.getRight());
         listAstNode.setAvailableNames(parse.getLeft().getAvailableNames());
         return new Pair<>(listAstNode, parse.getRight());
     }

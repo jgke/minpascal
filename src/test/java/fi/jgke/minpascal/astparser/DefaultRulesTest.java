@@ -30,7 +30,7 @@ public class DefaultRulesTest {
     public void newlineTest() {
         Pair<AstNode, Pair<String, Position>> parse = new RuleMatch("whitespace").parse("   \n  ");
         assertThat(parse.getRight().getLeft(), is(equalTo("")));
-        assertThat(parse.getRight().getRight(), is(equalTo(new Position(2, 2))));
+        assertThat(parse.getRight().getRight(), is(equalTo(new Position(2, 3))));
         assertThat(parse.getLeft().getFirstChild("_ws").getContentString(), is(equalTo("   \n  ")));
     }
 }

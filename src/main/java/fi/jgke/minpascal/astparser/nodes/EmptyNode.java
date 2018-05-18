@@ -1,12 +1,13 @@
 package fi.jgke.minpascal.astparser.nodes;
 
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.CompilerException;
 
 import java.util.Optional;
 
 public class EmptyNode extends AstNode {
-    public EmptyNode(String name) {
-        super(name);
+    public EmptyNode(String name, Position position) {
+        super(name, position);
     }
 
     @Override

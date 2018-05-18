@@ -1,5 +1,6 @@
 package fi.jgke.minpascal.astparser.nodes;
 
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.CompilerException;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,9 +17,12 @@ public abstract class AstNode {
     @Getter
     private Set<String> availableNames = new HashSet<>();
     protected boolean availableSet = false;
+    @Getter
+    private final Position position;
 
-    public AstNode(String name) {
+    public AstNode(String name, Position position) {
         this.name = name;
+        this.position = position;
     }
 
     public AstNode setAvailableNames(Set<String> availableNames) {

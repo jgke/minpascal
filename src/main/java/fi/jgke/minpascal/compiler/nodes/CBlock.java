@@ -5,6 +5,7 @@ import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
 import fi.jgke.minpascal.compiler.std.CExpressionResult;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.TypeError;
 import fi.jgke.minpascal.util.Pair;
 import lombok.Data;
@@ -106,10 +107,10 @@ public class CBlock {
             List<CType> parameters = collect.stream().map(Pair::getRight).collect(Collectors.toList());
             CType ftype = new CType(returnType, parameters);
             String identifier = node.getFirstChild("identifier").getContentString();
-            IdentifierContext.addIdentifier(identifier, ftype);
+            IdentifierContext.addIdentifier(identifier, ftype, node.getPosition());
             IdentifierContext.push();
             IdentifierContext.pushFunctionContext(returnType);
-            collect.forEach(p -> IdentifierContext.addIdentifier(p.getLeft().getLeft(), p.getLeft().getRight(), p.getRight()));
+            collect.forEach(p -> IdentifierContext.addIdentifier(p.getLeft().getLeft(), p.getLeft().getRight(), p.getRight(), node.getPosition()));
             Stream<Content> block = Stream.of(new Content(
                     ftype.toFunctionDeclaration(
                             collect.stream().map(p -> p.getLeft().getLeft()).collect(Collectors.toList()),
@@ -118,7 +119,7 @@ public class CBlock {
                             format(CBlock.parse(node.getFirstChild("Block")).contents.stream()) +
                             "\n}\n"));
             if (!returnType.equals(CType.CVOID) && !IdentifierContext.isLastStatementWasReturn()) {
-                throw new TypeError("Last statement in function has to be a return statement");
+                throw new TypeError("Last statement in function has to be a return statement", node.getPosition());
             }
             IdentifierContext.pop();
             IdentifierContext.popFunctionContext();
@@ -146,7 +147,7 @@ public class CBlock {
             initializer = Optional.of(cExpressionResult.getIdentifier());
         }
         Stream.concat(Stream.of(identifier), more.stream())
-                .forEach(ident -> IdentifierContext.addIdentifier(ident, type));
+                .forEach(ident -> IdentifierContext.addIdentifier(ident, type, astNode.getPosition()));
         Optional<String> finalInitializer = initializer;
         return Stream.concat(pre.stream().map(Content::new),
                 Stream.concat(Stream.of(identifier), more.stream())
@@ -238,7 +239,7 @@ public class CBlock {
         }
         if (!type.equals(functionContext)) {
             throw new TypeError("Invalid return type; expected " + functionContext.formatType()
-                    + " but got " + type.formatType());
+                    + " but got " + type.formatType(), astNode.getPosition());
         }
         return Stream.of(new Content(
                 result.getTemporaries().stream().collect(Collectors.joining(";\n"))
@@ -264,13 +265,13 @@ public class CBlock {
                 .unwrap();
     }
 
-    private static String readVariable(String identifier) {
-        CType type = IdentifierContext.getType(identifier);
+    private static String readVariable(String identifier, Position position) {
+        CType type = IdentifierContext.getType(identifier, position);
         String fmtFormat = "scanf(\"" + type.toFormat() + "\", &";
         if (type.equals(CType.CSTRING)) {
             fmtFormat = "_builtin_scanstring(&";
         }
-        return fmtFormat + IdentifierContext.getRealName(identifier) + ");\n";
+        return fmtFormat + IdentifierContext.getRealName(identifier, position) + ");\n";
     }
 
     private static Stream<Content> fromRead(AstNode firstChild) {
@@ -280,7 +281,7 @@ public class CBlock {
                         .map(child -> child.getFirstChild("Variable")))
                 .map(m -> m.getFirstChild("identifier"))
                 .map(AstNode::getContentString)
-                .map(CBlock::readVariable)
+                .map((String identifier) -> readVariable(identifier, firstChild.getPosition()))
                 .map(Content::new)
                 .collect(Collectors.toList())
                 .stream();
@@ -306,11 +307,11 @@ public class CBlock {
     private static Stream<Content> assignTo(String identifier, AstNode exp, boolean checkLeftPtr) {
         exp = exp.getFirstChild("ob").getFirstChild("assign").getFirstChild("Expression");
         CExpressionResult expression = CExpressionResult.fromExpression(exp);
-        String p1 = checkLeftPtr && IdentifierContext.getType(identifier).getPtrTo().isPresent()
+        String p1 = checkLeftPtr && IdentifierContext.getType(identifier, exp.getPosition()).getPtrTo().isPresent()
                 ? "*" : "";
         String realIdentifier =
                 checkLeftPtr
-                        ? IdentifierContext.getRealName(identifier)
+                        ? IdentifierContext.getRealName(identifier, exp.getPosition())
                         : identifier;
         String p2 = expression.getType().getPtrTo().map($ -> "*").orElse("");
         return Stream.concat(expression.getTemporaries().stream(),
@@ -344,8 +345,8 @@ public class CBlock {
 
             String total = formatExpressions(
                     collect,
-                    expressions -> Streams.zip(expressions.stream(), IdentifierContext.getType(identifier).getParameters().stream(),
-                            (a, b) -> a.getType().assignTo(b, a.getIdentifier()))
+                    expressions -> Streams.zip(expressions.stream(), IdentifierContext.getType(identifier, argumentsNode.getPosition()).getParameters().stream(),
+                            (a, b) -> a.getType().assignTo(b, a.getIdentifier(), argumentsNode.getPosition()))
                             .collect(Collectors.joining(delimit, pre, post)));
 
             return Stream.of(new Content(total));

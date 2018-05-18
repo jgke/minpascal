@@ -4,6 +4,7 @@ import fi.jgke.minpascal.astparser.AstParser;
 import fi.jgke.minpascal.astparser.parsers.RuleMatch;
 import fi.jgke.minpascal.compiler.std.CBinaryExpressions;
 import fi.jgke.minpascal.compiler.std.CExpressionResult;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.data.TokenType;
 import fi.jgke.minpascal.exception.OperatorError;
 import fi.jgke.minpascal.exception.TypeError;
@@ -26,6 +27,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 public class ExpressionResultTest {
+    private final Position p = new Position(0, 0);
+
     @Before
     public void init() {
         AstParser.initDefaultParsers();
@@ -112,10 +115,10 @@ public class ExpressionResultTest {
 
     @Test
     public void functionCalls() {
-        IdentifierContext.addIdentifier("foo1", new CType(CType.CINTEGER, Collections.emptyList()));
-        IdentifierContext.addIdentifier("foo2", new CType(CType.CINTEGER, Collections.singletonList(CType.CINTEGER)));
-        IdentifierContext.addIdentifier("foo3", new CType(CType.CINTEGER, Arrays.asList(CType.CINTEGER, CType.CINTEGER)));
-        IdentifierContext.addIdentifier("foo4", new CType(CType.CINTEGER, Arrays.asList(CType.CINTEGER, CType.CINTEGER, CType.CINTEGER)));
+        IdentifierContext.addIdentifier("foo1", new CType(CType.CINTEGER, Collections.emptyList()), p);
+        IdentifierContext.addIdentifier("foo2", new CType(CType.CINTEGER, Collections.singletonList(CType.CINTEGER)), p);
+        IdentifierContext.addIdentifier("foo3", new CType(CType.CINTEGER, Arrays.asList(CType.CINTEGER, CType.CINTEGER)), p);
+        IdentifierContext.addIdentifier("foo4", new CType(CType.CINTEGER, Arrays.asList(CType.CINTEGER, CType.CINTEGER, CType.CINTEGER)), p);
         test("foo1()", 1, CINTEGER, Collections.singletonMap("foo1", $ -> 1.0));
         test("foo2(5)", 2, CINTEGER, Collections.singletonMap("foo2", $ -> 2.0));
         test("foo3(5, 3)", 3, CINTEGER, Collections.singletonMap("foo3", $ -> 3.0));
@@ -124,9 +127,9 @@ public class ExpressionResultTest {
 
     @Test
     public void arrays() {
-        IdentifierContext.addIdentifier("foo", CType.ptrTo(CType.CINTEGER));
-        IdentifierContext.addIdentifier("qux", CType.ptrTo(new CType(CType.CINTEGER, Collections.emptyList())));
-        IdentifierContext.addIdentifier("bar", CType.CINTEGER);
+        IdentifierContext.addIdentifier("foo", CType.ptrTo(CType.CINTEGER), p);
+        IdentifierContext.addIdentifier("qux", CType.ptrTo(new CType(CType.CINTEGER, Collections.emptyList())), p);
+        IdentifierContext.addIdentifier("bar", CType.CINTEGER, p);
         test("foo[0]", 1, CINTEGER, Collections.singletonMap("foo", i -> Double.parseDouble(i) + 1));
         test("foo.size", 0, CINTEGER, Collections.singletonMap("foo", i -> Double.parseDouble(i) + 1));
         CExpressionResult expression = getExpression("qux[0]()");
@@ -170,10 +173,10 @@ public class ExpressionResultTest {
 
     @Test
     public void ptrTests() {
-        IdentifierContext.addIdentifier("a", CType.CINTEGER);
-        IdentifierContext.addIdentifier("b", CType.ptrTo(CType.CINTEGER));
-        IdentifierContext.addIdentifier("c", new CType(CType.CINTEGER, Collections.singletonList(CType.CINTEGER)));
-        IdentifierContext.addIdentifier("d", new CType(CType.CINTEGER, Collections.singletonList(CType.ptrTo(CType.CINTEGER))));
+        IdentifierContext.addIdentifier("a", CType.CINTEGER, p);
+        IdentifierContext.addIdentifier("b", CType.ptrTo(CType.CINTEGER), p);
+        IdentifierContext.addIdentifier("c", new CType(CType.CINTEGER, Collections.singletonList(CType.CINTEGER)), p);
+        IdentifierContext.addIdentifier("d", new CType(CType.CINTEGER, Collections.singletonList(CType.ptrTo(CType.CINTEGER))), p);
         opTest("c(a)", "c\\(a\\)");
         opTest("c(b)", "c\\(\\*b\\)");
         opTest("d(a)", "d\\(&a\\)");
@@ -182,31 +185,31 @@ public class ExpressionResultTest {
 
     @Test(expected = TypeError.class)
     public void invalidDereference() {
-        IdentifierContext.addIdentifier("a", CType.CINTEGER);
+        IdentifierContext.addIdentifier("a", CType.CINTEGER, p);
         getExpression("a[0]");
     }
 
     @Test(expected = TypeError.class)
     public void invalidSizeof() {
-        IdentifierContext.addIdentifier("a", CType.CINTEGER);
+        IdentifierContext.addIdentifier("a", CType.CINTEGER, p);
         getExpression("a.size");
     }
 
     @Test(expected = TypeError.class)
     public void invalidFunctionCall() {
-        IdentifierContext.addIdentifier("a", CType.CINTEGER);
+        IdentifierContext.addIdentifier("a", CType.CINTEGER, p);
         getExpression("a()");
     }
 
     @Test(expected = TypeError.class)
     public void invalidFunctionParameters() {
-        IdentifierContext.addIdentifier("a", new CType(CType.CINTEGER, Collections.singletonList(CType.ptrTo(CType.CINTEGER))));
+        IdentifierContext.addIdentifier("a", new CType(CType.CINTEGER, Collections.singletonList(CType.ptrTo(CType.CINTEGER))), p);
         getExpression("a()");
     }
 
     @Test(expected = TypeError.class)
     public void invalidFunctionParameterType() {
-        IdentifierContext.addIdentifier("a", new CType(CType.CINTEGER, Collections.singletonList(CType.ptrTo(CType.CINTEGER))));
+        IdentifierContext.addIdentifier("a", new CType(CType.CINTEGER, Collections.singletonList(CType.ptrTo(CType.CINTEGER))), p);
         getExpression("a(\"foo\")");
     }
 
@@ -237,14 +240,14 @@ public class ExpressionResultTest {
 
     @Test(expected = OperatorError.class)
     public void functionPlus() {
-        IdentifierContext.addIdentifier("foo", new CType(CType.CINTEGER, Collections.emptyList()));
-        CBinaryExpressions.apply(getExpression("foo"), TokenType.PLUS, getExpression("true"));
+        IdentifierContext.addIdentifier("foo", new CType(CType.CINTEGER, Collections.emptyList()), p);
+        CBinaryExpressions.apply(getExpression("foo"), TokenType.PLUS, getExpression("true"), p);
     }
 
     @Test
     public void ptrPlusPtr() {
-        IdentifierContext.addIdentifier("a", CType.ptrTo(CINTEGER));
-        IdentifierContext.addIdentifier("b", CType.ptrTo(CINTEGER));
-        CBinaryExpressions.apply(getExpression("a"), TokenType.PLUS, getExpression("b"));
+        IdentifierContext.addIdentifier("a", CType.ptrTo(CINTEGER), p);
+        IdentifierContext.addIdentifier("b", CType.ptrTo(CINTEGER), p);
+        CBinaryExpressions.apply(getExpression("a"), TokenType.PLUS, getExpression("b"), p);
     }
 }

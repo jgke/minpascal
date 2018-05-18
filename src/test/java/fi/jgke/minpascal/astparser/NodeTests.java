@@ -2,6 +2,7 @@ package fi.jgke.minpascal.astparser;
 
 import fi.jgke.minpascal.astparser.nodes.LeafNode;
 import fi.jgke.minpascal.astparser.nodes.ListAstNode;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.CompilerException;
 import org.junit.After;
 import org.junit.Before;
@@ -19,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class NodeTests {
     private List<Consumer<?>> calledConsumers;
     private List<Function<?, ?>> calledFunctions;
+    private final Position p = new Position(0, 0);
 
     @SuppressWarnings("unchecked")
     private <T> Consumer<T> spyConsumer(Consumer<T> consumer) {
@@ -70,8 +72,8 @@ public class NodeTests {
 
     @Test
     public void listNodeTests() {
-        LeafNode leafNode = new LeafNode("bar", "baz");
-        ListAstNode listAstNode = new ListAstNode("foo", Collections.singletonList(leafNode));
+        LeafNode leafNode = new LeafNode("bar", "baz", p);
+        ListAstNode listAstNode = new ListAstNode("foo", Collections.singletonList(leafNode), p);
         listAstNode.setAvailableNames(Collections.singleton("bar"));
         assertThat(listAstNode.getList().size(), is(equalTo(1)));
         assertThat(listAstNode.getList().get(0), is(equalTo(leafNode)));
@@ -83,7 +85,7 @@ public class NodeTests {
                 .map("bar", calledFunction($ -> $))
                 .unwrap();
 
-        listAstNode = new ListAstNode("foo", Collections.singletonList(leafNode));
+        listAstNode = new ListAstNode("foo", Collections.singletonList(leafNode), p);
         listAstNode.setAvailableNames(new HashSet<>(Arrays.asList("bar", "qux")));
         assertThat(listAstNode.getList().size(), is(equalTo(1)));
         assertThat(listAstNode.getList().get(0), is(equalTo(leafNode)));
@@ -103,8 +105,8 @@ public class NodeTests {
 
     @Test(expected = AssertionError.class)
     public void listMapFails() {
-        LeafNode leafNode = new LeafNode("bar", "baz");
-        new ListAstNode("foo", Collections.singletonList(leafNode))
+        LeafNode leafNode = new LeafNode("bar", "baz", p);
+        new ListAstNode("foo", Collections.singletonList(leafNode), p)
                 .toMap()
                 .chain("bar", $ -> {
                 })
@@ -113,8 +115,8 @@ public class NodeTests {
 
     @Test(expected = CompilerException.class)
     public void incompleteMap() {
-        LeafNode leafNode = new LeafNode("bar", "baz");
-        ListAstNode foo = new ListAstNode("foo", Collections.singletonList(leafNode));
+        LeafNode leafNode = new LeafNode("bar", "baz", p);
+        ListAstNode foo = new ListAstNode("foo", Collections.singletonList(leafNode), p);
         foo.setAvailableNames(new HashSet<>(Arrays.asList("foo", "bar")));
         foo.toMap()
                 .chain("bar", $ -> {
@@ -124,8 +126,8 @@ public class NodeTests {
 
     @Test(expected = CompilerException.class)
     public void invalidChainCall() {
-        LeafNode leafNode = new LeafNode("bar", "baz");
-        new ListAstNode("foo", Collections.singletonList(leafNode))
+        LeafNode leafNode = new LeafNode("bar", "baz", p);
+        new ListAstNode("foo", Collections.singletonList(leafNode), p)
                 .setAvailableNames(new HashSet<>(Arrays.asList("foo", "bar")))
                 .toMap()
                 .chain("foo", $ -> {
@@ -137,8 +139,8 @@ public class NodeTests {
 
     @Test(expected = CompilerException.class)
     public void invalidMapCall() {
-        LeafNode leafNode = new LeafNode("bar", "baz");
-        ListAstNode foo = new ListAstNode("foo", Collections.singletonList(leafNode));
+        LeafNode leafNode = new LeafNode("bar", "baz", p);
+        ListAstNode foo = new ListAstNode("foo", Collections.singletonList(leafNode), p);
         foo.setAvailableNames(new HashSet<>(Arrays.asList("foo", "bar")));
         foo.toMap()
                 .map("foo", $ -> $)
@@ -148,9 +150,9 @@ public class NodeTests {
 
     @Test
     public void unwrapMapCall() {
-        LeafNode leafNode = new LeafNode("bar", "baz");
-        ListAstNode foo = new ListAstNode("Foo", Collections.singletonList(leafNode));
-        new ListAstNode("Foo", Collections.singletonList(foo))
+        LeafNode leafNode = new LeafNode("bar", "baz", p);
+        ListAstNode foo = new ListAstNode("Foo", Collections.singletonList(leafNode), p);
+        new ListAstNode("Foo", Collections.singletonList(foo), p)
                 .setAvailableNames(new HashSet<>(Arrays.asList("Foo", "bar")))
                 .toMap()
                 .chain("Foo", f -> assertThat(f.getFirstChild("bar").getContentString(), is(equalTo("baz"))))

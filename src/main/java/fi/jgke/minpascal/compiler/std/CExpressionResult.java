@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.compiler.IdentifierContext;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.TypeError;
 import lombok.Data;
 
@@ -37,7 +38,8 @@ public class CExpressionResult {
         return relOp.toOptional().map(rel ->
                 getType(fromSimple(left),
                         getRelOp(rel),
-                        fromSimple(rel.getFirstChild("RelOp").getFirstChild("SimpleExpression")))
+                        fromSimple(rel.getFirstChild("RelOp").getFirstChild("SimpleExpression")),
+                        arg.getPosition())
         ).orElse(fromSimple(left));
     }
 
@@ -70,23 +72,24 @@ public class CExpressionResult {
         AstNode left = simple.getFirstChild("Term");
         return left.getFirstChild("AddOp").toOptional()
                 .map(add -> getType(
-                        addSign(sign).apply(fromTerm(left.getFirstChild("Term"))),
+                        addSign(sign, left.getPosition()).apply(fromTerm(left.getFirstChild("Term"))),
                         getAddOp(add),
-                        fromTerm(add.getFirstChild("AddOp").getFirstChild("Term"))
-                )).orElse(addSign(sign).apply(fromTerm(left.getFirstChild("Term"))));
+                        fromTerm(add.getFirstChild("AddOp").getFirstChild("Term")),
+                        left.getPosition()
+                )).orElse(addSign(sign, left.getPosition()).apply(fromTerm(left.getFirstChild("Term"))));
     }
 
-    private static CExpressionResult getType(CExpressionResult left, String op, CExpressionResult right) {
-        return CBinaryExpressions.apply(left, CBinaryExpressionFnPrivate.getOperator(op), right);
+    private static CExpressionResult getType(CExpressionResult left, String op, CExpressionResult right, Position position) {
+        return CBinaryExpressions.apply(left, CBinaryExpressionFnPrivate.getOperator(op), right, position);
     }
 
-    private static Function<CExpressionResult, CExpressionResult> addSign(Optional<String> sign) {
+    private static Function<CExpressionResult, CExpressionResult> addSign(Optional<String> sign, Position position) {
         return result -> {
             sign.ifPresent(s -> {
                 CType type = result.getType();
                 if (!type.equals(CType.CINTEGER) &&
                         !type.equals(CType.CDOUBLE))
-                    throw new TypeError("Expected integer or real, got " + type.formatType());
+                    throw new TypeError("Expected integer or real, got " + type.formatType(), position);
                 String id = genIdentifier();
                 result.temporaries.add(type.toDeclaration(id, Optional.empty()) + " = " + s + " " + result.getIdentifier());
                 result.identifier = id;
@@ -110,7 +113,8 @@ public class CExpressionResult {
         return relOp.toOptional().map(rel ->
                 getType(fromFactor(left.getFirstChild("Factor")),
                         getMulOp(rel),
-                        fromFactor(rel.getFirstChild("MulOp").getFirstChild("Factor")))
+                        fromFactor(rel.getFirstChild("MulOp").getFirstChild("Factor")),
+                        relOp.getPosition())
         ).orElse(fromFactor(left.getFirstChild("Factor")));
     }
 
@@ -128,7 +132,8 @@ public class CExpressionResult {
         if (post.isPresent()) {
             String identifier = unwrap.getIdentifier();
             CType type = unwrap.getType().getPtrTo()
-                    .orElseThrow(() -> new TypeError("Expected " + identifier + " to be an array but it isn't"));
+                    .orElseThrow(() -> new TypeError("Expected " + identifier + " to be an array but it isn't",
+                            factor.getPosition()));
             String s = post.get();
             String tmp = genIdentifier();
             ArrayList<String> temps = new ArrayList<>(unwrap.getTemporaries());
@@ -141,7 +146,7 @@ public class CExpressionResult {
     private static CExpressionResult fromNot(AstNode astNode) {
         CExpressionResult factor = fromFactor(astNode.getFirstChild("Factor"));
         if(!factor.getType().equals(CType.CBOOLEAN)) {
-            throw new TypeError("Expected boolean but got " + factor.getType().formatType());
+            throw new TypeError("Expected boolean but got " + factor.getType().formatType(), astNode.getPosition());
         }
         String identifier = factor.getIdentifier();
         factor.getTemporaries().add(identifier + " = !" + identifier + ";");
@@ -154,16 +159,17 @@ public class CExpressionResult {
                 .getFirstChild("identifier").getContentString();
         Optional<AstNode> arrayIndex = astNode.getFirstChild("Variable")
                 .getFirstChild("ob").toOptional();
-        CType type = IdentifierContext.getType(identifier);
-        String realName = IdentifierContext.getRealName(identifier);
+        CType type = IdentifierContext.getType(identifier, astNode.getPosition());
+        String realName = IdentifierContext.getRealName(identifier, astNode.getPosition());
         Function<CExpressionResult, CExpressionResult> addPre = Function.identity();
         if (arrayIndex.isPresent()) {
             AstNode idx = arrayIndex.get();
             String finalIdentifier1 = identifier;
             String newIdentifier = genIdentifier();
             type = type.getPtrTo()
-                    .orElseThrow(() -> new TypeError("Expected " + finalIdentifier1 + " to be an array but it isn't"));
-            IdentifierContext.addIdentifier(newIdentifier, type);
+                    .orElseThrow(() -> new TypeError("Expected " + finalIdentifier1 + " to be an array but it isn't",
+                            astNode.getPosition()));
+            IdentifierContext.addIdentifier(newIdentifier, type, astNode.getPosition());
             CExpressionResult cExpressionResult = fromExpression(idx.getFirstChild("ob").getFirstChild("Expression"));
             identifier = newIdentifier;
             realName = newIdentifier;
@@ -195,7 +201,7 @@ public class CExpressionResult {
 
     private static CExpressionResult fromCall(String identifier, CType type, AstNode call) {
         CType returnType = type.getReturnType()
-                .orElseThrow(() -> new TypeError(identifier + " isn't a function"));
+                .orElseThrow(() -> new TypeError(identifier + " isn't a function", call.getPosition()));
         List<CExpressionResult> expressions = CExpressionResult.getArguments(call.getFirstChild("Arguments"));
         List<String> temporaries = expressions.stream()
                 .flatMap(e -> e.getTemporaries().stream())
@@ -204,14 +210,14 @@ public class CExpressionResult {
                 .flatMap(e -> e.getPost().stream())
                 .collect(Collectors.toList());
         if (type.getParameters().size() != expressions.size()) {
-            throw new TypeError("Invalid arity: Got " + expressions.size() + " parameters but expected " + type.getParameters().size());
+            throw new TypeError("Invalid arity: Got " + expressions.size() + " parameters but expected " + type.getParameters().size(), call.getPosition());
         }
         String arguments =
                 Streams.zip(expressions.stream(), type.getParameters().stream(),
-                        (a, b) -> a.getType().assignTo(b, a.getIdentifier()))
+                        (a, b) -> a.getType().assignTo(b, a.getIdentifier(), call.getPosition()))
                         .collect(Collectors.joining(","));
         String result = genIdentifier();
-        temporaries.add(returnType.toDeclaration(result, Optional.empty()) + " = " + IdentifierContext.getRealName(identifier) + "(" + arguments + ");");
+        temporaries.add(returnType.toDeclaration(result, Optional.empty()) + " = " + IdentifierContext.getRealName(identifier, call.getPosition()) + "(" + arguments + ");");
         return new CExpressionResult(returnType, result, temporaries, post);
     }
 

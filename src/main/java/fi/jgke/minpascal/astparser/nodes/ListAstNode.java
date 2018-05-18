@@ -1,12 +1,14 @@
 package fi.jgke.minpascal.astparser.nodes;
 
+import fi.jgke.minpascal.data.Position;
+
 import java.util.List;
 
 public class ListAstNode extends AstNode {
     private final List<AstNode> content;
 
-    public ListAstNode(String name, List<AstNode> content) {
-        super(name);
+    public ListAstNode(String name, List<AstNode> content, Position position) {
+        super(name, position);
         this.content = content;
     }
 

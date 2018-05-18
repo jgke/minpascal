@@ -5,6 +5,7 @@ import fi.jgke.minpascal.astparser.nodes.EmptyNode;
 import fi.jgke.minpascal.astparser.parsers.*;
 import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.CompilerException;
+import fi.jgke.minpascal.exception.ParseError;
 import fi.jgke.minpascal.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,12 +51,12 @@ public class ParserTest {
                 });
     }
 
-    @Test(expected = CompilerException.class)
+    @Test(expected = ParseError.class)
     public void testTerminalNotMatch() {
         new TerminalMatch("a", "a", false).parse("b");
     }
 
-    @Test(expected = CompilerException.class)
+    @Test(expected = ParseError.class)
     public void testTerminalNotMatchRegex() {
         new TerminalMatch("a", "a", true).parse("b");
     }
@@ -180,7 +181,7 @@ public class ParserTest {
         assertThat(parsers.get(0), is(equalTo(epsilon)));
     }
 
-    @Test(expected = CompilerException.class)
+    @Test(expected = ParseError.class)
     public void testOrMatchThrowsOnError() {
         initRules("a ::= 'a'");
         new OrMatch(Arrays.asList(new RuleMatch("a"), new RuleMatch("a"))).parse("b");

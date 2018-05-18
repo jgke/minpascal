@@ -17,6 +17,7 @@ public class KleeneMatch implements Parser {
 
     @Override
     public Pair<AstNode, Pair<String, Position>> parse(Pair<String, Position> str) {
+        Position p = str.getRight();
         Pair<List<AstNode>, Pair<String, Position>> pair = new Pair<>(Collections.emptyList(), str);
         while (parser.parses(pair.getRight().getLeft())) {
             Pair<AstNode, Pair<String, Position>> parse = parser.parse(pair.getRight());
@@ -24,7 +25,7 @@ public class KleeneMatch implements Parser {
             astNodes.add(parse.getLeft());
             pair = new Pair<>(astNodes, parse.getRight());
         }
-        ListAstNode listAstNode = new ListAstNode(name, pair.getLeft());
+        ListAstNode listAstNode = new ListAstNode(name, pair.getLeft(), p);
         return new Pair<>(listAstNode, pair.getRight());
     }
 
