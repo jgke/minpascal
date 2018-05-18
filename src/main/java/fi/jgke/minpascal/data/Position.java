@@ -11,4 +11,15 @@ public class Position {
     public String toString() {
         return "line " + getLine() + ", column " + getColumn();
     }
+
+    public Position addStr(String s) {
+        if (s.contains("\n")) {
+            String[] split = s.split("\n", -1);
+            int length = split[split.length - 1].length();
+            int lines = split.length - 1;
+            // ignore column here because we want it from the start of the line
+            return new Position(line + lines, length);
+        }
+        return new Position(line, column + s.length());
+    }
 }

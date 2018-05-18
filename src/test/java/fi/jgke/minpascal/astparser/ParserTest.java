@@ -3,6 +3,7 @@ package fi.jgke.minpascal.astparser;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.nodes.EmptyNode;
 import fi.jgke.minpascal.astparser.parsers.*;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
 import org.junit.Before;
@@ -214,8 +215,8 @@ public class ParserTest {
 
     private void parserTest(Parser parser, String str, String expectedRight, Consumer<AstNode> consumer) {
         assertThat("Parser " + parser + " can parse " + str, parser.parses(str));
-        Pair<AstNode, String> parse = parser.parse(str);
-        assertThat(parse.getRight(), is(equalTo(expectedRight)));
+        Pair<AstNode, Pair<String, Position>> parse = parser.parse(str);
+        assertThat(parse.getRight().getLeft(), is(equalTo(expectedRight)));
         consumer.accept(parse.getLeft());
     }
 }

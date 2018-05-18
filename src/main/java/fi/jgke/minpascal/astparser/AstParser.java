@@ -2,6 +2,7 @@ package fi.jgke.minpascal.astparser;
 
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.parsers.Parser;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
 import lombok.Getter;
@@ -45,9 +46,9 @@ public class AstParser {
 
     public static AstNode parse(String s) {
         initDefaultParsers();
-        Pair<AstNode, String> parse = rules.get("S").parse(s.replaceAll("\n", " "));
+        Pair<AstNode, Pair<String, Position>> parse = rules.get("S").parse(s);
 
-        if (!parse.getRight().trim().isEmpty()) {
+        if (!parse.getRight().getLeft().trim().isEmpty()) {
             throw new CompilerException("Input not empty after parsing");
         }
         //System.out.println(formatTree(parse.getLeft().toString()));

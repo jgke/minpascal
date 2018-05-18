@@ -2,6 +2,7 @@ package fi.jgke.minpascal.astparser;
 
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.parsers.RuleMatch;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.util.Pair;
 import org.junit.Test;
 
@@ -14,9 +15,9 @@ public class ParserSmokeTest {
     @Test
     public void simpleTest() {
         initDefaultParsers();
-        Pair<AstNode, String> parse = AstParser.getRules().get("IdentifierStatement")
+        Pair<AstNode, Pair<String, Position>> parse = AstParser.getRules().get("IdentifierStatement")
                 .parse("foo := 5;");
-        assertThat(parse.getRight(), is(equalTo(";")));
+        assertThat(parse.getRight().getLeft(), is(equalTo(";")));
         assertThat(parse.getLeft().getFirstChild("identifier").getContentString(),
                 is(equalTo("foo")));
         parse.getLeft().getFirstChild("IdentifierStatementContent")
@@ -29,15 +30,15 @@ public class ParserSmokeTest {
         String B = "B ::= \"B\"";
         String C = "C ::= \"C\"";
         ParserTestUtils.initRules(A, B, C);
-        Pair<AstNode, String> parse;
+        Pair<AstNode, Pair<String, Position>> parse;
         parse = new RuleMatch("A").parse("B");
-        assertThat(parse.getRight(), is(equalTo("")));
+        assertThat(parse.getRight().getLeft(), is(equalTo("")));
         parse.getLeft().toMap()
                 .map("B", $ -> null)
                 .map("C", $ -> assertFalse())
                 .unwrap();
         parse = new RuleMatch("A").parse("C");
-        assertThat(parse.getRight(), is(equalTo("")));
+        assertThat(parse.getRight().getLeft(), is(equalTo("")));
         parse.getLeft().toMap()
                 .map("C", $ -> null)
                 .map("B", $ -> assertFalse())

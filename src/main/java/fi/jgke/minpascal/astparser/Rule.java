@@ -33,7 +33,7 @@ public class Rule {
                 .collect(Collectors.toList());
     }
 
-    private Parser toJust(List<Parser> parsers, String name, boolean flatten) {
+    private Parser toJust(List<Parser> parsers, String name) {
         if (parsers.size() <= 1)
             return parsers.get(0);
         return new AndMatch(name, parsers);
@@ -67,7 +67,7 @@ public class Rule {
                     parsers.add(new KleeneMatch(parser));
                     break;
                 case "|":
-                    Parser inner = toJust(parsers, parsers.get(0).getName(), true);
+                    Parser inner = toJust(parsers, parsers.get(0).getName());
                     parsers = new ArrayList<>();
                     Parser right = getParser(tokens, tokens.peek());
                     if (right instanceof AndMatch) {
@@ -91,7 +91,7 @@ public class Rule {
                     parsers.add(new RuleMatch(remove));
             }
         }
-        return toJust(parsers, name, false);
+        return toJust(parsers, name);
     }
 
     private boolean isTerminating(Queue<String> tokens) {

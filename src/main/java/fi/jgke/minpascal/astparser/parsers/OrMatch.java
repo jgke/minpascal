@@ -2,6 +2,7 @@ package fi.jgke.minpascal.astparser.parsers;
 
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.nodes.ListAstNode;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.util.Pair;
 
@@ -41,15 +42,15 @@ public class OrMatch implements Parser {
         throw new UnsupportedOperationException();
     }
 
-    private static CompilerException parseFailure(List<Parser> parsers, String substring) {
-        return new CompilerException("Parse failure, expected any of " + parsers + " near " + substring);
+    private static CompilerException parseFailure(List<Parser> parsers, Pair<String, Position> substring) {
+        return new CompilerException("Parse failure, expected any of " + parsers + " near " + substring.getRight());
     }
 
     @Override
-    public Pair<AstNode, String> parse(String str) {
+    public Pair<AstNode, Pair<String, Position>> parse(Pair<String, Position> str) {
         for (Parser p : parsers) {
-            if (p.parses(str)) {
-                Pair<AstNode, String> parse = p.parse(str);
+            if (p.parses(str.getLeft())) {
+                Pair<AstNode, Pair<String, Position>> parse = p.parse(str);
                 ListAstNode listAstNode = new ListAstNode(p.getName(), Collections.singletonList(parse.getLeft()));
                 listAstNode.setAvailableNames(names);
                 return new Pair<>(listAstNode, parse.getRight());

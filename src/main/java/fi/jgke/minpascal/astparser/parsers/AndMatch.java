@@ -2,6 +2,7 @@ package fi.jgke.minpascal.astparser.parsers;
 
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.astparser.nodes.ListAstNode;
+import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.util.Pair;
 import lombok.Getter;
 
@@ -23,12 +24,13 @@ public class AndMatch implements Parser {
         return name;
     }
 
+
     @Override
-    public Pair<AstNode, String> parse(String str) {
+    public Pair<AstNode, Pair<String, Position>> parse(Pair<String, Position> str) {
         List<AstNode> nodes = new ArrayList<>();
         for (Parser p : parsers) {
             str = whitespace.parse(str).getRight();
-            Pair<AstNode, String> pair = p.parse(str);
+            Pair<AstNode, Pair<String, Position>> pair = p.parse(str);
             nodes.add(pair.getLeft());
             str = pair.getRight();
         }

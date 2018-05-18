@@ -162,7 +162,11 @@ public class Regex {
             char c = queue.remove();
             switch (c) {
                 case '\\':
-                    patterns.add(new Pattern("" + queue.remove()));
+                    Character remove = queue.remove();
+                    if(remove.equals('n'))
+                        patterns.add(new Pattern("\n"));
+                    else
+                        patterns.add(new Pattern("" + remove));
                     break;
                 case '.':
                     patterns.add(new Pattern(Type.ANY, Collections.emptyList()));
