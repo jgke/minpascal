@@ -1,6 +1,9 @@
 package fi.jgke.minpascal.compiler;
 
 import com.google.common.collect.Streams;
+import fi.jgke.minpascal.astparser.AstParser;
+import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.astparser.parsers.RuleMatch;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -8,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static fi.jgke.minpascal.compiler.CType.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -89,5 +93,55 @@ public class CTypeTest {
                     Streams.mapWithIndex(siblings.stream(), ($, index) -> "a" + index).collect(Collectors.toList()),
                     "id"), is(equalTo(expectedFunction)));
         }
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testFpError1() {
+        CType type;
+
+        type = new CType("int");
+        type.toFunctionDeclaration(Collections.emptyList(), "foo");
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testFpError2() {
+        CType type;
+
+        type = new CType(CINTEGER, Collections.emptyList());
+        type.toFunctionDeclaration(Collections.singletonList("foo"), "foo");
+    }
+
+    @Test
+    public void testAssignable() {
+        CType type;
+
+        type = CINTEGER;
+        assertThat("int can be assigned to int", type.isAssignable(CINTEGER));
+
+        type = CINTEGER;
+        assertThat("int can be assigned to int *", type.isAssignable(CType.ptrTo(CINTEGER)));
+
+        type = CINTEGER;
+        assertThat("int can be assigned to double", type.isAssignable(CDOUBLE));
+
+        type = CINTEGER;
+        assertThat("int can't be assigned to boolean", !type.isAssignable(CBOOLEAN));
+    }
+
+    private void testFromTypeNode(String content, boolean ptr, CType expected) {
+        AstNode typeNode = new RuleMatch("Type").parse(content).getLeft();
+        assertThat(CType.fromTypeNode(typeNode, ptr), is(equalTo(expected)));
+    }
+
+    @Test
+    public void testFromTypeNode() {
+        AstParser.initDefaultParsers();
+
+        testFromTypeNode("real", false, CDOUBLE);
+        testFromTypeNode("integer", false, CINTEGER);
+        testFromTypeNode("string", false, CSTRING);
+        testFromTypeNode("boolean", false, CBOOLEAN);
+        testFromTypeNode("array [3] of boolean", false, CType.ptrTo(CBOOLEAN));
+
     }
 }

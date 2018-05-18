@@ -307,11 +307,11 @@ public class CBlock {
         exp = exp.getFirstChild("ob").getFirstChild("assign").getFirstChild("Expression");
         CExpressionResult expression = CExpressionResult.fromExpression(exp);
         String p1 = checkLeftPtr && IdentifierContext.getType(identifier).getPtrTo().isPresent()
-                    ? "*" : "";
+                ? "*" : "";
         String realIdentifier =
                 checkLeftPtr
-                ? IdentifierContext.getRealName(identifier)
-                : identifier;
+                        ? IdentifierContext.getRealName(identifier)
+                        : identifier;
         String p2 = expression.getType().getPtrTo().map($ -> "*").orElse("");
         return Stream.concat(expression.getTemporaries().stream(),
                 Stream.of(p1 + realIdentifier + " = " + p2 + expression.getIdentifier() + ";"))
@@ -344,23 +344,11 @@ public class CBlock {
 
             String total = formatExpressions(
                     collect,
-                    expressions ->
-                            Streams.zip(expressions.stream(), IdentifierContext.getType(identifier).getParameters().stream(),
-                                    (a, b) -> b.getPtrTo().map(to ->
-                                            a.getType().getPtrTo().map($ -> a.getIdentifier())
-                                                    .orElse("&" + a.getIdentifier()))
-                                            .orElse(a.getType().getPtrTo()
-                                                    .map($ -> "*" + a.getIdentifier())
-                                                    .orElse(a.getIdentifier())))
-                                    .collect(Collectors.joining(delimit, pre, post)));
+                    expressions -> Streams.zip(expressions.stream(), IdentifierContext.getType(identifier).getParameters().stream(),
+                            (a, b) -> a.getType().assignTo(b, a.getIdentifier()))
+                            .collect(Collectors.joining(delimit, pre, post)));
 
             return Stream.of(new Content(total));
-        };
-    }
-
-    private static <T> Function<AstNode, T> notImplemented() {
-        return $ -> {
-            throw new RuntimeException("not impl " + $.getName());
         };
     }
 

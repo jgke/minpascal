@@ -22,7 +22,7 @@ While ::= while Expression do Statement
 Declaration ::= VarDeclaration | ProcedureDeclaration | FunctionDeclaration
 VarDeclaration ::= var identifier (comma identifier)* colon Type
 Type ::= SimpleType | ArrayType
-SimpleType ::= int | str | real
+SimpleType ::= int | str | real | boolean
 ArrayType ::= array ob [Expression] cb of SimpleType
 ProcedureDeclaration ::= procedure identifier Parameters semicolon Block
 FunctionDeclaration ::= function identifier Parameters colon Type semicolon Block
@@ -53,6 +53,7 @@ array ::= 'array'
 assert ::= 'assert'
 assign ::= ':='
 begin ::= 'begin'
+boolean ::= 'boolean'
 cb ::= ']'
 colon ::= ':'
 comma ::= ','

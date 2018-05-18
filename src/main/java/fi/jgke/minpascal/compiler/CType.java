@@ -35,6 +35,7 @@ public class CType {
         pascalToCMap = new HashMap<>();
         pascalToCMap.put("boolean", "bool");
         pascalToCMap.put("integer", "int");
+        pascalToCMap.put("real", "double");
         pascalToCMap.put("string", "char *");
     }
 
@@ -56,23 +57,24 @@ public class CType {
 
     private static String getType(AstNode simpleTypeNode) {
         return simpleTypeNode.<String>toMap()
-                .map("int", AstNode::getContentString)
-                .map("str", AstNode::getContentString)
-                .map("real", AstNode::getContentString)
+                .map("int", $ -> "integer")
+                .map("str", $ -> "string")
+                .map("real", $ -> "real")
+                .map("boolean", $ -> "boolean")
                 .unwrap();
     }
 
     public static CType fromTypeNode(AstNode typeNode, boolean ptr) {
-        String type = typeNode.<String>toMap()
+        String parsedType = typeNode.<String>toMap()
                 .map("SimpleType", CType::getType)
                 .map("ArrayType", atype -> getType(atype
                         .getFirstChild("Expression")
                         .getFirstChild("cb")
                         .getFirstChild("SimpleType")))
                 .unwrap();
-        type = pascalToCMap.getOrDefault(type, null);
+        String type = pascalToCMap.getOrDefault(parsedType, null);
         if (type == null) {
-            throw new CompilerException("Invalid type " + typeNode);
+            throw new CompilerException("Invalid type " + parsedType);
         }
         //type += typeNode.getOptionalChild("ArrayType")
         //        .map(arrayTypeNode -> " *").orElse("");
