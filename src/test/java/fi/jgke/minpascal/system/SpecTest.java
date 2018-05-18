@@ -86,7 +86,7 @@ public class SpecTest {
     public void three() {
         String s = "program Hello; " +
                 "begin " +
-                "  assert(false);" +
+                "  assert(1 > 2);" +
                 "end.";
         testCompiledOutput(s, "", "Assertion failed\n", 1);
     }

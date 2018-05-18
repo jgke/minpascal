@@ -3,6 +3,7 @@ package fi.jgke.minpascal.compiler;
 import com.google.common.collect.Streams;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
 import fi.jgke.minpascal.exception.CompilerException;
+import fi.jgke.minpascal.exception.TypeError;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -82,8 +83,8 @@ public class CType {
         return cType;
     }
 
-    @Override
-    public String toString() {
+    //Just the type (for eg. casts)
+    public String formatType() {
         return returnType
                 .map($ -> formatFunctionPointer(""))
                 .orElse(getMe());
@@ -91,14 +92,14 @@ public class CType {
 
     private static String formatCall(List<CType> types) {
         return "(" +
-                types.stream().map(CType::toString).collect(Collectors.joining(", ")) +
+                types.stream().map(CType::formatType).collect(Collectors.joining(", ")) +
                 ")";
     }
 
     // returnType (*identifier)(args)
     private String formatFunctionPointer(String identifier) {
         if (!returnType.isPresent()) throw new AssertionError();
-        return returnType.get().toString() + " (*" + identifier + ")" + formatCall(parameters);
+        return returnType.get().formatType() + " (*" + identifier + ")" + formatCall(parameters);
     }
 
     // returnType (*identifier)(args)
@@ -107,8 +108,8 @@ public class CType {
         String s = this.returnType
                 .map($ -> formatFunctionPointer(identifier))
                 .orElseGet(() ->
-                        this.ptrTo.map(to -> to.toString() + " *" + identifier)
-                                .orElseGet(() -> this.toString() + " " + identifier));
+                        this.ptrTo.map(to -> to.formatType() + " *" + identifier)
+                                .orElseGet(() -> this.formatType() + " " + identifier));
         return initializer.map(id ->
                 s + " = malloc(sizeof(int) * (" + id + " + 1));\n" +
                         identifier + "[0] = " + id + ";\n" +
@@ -119,11 +120,11 @@ public class CType {
     public String toFunctionDeclaration(List<String> argumentIdentifiers, String name) {
         if (!returnType.isPresent()) throw new AssertionError();
         if (argumentIdentifiers.size() != parameters.size()) throw new AssertionError();
-        return returnType.get().toString() + " " + name + "(" +
+        return returnType.get().formatType() + " " + name + "(" +
                 Streams.zip(parameters.stream(), argumentIdentifiers.stream(),
                         (type, identifier) ->
-                                type.getPtrTo().map(to -> to.toString() + " *" + identifier
-                                ).orElseGet(() -> type.toString() + " " + identifier)
+                                type.getPtrTo().map(to -> to.formatType() + " *" + identifier
+                                ).orElseGet(() -> type.formatType() + " " + identifier)
                 ).collect(Collectors.joining(", ")) + ")";
     }
 
@@ -162,5 +163,29 @@ public class CType {
 
     public Optional<CType> getPtrTo() {
         return ptrTo;
+    }
+
+    public boolean isAssignable(CType to) {
+        to = to.dereferenceMaybe();
+        CType me = this.dereferenceMaybe();
+        if (to.equals(me))
+            return true;
+        if (me.equals(CINTEGER)) {
+            return to.equals(CINTEGER) || to.equals(CDOUBLE);
+        }
+        return false;
+    }
+
+    public String assignTo(CType to, String identifier) {
+        if (!isAssignable(to)) {
+            throw new TypeError("Cannot assign " + this.formatType() + " to " + to.formatType());
+        }
+        return this.getPtrTo().map($ ->
+                to.getPtrTo()
+                        .map($$ -> identifier)
+                        .orElse("*" + identifier))
+                .orElse(to.getPtrTo()
+                        .map($ -> "&" + identifier)
+                        .orElse(identifier));
     }
 }

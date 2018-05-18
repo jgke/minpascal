@@ -17,13 +17,11 @@ public class CTypeTest {
     @Test
     public void toStringSimple() {
         testCType(
-                "void",
                 Optional.empty(),
                 Collections.emptyList(),
                 "void",
                 "void id");
         testCType(
-                "anything",
                 Optional.of(new CType("int")),
                 Collections.singletonList(new CType("int")),
                 "int (*)(int)",
@@ -65,8 +63,6 @@ public class CTypeTest {
         CType type;
 
         type = new CType("int");
-        System.out.println(type);
-        System.out.println(type.equals(CType.CINTEGER));
         assertThat(type.defaultValue(), is(equalTo("0")));
 
         type = new CType("bool");
@@ -79,14 +75,14 @@ public class CTypeTest {
         assertThat(type.defaultValue(), is(equalTo("NULL")));
     }
 
-    private static void testCType(String me, Optional<CType> call, List<CType> siblings, String expected, String expectedIdentifier) {
-        testCType(me, call, siblings, expected, expectedIdentifier, "");
+    private static void testCType(Optional<CType> call, List<CType> siblings, String expected, String expectedIdentifier) {
+        testCType(call, siblings, expected, expectedIdentifier, "");
     }
 
-    private static void testCType(String me, Optional<CType> call, List<CType> siblings, String expected,
+    private static void testCType(Optional<CType> call, List<CType> siblings, String expected,
                                   String expectedIdentifier, String expectedFunction) {
-        CType cType = new CType(me, call, siblings);
-        assertThat(cType.toString(), is(equalTo(expected)));
+        CType cType = new CType("void", call, siblings);
+        assertThat(cType.formatType(), is(equalTo(expected)));
         assertThat(cType.toDeclaration("id", Optional.empty()), is(equalTo(expectedIdentifier)));
         if (!expectedFunction.isEmpty()) {
             assertThat(cType.toFunctionDeclaration(

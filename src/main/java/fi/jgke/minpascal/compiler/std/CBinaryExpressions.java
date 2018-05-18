@@ -2,7 +2,6 @@ package fi.jgke.minpascal.compiler.std;
 
 import fi.jgke.minpascal.compiler.CType;
 import fi.jgke.minpascal.data.TokenType;
-import fi.jgke.minpascal.exception.CompilerException;
 import fi.jgke.minpascal.exception.OperatorError;
 
 import java.util.Arrays;
@@ -33,15 +32,8 @@ public class CBinaryExpressions {
     private static CType max(CType a, CType b) {
         if (a.equals(CSTRING) || b.equals(CSTRING)) {
             return CSTRING;
-        } else if (a.equals(CBOOLEAN) || b.equals(CBOOLEAN)) {
-            if (a.equals(CBOOLEAN) && b.equals(CBOOLEAN)) {
-                return CBOOLEAN;
-            }
-            CType got = a;
-            if (a.equals(CBOOLEAN)) {
-                got = b;
-            }
-            throw new CompilerException("Expected CBOOLEAN, got " + got);
+        } else if (a.equals(CBOOLEAN)) {
+            return CBOOLEAN;
         } else if (a.equals(CDOUBLE) || b.equals(CDOUBLE)) {
             return CDOUBLE;
         }

@@ -43,7 +43,7 @@ SizeExpression ::= dot size
 // 'true' and 'false' are treated as variables
 Literal ::= realliteral | integerliteral | stringliteral
 
-RelOp ::= equals | notequals | lessthan | lessthanequals | morethan | morethanequals
+RelOp ::= notequals | equals | lessthanequals | lessthan | morethanequals | morethan
 Sign ::= plus | minus
 AddOp ::= plus | minus | or
 MulOp ::= times | divide | mod | and
@@ -65,7 +65,7 @@ end ::= 'end'
 equals ::= '=='
 function ::= 'function'
 identifier ::= !keyword identifierregex
-identifierregex ::= "[a-zA-Z]+"
+identifierregex ::= "[a-zA-Z][a-zA-Z0-9]*"
 keyword ::= or | and | not | if | then | else | of | while | do
           | begin | end | var | array | procedure | function
           | program | assert | return

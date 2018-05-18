@@ -56,6 +56,40 @@ public class CTest {
     }
 
     @Test
+    public void sideEffects() {
+        String app = "program Hello;\n" +
+                " function foo (x : integer): integer; " +
+                " begin " +
+                "     writeln(x + 1); " +
+                "     return x; " +
+                " end " +
+                " function bar (x : integer): integer; " +
+                " begin " +
+                "     writeln(x - 1); " +
+                "     return x; " +
+                " end " +
+                " begin\n" +
+                " writeln(foo(5) + bar(5)); " +
+                "end.\n";
+        testCompiledOutput(app, "6\n4\n10\n");
+    }
+
+    @Test
+    public void strConcat() {
+        String app = "program Hello;\n" +
+                "begin " +
+                " var x: string;" +
+                " var y: string;" +
+                " x := \"FooBar\";" +
+                " y := \"FooBar\";" +
+                " writeln(\"Foo\" + \"Bar\"); " +
+                " x := x + y;" +
+                " writeln(x); " +
+                "end.\n";
+        testCompiledOutput(app, "FooBar\nFooBarFooBar\n");
+    }
+
+    @Test
     public void varFunctions() {
         String app = "program foo;" +
                 " function foo (var x : integer): integer; " +

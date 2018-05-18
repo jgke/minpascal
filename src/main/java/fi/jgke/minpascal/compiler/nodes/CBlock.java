@@ -237,8 +237,8 @@ public class CBlock {
             p = "*";
         }
         if (!type.equals(functionContext)) {
-            throw new TypeError("Invalid return type; expected " + functionContext
-                    + " but got " + type);
+            throw new TypeError("Invalid return type; expected " + functionContext.formatType()
+                    + " but got " + type.formatType());
         }
         return Stream.of(new Content(
                 result.getTemporaries().stream().collect(Collectors.joining(";\n"))

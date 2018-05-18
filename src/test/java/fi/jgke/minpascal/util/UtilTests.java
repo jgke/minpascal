@@ -15,9 +15,9 @@ public class UtilTests {
     public void untilTests() {
         new OptionalUtils();
         OptionalUtils.Until<String> stringUntil = new OptionalUtils.Until<>();
-        stringUntil.chain(Optional.empty(), this::unreachable);
-        stringUntil.chain(Optional.of("foo"), $ -> "bar");
-        stringUntil.chain(Optional.empty(), this::unreachable);
+        stringUntil.chain(Optional.empty(), this::unreachable)
+        .chain(Optional.of("foo"), $ -> "bar")
+        .chain(Optional.empty(), this::unreachable);
         assertThat(stringUntil.get(), is(equalTo("bar")));
     }
 
@@ -40,7 +40,11 @@ public class UtilTests {
     public void formatterTest() {
         new Formatter();
         String input = "[foo{bar}, baz(quz; baq;)\n]";
-        assertThat(Formatter.formatTree(input, -1), is(equalTo("[\n  foo{bar} \n  baz (\n    quz;\n    baq;\n    \n  )\n  \n]\n")));
+        assertThat(Formatter.formatTree(input, -1), is(equalTo("\n[\n  foo{bar}\n  baz (\n    quz;\n    baq;)]\n")));
+        assertThat(Formatter.formatTree(input, 0), is(equalTo("\n")));
+        assertThat(Formatter.formatTree(input, 1), is(equalTo("\n[]\n")));
+        assertThat(Formatter.formatTree(input, 2), is(equalTo("\n[\n  foo{bar}\n  baz ()]\n")));
+        assertThat(Formatter.formatTree("[a[b[c],d],e[f]]", -1), is(equalTo("\n[\n  a[\n    b[\n      c]\n    d]\n  e[\n    f]]\n")));
     }
 
     @Test
