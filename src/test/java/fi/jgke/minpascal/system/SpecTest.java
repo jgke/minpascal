@@ -88,7 +88,7 @@ public class SpecTest {
                 "begin " +
                 "  assert(1 > 2);" +
                 "end.";
-        testCompiledOutput(s, "", "Assertion failed\n", 1);
+        testCompiledOutput(s, "", "Assertion failed on line 1, column 24\n", 1);
     }
 
     /*

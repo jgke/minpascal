@@ -134,9 +134,9 @@ public class ExpressionResultTest {
         test("foo.size", 0, CINTEGER, Collections.singletonMap("foo", i -> Double.parseDouble(i) + 1));
         CExpressionResult expression = getExpression("qux[0]()");
         assertThat("Array of functions works",
-                expression.getTemporaries().get(1).matches("^int \\(\\*_identifier[0-9]+\\)\\(\\) = qux\\[_identifier[0-9]+];$"));
+                expression.getTemporaries().get(2).matches("^int \\(\\*_identifier[0-9]+\\)\\(\\) = qux\\[_identifier[0-9]+];$"));
         assertThat("Array of functions works",
-                expression.getTemporaries().get(2).matches("^int _identifier[0-9]+ = _identifier[0-9]+\\(\\);$"));
+                expression.getTemporaries().get(3).matches("^int _identifier[0-9]+ = _identifier[0-9]+\\(\\);$"));
     }
 
     private void opTest(String expr, String expected) {
