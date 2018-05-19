@@ -13,7 +13,6 @@ public class AndParser implements Parser {
     private final String name;
     @Getter
     private final List<Parser> parsers;
-    private static final Parser whitespace = new RuleParser("whitespace");
 
     public AndParser(String name, List<Parser> parsers) {
         this.name = name;
