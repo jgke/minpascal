@@ -56,15 +56,16 @@ public class NodeTests {
     @After
     public void checkCalled() {
         calledConsumers.forEach(thing -> Mockito.verify(thing).accept(Mockito.any()));
+        calledFunctions.forEach(thing -> Mockito.verify(thing).apply(Mockito.any()));
     }
 
-    public <A> Consumer<A> calledConsumer(Consumer<A> fn) {
+    private <A> Consumer<A> calledConsumer(Consumer<A> fn) {
         fn = spyConsumer(fn);
         calledConsumers.add(fn);
         return fn;
     }
 
-    public <A, B> Function<A, B> calledFunction(Function<A, B> fn) {
+    private <A, B> Function<A, B> calledFunction(Function<A, B> fn) {
         fn = spyFunction(fn);
         calledFunctions.add(fn);
         return fn;

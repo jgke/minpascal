@@ -52,7 +52,7 @@ public class CBlock {
         return new CBlock(collect);
     }
 
-    public static Stream<Content> fromStatement(AstNode statement) {
+    private static Stream<Content> fromStatement(AstNode statement) {
         IdentifierContext.setLastStatementWasReturn(false);
         return statement.<Stream<Content>>toMap()
                 .map("SimpleStatement", CBlock::fromSimple)

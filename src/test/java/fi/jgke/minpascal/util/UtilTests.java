@@ -2,6 +2,7 @@ package fi.jgke.minpascal.util;
 
 import org.junit.Test;
 
+import static fi.jgke.minpascal.util.StringUtils.ellipsis;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -25,9 +26,10 @@ public class UtilTests {
         assertThat(foo.getRight(), is(equalTo("foo")));
     }
 
-    @SuppressWarnings("unused")
-    private <T, U> T unreachable(U u) {
-        throw new RuntimeException();
+    @Test
+    public void ellipsisTest() {
+        assertThat(ellipsis("", 0), is(equalTo("")));
+        assertThat(ellipsis("foobar", 5), is(equalTo("fo...")));
+        assertThat(ellipsis("foobar", 6), is(equalTo("foobar")));
     }
-
 }

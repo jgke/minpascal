@@ -45,6 +45,7 @@ public class ParserSmokeTest {
                 .unwrap();
     }
 
+    @SuppressWarnings({"SameReturnValue", "ConstantConditions"})
     private static <T> T assertFalse() {
         assertThat(false, is(equalTo(true)));
         return null;
@@ -54,10 +55,10 @@ public class ParserSmokeTest {
     public void testParameters() {
         initDefaultParsers();
         RuleMatch p = new RuleMatch("Parameters");
-        p.parse("()").getLeft().debug();
-        p.parse("(x: real)").getLeft();
-        p.parse("(x: real, y: real)").getLeft();
-        p.parse("(x: real, y: real, z: real)").getLeft();
-        p.parse("(x: real, y: real, z: real, t: real)").getLeft();
+        p.parse("()");
+        p.parse("(x: real)");
+        p.parse("(x: real, y: real)");
+        p.parse("(x: real, y: real, z: real)");
+        p.parse("(x: real, y: real, z: real, t: real)");
     }
 }

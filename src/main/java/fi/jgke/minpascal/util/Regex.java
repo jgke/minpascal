@@ -51,8 +51,8 @@ public class Regex {
             this.lazyMatch = null;
         }
 
-        Pattern(Type type, List<Pattern> content, Pattern lazyMatch) {
-            this.type = type;
+        Pattern(List<Pattern> content, Pattern lazyMatch) {
+            this.type = Type.KLEENE_LAZY;
             this.content = content;
             this.lazyMatch = lazyMatch;
             this.terminal = null;
@@ -63,7 +63,7 @@ public class Regex {
             int position = 0;
             switch (type) {
                 case STRING:
-                    if (str.startsWith(terminal)) {
+                    if (str.startsWith(Objects.requireNonNull(terminal))) {
                         return terminal.length();
                     }
                     return -1;
@@ -98,6 +98,7 @@ public class Regex {
                 case KLEENE_LAZY:
                     int lazySize;
                     if (content == null) throw new AssertionError();
+                    if (lazyMatch == null) throw new AssertionError();
                     while ((lazySize = lazyMatch.getMatches(str.substring(position))) == -1) {
                         for (Pattern subPattern : content) {
                             int subSize = subPattern.getMatches(str.substring(position));
@@ -182,8 +183,7 @@ public class Regex {
                         queue.remove();
                         Pattern subPattern;
                         subPattern = makePattern(queue);
-                        pattern = new Pattern(Type.KLEENE_LAZY,
-                                              Collections.singletonList(lastPattern),
+                        pattern = new Pattern(Collections.singletonList(lastPattern),
                                               subPattern);
                     } else {
                         Type type = c == '+' ? Type.KLEENE_PLUS : Type.KLEENE;

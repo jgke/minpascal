@@ -6,7 +6,7 @@ import fi.jgke.minpascal.compiler.nodes.CBlock;
 import java.util.stream.Collectors;
 
 public class RootBuilder {
-    AstNode root;
+    private AstNode root;
 
     public RootBuilder(AstNode root) {
         this.root = root;

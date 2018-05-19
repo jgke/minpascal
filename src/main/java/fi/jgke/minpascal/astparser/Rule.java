@@ -95,7 +95,10 @@ public class Rule {
     }
 
     private boolean isTerminating(Queue<String> tokens) {
-        return tokens.isEmpty() || tokens.peek().equals(")") || tokens.peek().equals("|") || tokens.peek().equals("]");
+        if(tokens.isEmpty())
+            return true;
+        String next = tokens.element();
+        return next.equals(")") || next.equals("|") || next.equals("]");
     }
 
     public Parser getParser() {
@@ -108,9 +111,7 @@ public class Rule {
         for (String s : Arrays.asList("!", "[", "]", "|", "(", ")", "*")) {
             split = tokenize(split, s);
         }
-        Parser parser = getParser(new ArrayDeque<>(split), _name);
-        //System.out.println(_name + " ::= " + parser);
-        return parser;
+        return getParser(new ArrayDeque<>(split), _name);
     }
 
 }

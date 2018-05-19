@@ -117,15 +117,10 @@ public class CTypeTest {
 
         type = CINTEGER;
         assertThat("int can be assigned to int", type.isAssignable(CINTEGER));
-
-        type = CINTEGER;
         assertThat("int can be assigned to int *", type.isAssignable(CType.ptrTo(CINTEGER)));
-
-        type = CINTEGER;
         assertThat("int can be assigned to double", type.isAssignable(CDOUBLE));
-
-        type = CINTEGER;
         assertThat("int can't be assigned to boolean", !type.isAssignable(CBOOLEAN));
+        assertThat("double can't be assigned to int", !CDOUBLE.isAssignable(CINTEGER));
     }
 
     private void testFromTypeNode(String content, boolean ptr, CType expected) {
@@ -141,6 +136,7 @@ public class CTypeTest {
         testFromTypeNode("integer", false, CINTEGER);
         testFromTypeNode("string", false, CSTRING);
         testFromTypeNode("boolean", false, CBOOLEAN);
+        testFromTypeNode("boolean", true, CType.ptrTo(CBOOLEAN));
         testFromTypeNode("array [3] of boolean", false, CType.ptrTo(CBOOLEAN));
 
     }

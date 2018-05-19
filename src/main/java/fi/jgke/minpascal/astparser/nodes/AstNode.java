@@ -38,7 +38,7 @@ public abstract class AstNode {
     }
 
     public List<AstNode> getList() {
-        return Collections.singletonList((AstNode)getContent());
+        return Collections.singletonList((AstNode) getContent());
     }
 
     public <T> MappingAstNode<T> toMap() {
@@ -58,7 +58,7 @@ public abstract class AstNode {
     public AstNode getFirstChild(String withName) {
         return getOptionalChild(withName)
                 .orElseThrow(() -> new CompilerException("Child " + withName + " not found, available: "
-                        + getList().stream().map(AstNode::getName).collect(Collectors.joining(", ")) + "/" + availableNames.toString()
+                                                                 + getList().stream().map(AstNode::getName).collect(Collectors.joining(", ")) + "/" + availableNames.toString()
                 ));
     }
 
@@ -67,6 +67,7 @@ public abstract class AstNode {
         return debug(-1);
     }
 
+    @SuppressWarnings("unused")
     public AstNode debug(int limit) {
         System.out.println(formatTree(this.toString(), limit));
         System.out.flush();

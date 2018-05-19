@@ -23,7 +23,6 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,7 +30,7 @@ import java.nio.file.Paths;
 
 public class MinPascal {
 
-    public static String compile(String content) throws IOException {
+    public static String compile(String content) {
         AstNode parse = AstParser.parse(content);
         return Compiler.compile(parse);
     }
@@ -45,7 +44,7 @@ public class MinPascal {
         parser.addArgument("outFile").nargs("?").setDefault((Object) null)
                 .help("Output file");
 
-        Namespace ns = null;
+        Namespace ns;
         try {
             ns = parser.parseArgs(args);
         } catch (ArgumentParserException e) {

@@ -18,32 +18,18 @@ package fi.jgke.minpascal.compiler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CBuilder {
     private StringBuilder builder;
-    private List<CBuilder> functions;
     private List<String> imports;
-
-    private int indentation = 0;
 
     public CBuilder() {
         this.builder = new StringBuilder();
-        this.functions = new ArrayList<>();
         this.imports = new ArrayList<>();
     }
 
     public CBuilder append(String str) {
-        return this.append(str, true);
-    }
-
-    private CBuilder append(String str, boolean indent) {
-        if (indent) {
-            builder.append("\n");
-            for (int i = 0; i < indentation; i++) {
-                builder.append("    ");
-            }
-        }
+        builder.append("\n");
         builder.append(str);
         return this;
     }
@@ -53,174 +39,10 @@ public class CBuilder {
         return this;
     }
 
-    public Stream<CBuilder> getFunctions() {
-        return Stream.concat(
-                functions.stream().flatMap(CBuilder::getFunctions),
-                Stream.of(this));
-    }
-
     @Override
     public String toString() {
-        return this.toString(getFunctions().filter(cb -> !cb.equals(this)));
-    }
-
-    public String toString(Stream<CBuilder> builders) {
         return imports.stream().collect(Collectors.joining("")) +
-                "\n" + this.builder.toString() + "\n" +
-                builders
-                        .map(cBuilder -> cBuilder.toString(Stream.empty()))
-                        .collect(Collectors.joining("\n"));
+                "\n" + this.builder.toString() + "\n";
     }
 
-    /*
-    private Void addBlock(BlockNode body) {
-        this.append("{\n");
-        body.getChildren().forEach(this::addStatement);
-        this.append("}");
-        return null;
-    }
-
-    private void addStatement(AstNode statementNode) {
-        statementNode.getDeclarationNode().ifPresent(this::addDeclaration);
-        statementNode.getSimple().ifPresent(this::addSimple);
-        statementNode.getStructured().ifPresent(this::addStructured);
-    }
-
-    private void addStructured(StructuredStatementNode structuredStatementNode) {
-        structuredStatementNode.map(
-                this::addBlock,
-                this::addIf,
-                this::addWhile
-        );
-    }
-
-    private Void addWhile(WhileNode whileNode) {
-        String again = IdentifierContext.genIdentifier("again");
-        String end = IdentifierContext.genIdentifier("end");
-
-        this.addLabel(again);
-
-        CExpressionResult result = CExpressionResult.fromExpression(whileNode.getCondition());
-        result.getTemporaries().forEach(this::append);
-        this.append("if(!" + result.getIdentifier() + ") ");
-        this.indentation++;
-        addGoto(end);
-        this.indentation--;
-
-        addStatement(whileNode.getStatement());
-        this.addGoto(again);
-        this.addLabel(end);
-        return null;
-    }
-
-    private Void addIf(IfThenNode ifThenNode) {
-        String end = IdentifierContext.genIdentifier("iffalse");
-
-        CExpressionResult result = CExpressionResult.fromExpression(ifThenNode.getCondition());
-        result.getTemporaries().forEach(this::append);
-
-        this.append("if(!" + result.getIdentifier() + ") ");
-        indentation++;
-        addGoto(end);
-        indentation--;
-
-        addStatement(ifThenNode.getThenStatement());
-
-        if (ifThenNode.getElseStatement().isPresent()) {
-            StatementNode elseStatement = ifThenNode.getElseStatement().get();
-            String label2 = IdentifierContext.genIdentifier("end");
-
-            this.addGoto(label2);
-
-            this.addLabel(end);
-            addStatement(elseStatement);
-
-            end = label2;
-        }
-        this.addLabel(end);
-        return null;
-    }
-
-    private Void notImplemented(Object any) {
-        throw new CompilerException("Not implemented");
-    }
-
-    private void addSimple(SimpleStatementNode simpleStatementNode) {
-        simpleStatementNode.map(
-                this::addReturn,
-                this::addRead,
-                this::addWrite,
-                this::addAssert,
-                this::addCall,
-                this::addAssign
-        );
-    }
-
-    private Void addAssign(AssignmentNode assignmentNode) {
-        CExpressionResult cExpressionResult = CExpressionResult.fromExpression(assignmentNode.getValue());
-        cExpressionResult.getTemporaries().forEach(this::append);
-        String identifier = assignmentNode.getIdentifier().getIdentifier().getValue();
-        if (assignmentNode.getIdentifier().getArrayAccessInteger().isPresent()) {
-            ExpressionNode e = assignmentNode.getIdentifier().getArrayAccessInteger().get();
-            CExpressionResult accessInt = CExpressionResult.fromExpression(e);
-            accessInt.getTemporaries().forEach(this::append);
-            identifier += "[" + accessInt.getIdentifier() + "]";
-            accessInt.getPost().forEach(this::append);
-        }
-        this.append(identifier + " = " + cExpressionResult.getIdentifier() + ";");
-        cExpressionResult.getPost().forEach(this::append);
-        return null;
-    }
-
-    private Void addCall(CallNode callNode) {
-        List<CExpressionResult> collect = callNode.getArguments().getArguments().stream()
-                .map(CExpressionResult::fromExpression)
-                .collect(Collectors.toList());
-        collect.forEach(e -> e.getTemporaries().forEach(this::append));
-        this.append(callNode.getIdentifier().getValue() + "(");
-        this.append(collect.stream()
-                .map(CExpressionResult::getIdentifier)
-                .collect(Collectors.joining(", ")), false);
-        this.append(");", false);
-        collect.forEach(e -> e.getPost().forEach(this::append));
-        return null;
-    }
-
-    private Void addAssert(AssertNode assertNode) {
-        CExpressionResult cExpressionResult = CExpressionResult.fromExpression(assertNode.getBooleanExpr());
-        cExpressionResult.getTemporaries().forEach(this::append);
-        this.append("assert " + cExpressionResult.getIdentifier() + ";");
-        cExpressionResult.getPost().forEach(this::append);
-        return null;
-    }
-
-    private Void addReturn(ReturnNode returnNode) {
-        ExpressionNode expression = returnNode.getExpression();
-        CExpressionResult cExpressionResult = CExpressionResult.fromExpression(expression);
-        cExpressionResult.getTemporaries().forEach(this::append);
-        cExpressionResult.getPost().forEach(this::append);
-        this.append("return " + cExpressionResult.getIdentifier() + ";"); // leak memory for now
-        return null;
-    }
-
-    private Void addRead(ReadNode readNode) {
-        Arrays.stream(StdIO.read(readNode.getVariables()).split("\n"))
-                .forEach(this::append);
-        return null;
-    }
-
-    private Void addWrite(WriteNode writeNode) {
-        Arrays.stream(StdIO.writeLn(writeNode.getArguments()).split("\n"))
-                .forEach(this::append);
-        return null;
-    }
-
-    private void addDeclaration(DeclarationNode declarationNode) {
-        declarationNode.getVarDeclaration().ifPresent(var ->
-                var.getIdentifiers().forEach(id ->
-                        this.addDeclaration(id.getValue(), new CType(var.getType()))
-                ));
-        declarationNode.getFunctionNode().ifPresent(functionNode -> this.addFunction(functionNode.getIdentifier().getValue(), functionNode));
-    }
-    */
 }

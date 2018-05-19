@@ -56,7 +56,7 @@ public class ExpressionResultTest {
         test(exp, expected, expectedType, new HashMap<>());
     }
 
-    public CExpressionResult getExpression(String exp) {
+    private CExpressionResult getExpression(String exp) {
         return CExpressionResult.fromExpression(new RuleMatch("Expression").parse(exp).getLeft());
     }
 

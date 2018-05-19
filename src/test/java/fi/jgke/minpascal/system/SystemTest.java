@@ -21,7 +21,7 @@ public class SystemTest {
     public Timeout globalTimeout = Timeout.seconds(10);
 
     @Test
-    public void example() throws IOException {
+    public void example() {
         String content = "program example;" +
                 "begin\n" +
                 "var b, c, d, e : integer;" +
@@ -45,7 +45,7 @@ public class SystemTest {
     }
 
     @Test(expected = TypeError.class)
-    public void returnTypeMismatch() throws IOException {
+    public void returnTypeMismatch() {
         String content = "program example;" +
                 "function bar (var y : integer): integer; " +
                 "begin " +
