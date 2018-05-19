@@ -36,10 +36,10 @@ public class CExpressionResult {
         AstNode left = arg.getFirstChild("SimpleExpression");
         AstNode relOp = arg.getFirstChild("RelOp");
         return relOp.toOptional().map(rel ->
-                getType(fromSimple(left),
-                        getRelOp(rel),
-                        fromSimple(rel.getFirstChild("RelOp").getFirstChild("SimpleExpression")),
-                        arg.getPosition())
+                                              getType(fromSimple(left),
+                                                      getRelOp(rel),
+                                                      fromSimple(rel.getFirstChild("RelOp").getFirstChild("SimpleExpression")),
+                                                      arg.getPosition())
         ).orElse(fromSimple(left));
     }
 
@@ -111,10 +111,10 @@ public class CExpressionResult {
     private static CExpressionResult fromTerm(AstNode left) {
         AstNode relOp = left.getFirstChild("MulOp");
         return relOp.toOptional().map(rel ->
-                getType(fromFactor(left.getFirstChild("Factor")),
-                        getMulOp(rel),
-                        fromFactor(rel.getFirstChild("MulOp").getFirstChild("Factor")),
-                        relOp.getPosition())
+                                              getType(fromFactor(left.getFirstChild("Factor")),
+                                                      getMulOp(rel),
+                                                      fromFactor(rel.getFirstChild("MulOp").getFirstChild("Factor")),
+                                                      relOp.getPosition())
         ).orElse(fromFactor(left.getFirstChild("Factor")));
     }
 
@@ -133,7 +133,7 @@ public class CExpressionResult {
             String identifier = unwrap.getIdentifier();
             CType type = unwrap.getType().getPtrTo()
                     .orElseThrow(() -> new TypeError("Expected " + identifier + " to be an array but it isn't",
-                            factor.getPosition()));
+                                                     factor.getPosition()));
             String s = post.get();
             String tmp = genIdentifier();
             ArrayList<String> temps = new ArrayList<>(unwrap.getTemporaries());
@@ -145,7 +145,7 @@ public class CExpressionResult {
 
     private static CExpressionResult fromNot(AstNode astNode) {
         CExpressionResult factor = fromFactor(astNode.getFirstChild("Factor"));
-        if(!factor.getType().equals(CType.CBOOLEAN)) {
+        if (!factor.getType().equals(CType.CBOOLEAN)) {
             throw new TypeError("Expected boolean but got " + factor.getType().formatType(), astNode.getPosition());
         }
         String identifier = factor.getIdentifier();
@@ -168,13 +168,16 @@ public class CExpressionResult {
             String newIdentifier = genIdentifier();
             type = type.getPtrTo()
                     .orElseThrow(() -> new TypeError("Expected " + finalIdentifier1 + " to be an array but it isn't",
-                            astNode.getPosition()));
+                                                     astNode.getPosition()));
             IdentifierContext.addIdentifier(newIdentifier, type, astNode.getPosition());
             CExpressionResult cExpressionResult = fromExpression(idx.getFirstChild("ob").getFirstChild("Expression"));
             identifier = newIdentifier;
             realName = newIdentifier;
             CType finalType1 = type;
+            String assertionCondition = cExpressionResult.getIdentifier() + " <= " + finalIdentifier1 + "[-1]";
+            String assertion = "_builtin_assert(" + assertionCondition + ", " + idx.getPosition().getLine() + ", " + idx.getPosition().getColumn() + ");\n";
             addPre = o -> {
+                cExpressionResult.getTemporaries().add(assertion);
                 cExpressionResult.getTemporaries().add(finalType1.toDeclaration(newIdentifier, Optional.empty()) + " = " + finalIdentifier1 + "[" + cExpressionResult.getIdentifier() + "];");
                 o.getTemporaries().addAll(0, cExpressionResult.getTemporaries());
                 o.getPost().addAll(cExpressionResult.getPost());
@@ -185,11 +188,11 @@ public class CExpressionResult {
         String finalIdentifier = identifier;
         String finalRealName = realName;
         return addPre.apply(astNode.getFirstChild("Arguments").toOptional()
-                .map(args -> fromCall(finalIdentifier, finalType, args))
-                .orElseGet(() -> new CExpressionResult(finalType,
-                        finalRealName,
-                        Collections.emptyList(),
-                        Collections.emptyList())));
+                                    .map(args -> fromCall(finalIdentifier, finalType, args))
+                                    .orElseGet(() -> new CExpressionResult(finalType,
+                                                                           finalRealName,
+                                                                           Collections.emptyList(),
+                                                                           Collections.emptyList())));
     }
 
     private static String getSign(AstNode sign) {
@@ -214,7 +217,7 @@ public class CExpressionResult {
         }
         String arguments =
                 Streams.zip(expressions.stream(), type.getParameters().stream(),
-                        (a, b) -> a.getType().assignTo(b, a.getIdentifier(), call.getPosition()))
+                            (a, b) -> a.getType().assignTo(b, a.getIdentifier(), call.getPosition()))
                         .collect(Collectors.joining(","));
         String result = genIdentifier();
         temporaries.add(returnType.toDeclaration(result, Optional.empty()) + " = " + IdentifierContext.getRealName(identifier, call.getPosition()) + "(" + arguments + ");");
@@ -224,14 +227,14 @@ public class CExpressionResult {
     private static CExpressionResult toExpression(CType type, Object value) {
         String id = genIdentifier();
         return new CExpressionResult(type, id, Collections.singletonList(type.toDeclaration(id, Optional.empty()) + " = " + value + ";"),
-                Collections.emptyList());
+                                     Collections.emptyList());
     }
 
     private static CExpressionResult getLiteralType(AstNode literalNode) {
         return literalNode.<CExpressionResult>toMap()
                 .map("realliteral", d -> toExpression(CType.CDOUBLE, Double.parseDouble(d.getContentString())))
                 .map("integerliteral", d -> toExpression(CType.CINTEGER, Integer.parseInt(d.getContentString())))
-                .map("stringliteral", d -> toExpression(CType.CSTRING, "_builtin_strdup(" + d.getContentString() + ")"))
+                .map("stringliteral", d -> toExpression(CType.CSTRING, d.getContentString()))
                 .unwrap();
     }
 
@@ -257,9 +260,9 @@ public class CExpressionResult {
         Optional<AstNode> astNode = argumentsNode.getFirstChild("Expression")
                 .getFirstChild("Expression").toOptional();
         return astNode.map(args -> Stream.concat(Stream.of(args.getFirstChild("Expression")),
-                args.getFirstChild("more")
-                        .getList().stream()
-                        .map(m -> m.getFirstChild("Expression")))
+                                                 args.getFirstChild("more")
+                                                         .getList().stream()
+                                                         .map(m -> m.getFirstChild("Expression")))
                 .map(CExpressionResult::fromExpression)
                 .collect(Collectors.toList()))
                 .orElse(Collections.emptyList());

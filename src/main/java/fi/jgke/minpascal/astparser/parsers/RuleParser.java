@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 import java.util.Collections;
 
 @AllArgsConstructor
-public class RuleMatch implements Parser {
+public class RuleParser implements Parser {
     private final String rule;
 
     @Override

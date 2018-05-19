@@ -1,7 +1,7 @@
 package fi.jgke.minpascal.compiler;
 
 import fi.jgke.minpascal.astparser.AstParser;
-import fi.jgke.minpascal.astparser.parsers.RuleMatch;
+import fi.jgke.minpascal.astparser.parsers.RuleParser;
 import fi.jgke.minpascal.compiler.std.CBinaryExpressions;
 import fi.jgke.minpascal.compiler.std.CExpressionResult;
 import fi.jgke.minpascal.data.Position;
@@ -57,7 +57,7 @@ public class ExpressionResultTest {
     }
 
     private CExpressionResult getExpression(String exp) {
-        return CExpressionResult.fromExpression(new RuleMatch("Expression").parse(exp).getLeft());
+        return CExpressionResult.fromExpression(new RuleParser("Expression").parse(exp).getLeft());
     }
 
     private void test(String exp, double expected, CType expectedType, Map<String, Function<String, Double>> fnCalls) {

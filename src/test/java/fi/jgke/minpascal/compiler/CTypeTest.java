@@ -3,7 +3,7 @@ package fi.jgke.minpascal.compiler;
 import com.google.common.collect.Streams;
 import fi.jgke.minpascal.astparser.AstParser;
 import fi.jgke.minpascal.astparser.nodes.AstNode;
-import fi.jgke.minpascal.astparser.parsers.RuleMatch;
+import fi.jgke.minpascal.astparser.parsers.RuleParser;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -62,23 +62,6 @@ public class CTypeTest {
         assertThat(type.toFormat(), is(equalTo("%p")));
     }
 
-    @Test
-    public void testDefaultValue() {
-        CType type;
-
-        type = new CType("int");
-        assertThat(type.defaultValue(), is(equalTo("0")));
-
-        type = new CType("bool");
-        assertThat(type.defaultValue(), is(equalTo("0")));
-
-        type = new CType("double");
-        assertThat(type.defaultValue(), is(equalTo("0.0d")));
-
-        type = new CType("char *");
-        assertThat(type.defaultValue(), is(equalTo("NULL")));
-    }
-
     private static void testCType(Optional<CType> call, List<CType> siblings, String expected, String expectedIdentifier) {
         testCType(call, siblings, expected, expectedIdentifier, "");
     }
@@ -124,7 +107,7 @@ public class CTypeTest {
     }
 
     private void testFromTypeNode(String content, boolean ptr, CType expected) {
-        AstNode typeNode = new RuleMatch("Type").parse(content).getLeft();
+        AstNode typeNode = new RuleParser("Type").parse(content).getLeft();
         assertThat(CType.fromTypeNode(typeNode, ptr), is(equalTo(expected)));
     }
 

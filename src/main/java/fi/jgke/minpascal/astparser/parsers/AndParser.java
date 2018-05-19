@@ -9,13 +9,13 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AndMatch implements Parser {
+public class AndParser implements Parser {
     private final String name;
     @Getter
     private final List<Parser> parsers;
-    private static final Parser whitespace = new RuleMatch("whitespace");
+    private static final Parser whitespace = new RuleParser("whitespace");
 
-    public AndMatch(String name, List<Parser> parsers) {
+    public AndParser(String name, List<Parser> parsers) {
         this.name = name;
         this.parsers = parsers;
     }
@@ -30,7 +30,6 @@ public class AndMatch implements Parser {
         Position pos = str.getRight();
         List<AstNode> nodes = new ArrayList<>();
         for (Parser p : parsers) {
-            str = whitespace.parse(str).getRight();
             Pair<AstNode, Pair<String, Position>> pair = p.parse(str);
             nodes.add(pair.getLeft());
             str = pair.getRight();

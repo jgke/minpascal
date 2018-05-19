@@ -12,16 +12,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class OrMatch implements Parser {
+public class OrParser implements Parser {
     private final List<Parser> parsers;
     private final Set<String> names;
 
-    public OrMatch(List<Parser> parsers) {
+    public OrParser(List<Parser> parsers) {
         if (parsers.size() > 1) {
             Parser maybeOr = parsers.get(1);
-            if (maybeOr instanceof OrMatch) {
+            if (maybeOr instanceof OrParser) {
                 if (parsers.size() != 2) throw new AssertionError();
-                List<Parser> newParsers = new ArrayList<>(((OrMatch) maybeOr).parsers);
+                List<Parser> newParsers = new ArrayList<>(((OrParser) maybeOr).parsers);
                 newParsers.add(0, parsers.get(0));
                 parsers = newParsers;
             }

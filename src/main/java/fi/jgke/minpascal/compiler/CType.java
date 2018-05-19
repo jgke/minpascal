@@ -142,12 +142,6 @@ public class CType {
         return "%p";
     }
 
-    public String defaultValue() {
-        if (this.equals(CINTEGER) || this.equals(CBOOLEAN)) return "0";
-        if (this.equals(CDOUBLE)) return "0.0d";
-        return "NULL";
-    }
-
     public CType dereferenceMaybe() {
         return this.ptrTo.orElse(this);
     }

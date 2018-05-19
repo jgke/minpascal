@@ -11,7 +11,7 @@ import lombok.Getter;
 import java.util.Arrays;
 
 @AllArgsConstructor
-public class MaybeMatch implements Parser {
+public class MaybeParser implements Parser {
     @Getter
     private final String name;
     private final Parser maybeThis;

@@ -10,14 +10,14 @@ import lombok.Getter;
 
 import java.util.Optional;
 
-public class TerminalMatch implements Parser {
+public class TerminalParser implements Parser {
     @Getter
     private final String name;
     private final String pattern;
     private final Optional<Regex> compiled;
-    private static final Parser whitespace = new RuleMatch("whitespace");
+    private static final Parser whitespace = new RuleParser("whitespace");
 
-    public TerminalMatch(String name, String pattern, boolean regex) {
+    public TerminalParser(String name, String pattern, boolean regex) {
         this.name = name;
         this.pattern = pattern;
         if (regex) {

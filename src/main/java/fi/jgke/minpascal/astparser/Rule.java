@@ -36,7 +36,7 @@ public class Rule {
     private Parser toJust(List<Parser> parsers, String name) {
         if (parsers.size() <= 1)
             return parsers.get(0);
-        return new AndMatch(name, parsers);
+        return new AndParser(name, parsers);
     }
 
     private Parser getParser(Queue<String> tokens, String name) {
@@ -52,43 +52,43 @@ public class Rule {
                     yesContent = isTerminating(tokens)
                             ? new Epsilon()
                             : getParser(tokens, tokens.peek());
-                    parsers.add(new MaybeMatch(myName, maybeContent, yesContent));
+                    parsers.add(new MaybeParser(myName, maybeContent, yesContent));
                     break;
                 case "(":
                     parsers.add(getParser(tokens, tokens.peek()));
                     break;
                 case "!":
                     String key = tokens.remove();
-                    parsers.add(new NotMatch(new RuleMatch(key), getParser(tokens, tokens.peek())));
+                    parsers.add(new NotParser(new RuleParser(key), getParser(tokens, tokens.peek())));
                     break;
                 case "*":
                     Parser parser = parsers.get(parsers.size() - 1);
                     parsers.remove(parsers.size() - 1);
-                    parsers.add(new KleeneMatch(parser));
+                    parsers.add(new KleeneParser(parser));
                     break;
                 case "|":
                     Parser inner = toJust(parsers, parsers.get(0).getName());
                     parsers = new ArrayList<>();
                     Parser right = getParser(tokens, tokens.peek());
-                    if (right instanceof AndMatch) {
-                        int size = ((AndMatch) right).getParsers().size();
+                    if (right instanceof AndParser) {
+                        int size = ((AndParser) right).getParsers().size();
                         if (size == 1) {
-                            parsers.add(new OrMatch(Arrays.asList(inner, ((AndMatch) right).getParsers().get(0))));
+                            parsers.add(new OrParser(Arrays.asList(inner, ((AndParser) right).getParsers().get(0))));
                             break;
                         }
-                    } else if (right instanceof OrMatch) {
-                        ((OrMatch) right).addParserToFront(inner);
+                    } else if (right instanceof OrParser) {
+                        ((OrParser) right).addParserToFront(inner);
                         parsers.add(right);
                         break;
                     }
-                    parsers.add(new OrMatch(Arrays.asList(inner, right)));
+                    parsers.add(new OrParser(Arrays.asList(inner, right)));
                     break;
                 case "]":
                     break loop;
                 case ")":
                     break loop;
                 default:
-                    parsers.add(new RuleMatch(remove));
+                    parsers.add(new RuleParser(remove));
             }
         }
         return toJust(parsers, name);
@@ -106,7 +106,7 @@ public class Rule {
         Regex regexRegex = new Regex("\".*?\"$");
         boolean isRegex = regexRegex.match(pattern) != -1;
         if (strRegex.match(pattern) != -1 || isRegex)
-            return new TerminalMatch(_name, pattern.substring(1, pattern.length() - 1), isRegex);
+            return new TerminalParser(_name, pattern.substring(1, pattern.length() - 1), isRegex);
         List<String> split = Arrays.asList(pattern.split("\\s+"));
         for (String s : Arrays.asList("!", "[", "]", "|", "(", ")", "*")) {
             split = tokenize(split, s);

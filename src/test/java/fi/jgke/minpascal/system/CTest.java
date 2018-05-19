@@ -90,6 +90,33 @@ public class CTest {
     }
 
     @Test
+    public void arrayOutOfBounds() {
+        String s = "program Hello;\n" +
+                "begin\n" +
+                "  var x : array [0] of integer;\n" +
+                "  writeln(x[1]);\n" +
+                "end.\n";
+        testCompiledOutput(s, "", "Assertion failed on line 4, column 12\n", 1);
+    }
+
+    @Test
+    public void nestedFunctions() {
+        String s = "program Hello;\n" +
+                " function foo (var x : integer): integer; " +
+                " begin " +
+                "   function bar (var x : integer): integer; " +
+                "   begin " +
+                "     return x + 1; " +
+                "   end; " +
+                "   return bar(x) + 2; " +
+                " end " +
+                "begin\n" +
+                "  writeln(foo(5));\n" +
+                "end.\n";
+        testCompiledOutput(s, "8\n");
+    }
+
+    @Test
     public void varFunctions() {
         String app = "program foo;" +
                 " function foo (var x : integer): integer; " +
@@ -155,6 +182,8 @@ public class CTest {
     }
 
     public static void testCompiledOutput(String input, String stdin, String output, int expectedReturnCode) {
+        // try first just compiling...
+        MinPascal.compile(input);
         try {
             withMppFile(input, path -> {
                 ByteArrayOutputStream err = new ByteArrayOutputStream();
@@ -170,7 +199,7 @@ public class CTest {
                 assertThat(returncode, is(equalTo(0)));
 
                 returncode = exec("gcc " + base + ".c -Werror -o " + base,
-                        path.getParent().toFile(), "", CTest::stripPrint, CTest::stripPrint);
+                                  path.getParent().toFile(), "", CTest::stripPrint, CTest::stripPrint);
                 assertThat(returncode, is(equalTo(0)));
 
                 AtomicReference<String> mutOutput = new AtomicReference<>("");
@@ -179,12 +208,12 @@ public class CTest {
 
                 // this fails on windows but w/e
                 boolean hasValgrind = exec("which valgrind",
-                        path.getParent().toFile(), "", mutOutput::set, valgrindOutput::set) == 0;
+                                           path.getParent().toFile(), "", mutOutput::set, valgrindOutput::set) == 0;
 
                 String valgrind = hasValgrind ? "valgrind --error-exitcode=1 " : "";
 
                 returncode = exec(valgrind + base,
-                        path.getParent().toFile(), stdin, mutOutput::set, valgrindOutput::set);
+                                  path.getParent().toFile(), stdin, mutOutput::set, valgrindOutput::set);
                 if (returncode != 0) {
                     System.err.println(valgrind + base);
                     System.err.println(path.getParent().toFile());

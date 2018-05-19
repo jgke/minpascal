@@ -7,14 +7,14 @@ import fi.jgke.minpascal.util.Pair;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class NotMatch implements Parser {
+public class NotParser implements Parser {
     private final Parser notThis;
     private final Parser yesThis;
 
     @Override
     public Pair<AstNode, Pair<String, Position>> parse(Pair<String, Position> str) {
         if (notThis.parses(str.getLeft()))
-            throw new CompilerException("NotMatch.parse called when notThis matches");
+            throw new CompilerException("NotParser.parse called when notThis matches");
         return yesThis.parse(str);
     }
 

@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 @AllArgsConstructor
-public class KleeneMatch implements Parser {
+public class KleeneParser implements Parser {
     private final static String name = "more";
     private final Parser parser;
 

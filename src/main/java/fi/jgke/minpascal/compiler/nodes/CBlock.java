@@ -150,8 +150,8 @@ public class CBlock {
                 .forEach(ident -> IdentifierContext.addIdentifier(ident, type, astNode.getPosition()));
         Optional<String> finalInitializer = initializer;
         return Stream.concat(pre.stream().map(Content::new),
-                Stream.concat(Stream.of(identifier), more.stream())
-                        .map(ident -> new Content(type.toDeclaration(ident, finalInitializer) + ";")));
+                             Stream.concat(Stream.of(identifier), more.stream())
+                                     .map(ident -> new Content(type.toDeclaration(ident, finalInitializer) + ";")));
     }
 
     private static Stream<Content> fromStructured(AstNode astNode) {
@@ -219,12 +219,12 @@ public class CBlock {
 
     private static Stream<Content> fromAssert(AstNode astNode) {
         CExpressionResult expression = CExpressionResult.fromExpression(astNode.getFirstChild("Expression"));
+        String identifier = expression.getIdentifier();
+        int line = astNode.getPosition().getLine();
+        int column = astNode.getPosition().getColumn();
         return Stream.of(new Content(
                 expression.getTemporaries().stream().collect(Collectors.joining(";\n"))
-                        + "if(!" + expression.getIdentifier() + ") {\n" +
-                        "      printf(\"Assertion failed\\n\");" +
-                        "      exit(1);" +
-                        "  }\n"));
+                        + "_builtin_assert(" + identifier + ", " + line + ", " + column + ");\n"));
     }
 
     private static Stream<Content> fromReturn(AstNode astNode) {
@@ -239,7 +239,7 @@ public class CBlock {
         }
         if (!type.equals(functionContext)) {
             throw new TypeError("Invalid return type; expected " + functionContext.formatType()
-                    + " but got " + type.formatType(), astNode.getPosition());
+                                        + " but got " + type.formatType(), astNode.getPosition());
         }
         return Stream.of(new Content(
                 result.getTemporaries().stream().collect(Collectors.joining(";\n"))
@@ -255,8 +255,8 @@ public class CBlock {
                 .getContentString();
         if (identifier.toLowerCase().equals("writeln")) {
             return fromWrite(identifierStatement
-                    .getFirstChild("IdentifierStatementContent")
-                    .getFirstChild("Arguments"));
+                                     .getFirstChild("IdentifierStatementContent")
+                                     .getFirstChild("Arguments"));
         }
         return identifierStatement
                 .getFirstChild("IdentifierStatementContent").<Stream<Content>>toMap()
@@ -277,8 +277,8 @@ public class CBlock {
     private static Stream<Content> fromRead(AstNode firstChild) {
         AstNode variable = firstChild.getFirstChild("Variable");
         return Stream.concat(Stream.of(variable),
-                firstChild.getFirstChild("more").getList().stream()
-                        .map(child -> child.getFirstChild("Variable")))
+                             firstChild.getFirstChild("more").getList().stream()
+                                     .map(child -> child.getFirstChild("Variable")))
                 .map(m -> m.getFirstChild("identifier"))
                 .map(AstNode::getContentString)
                 .map((String identifier) -> readVariable(identifier, firstChild.getPosition()))
@@ -295,9 +295,9 @@ public class CBlock {
                 .map(ob -> {
                     CExpressionResult index = CExpressionResult.fromExpression(ob.getFirstChild("Expression"));
                     return Stream.concat(index.getTemporaries().stream().map(Content::new),
-                            assignTo(identifier + "[" + index.getIdentifier() + "]",
-                                    assignmentStatement,
-                                    false)
+                                         assignTo(identifier + "[" + index.getIdentifier() + "]",
+                                                  assignmentStatement,
+                                                  false)
                     );
                 })
                 .orElseGet(() -> assignTo(
@@ -315,7 +315,7 @@ public class CBlock {
                         : identifier;
         String p2 = expression.getType().getPtrTo().map($ -> "*").orElse("");
         return Stream.concat(expression.getTemporaries().stream(),
-                Stream.of(p1 + realIdentifier + " = " + p2 + expression.getIdentifier() + ";"))
+                             Stream.of(p1 + realIdentifier + " = " + p2 + expression.getIdentifier() + ";"))
                 .map(Content::new);
     }
 
@@ -328,8 +328,8 @@ public class CBlock {
 
         String print = "printf(\"" + fmt.trim() + "\\n\", " + collect.stream()
                 .map(cExpressionResult ->
-                        (cExpressionResult.getType().getPtrTo().isPresent() ? "*" : "")
-                                + cExpressionResult.getIdentifier())
+                             (cExpressionResult.getType().getPtrTo().isPresent() ? "*" : "")
+                                     + cExpressionResult.getIdentifier())
                 .collect(Collectors.joining(", ")) + ");\n";
         String total = formatExpressions(collect, $ -> print);
         return Stream.of(new Content(total));
@@ -346,7 +346,7 @@ public class CBlock {
             String total = formatExpressions(
                     collect,
                     expressions -> Streams.zip(expressions.stream(), IdentifierContext.getType(identifier, argumentsNode.getPosition()).getParameters().stream(),
-                            (a, b) -> a.getType().assignTo(b, a.getIdentifier(), argumentsNode.getPosition()))
+                                               (a, b) -> a.getType().assignTo(b, a.getIdentifier(), argumentsNode.getPosition()))
                             .collect(Collectors.joining(delimit, pre, post)));
 
             return Stream.of(new Content(total));

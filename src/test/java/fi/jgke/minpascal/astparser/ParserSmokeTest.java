@@ -1,7 +1,7 @@
 package fi.jgke.minpascal.astparser;
 
 import fi.jgke.minpascal.astparser.nodes.AstNode;
-import fi.jgke.minpascal.astparser.parsers.RuleMatch;
+import fi.jgke.minpascal.astparser.parsers.RuleParser;
 import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.util.Pair;
 import org.junit.Test;
@@ -31,13 +31,13 @@ public class ParserSmokeTest {
         String C = "C ::= \"C\"";
         ParserTestUtils.initRules(A, B, C);
         Pair<AstNode, Pair<String, Position>> parse;
-        parse = new RuleMatch("A").parse("B");
+        parse = new RuleParser("A").parse("B");
         assertThat(parse.getRight().getLeft(), is(equalTo("")));
         parse.getLeft().toMap()
                 .map("B", $ -> null)
                 .map("C", $ -> assertFalse())
                 .unwrap();
-        parse = new RuleMatch("A").parse("C");
+        parse = new RuleParser("A").parse("C");
         assertThat(parse.getRight().getLeft(), is(equalTo("")));
         parse.getLeft().toMap()
                 .map("C", $ -> null)
@@ -54,7 +54,7 @@ public class ParserSmokeTest {
     @Test
     public void testParameters() {
         initDefaultParsers();
-        RuleMatch p = new RuleMatch("Parameters");
+        RuleParser p = new RuleParser("Parameters");
         p.parse("()");
         p.parse("(x: real)");
         p.parse("(x: real, y: real)");

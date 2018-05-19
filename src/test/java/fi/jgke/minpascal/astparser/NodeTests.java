@@ -2,6 +2,7 @@ package fi.jgke.minpascal.astparser;
 
 import fi.jgke.minpascal.astparser.nodes.LeafNode;
 import fi.jgke.minpascal.astparser.nodes.ListAstNode;
+import fi.jgke.minpascal.astparser.parsers.RuleParser;
 import fi.jgke.minpascal.data.Position;
 import fi.jgke.minpascal.exception.CompilerException;
 import org.junit.After;
@@ -13,6 +14,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static fi.jgke.minpascal.astparser.ParserTestUtils.initRules;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -158,6 +160,17 @@ public class NodeTests {
                 .toMap()
                 .chain("Foo", f -> assertThat(f.getFirstChild("bar").getContentString(), is(equalTo("baz"))))
                 .map("bar", $ -> $)
+                .unwrap();
+    }
+
+    @Test(expected = CompilerException.class)
+    public void invalidMap() {
+        initRules("X ::= a | b",
+                  "a ::= 'a'",
+                  "b ::= 'b'");
+        new RuleParser("X").parse("a").getLeft().toMap()
+                .map("a", $ -> null)
+                .map("c", $ -> null)
                 .unwrap();
     }
 }

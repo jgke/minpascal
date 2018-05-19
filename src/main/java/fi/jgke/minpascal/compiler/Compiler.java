@@ -16,9 +16,11 @@
 package fi.jgke.minpascal.compiler;
 
 import fi.jgke.minpascal.astparser.nodes.AstNode;
+import fi.jgke.minpascal.compiler.nodes.CBlock;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 public class Compiler {
     private CBuilder output;
@@ -31,6 +33,12 @@ public class Compiler {
         CRootBlock cRootBlock = new CRootBlock(// @formatter:off
                 Arrays.asList("stdio.h", "stdlib.h", "stdbool.h", "string.h"),
                 Arrays.asList(
+                        "void _builtin_assert(int cond, int line, int column) { " +
+                                "if(!cond) {" +
+                                  "printf(\"Assertion failed on line %d, column %d\\n\", line, column);" +
+                                  "exit(1);" +
+                                "}" +
+                        "}",
                         "void _builtin_scanstring(char **str) {" +
                                 "size_t strSize = 1024;" +
                                 "size_t pos = 0;" +
@@ -67,8 +75,15 @@ public class Compiler {
 
         IdentifierContext.push();
         //root.debug();
-        RootBuilder rootBuilder = new RootBuilder(root);
-        rootBuilder.build(output);
+        root.getFirstChild("more").getList().stream()
+                .flatMap(CBlock::fromDeclaration)
+                .forEach(c -> output.append(c.getData()));
+        IdentifierContext.pushFunctionContext(CType.CINTEGER);
+        output.append("\nint main() {");
+        output.append(CBlock.parse(root.getFirstChild("Block")).getContents()
+                              .stream().map(CBlock.Content::getData).collect(Collectors.joining("")));
+        output.append("\nreturn 0;");
+        output.append("\n}");
         IdentifierContext.pop();
 
         return this;

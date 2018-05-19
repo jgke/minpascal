@@ -100,9 +100,7 @@ real ::= 'real'
 str ::= 'string'
 var ::= 'var'
 while ::= 'while'
-write ::= 'writeln'
 
-whitespace ::= _comment | _ws | _epsilon
-_epsilon ::= ""
+whitespace ::= (_ws|_comment)*
 _comment ::= "\{\*.*?\*\}"
 _ws ::= "( |\n)+"
