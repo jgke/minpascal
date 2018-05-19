@@ -1,0 +1,323 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{placeins}
+\usepackage[top=1in,bottom=1in]{geometry}
+\usepackage{minted}
+\usepackage{hyperref}
+
+\def\bnflexer{grammar_notation.py:AbnfLexer -x}
+\def\pascallexer{pascal.py:DelphiLexer -x}
+
+\newcommand{\bnf}[1]{%
+    \inputminted{\bnflexer}{#1}}
+
+\setminted{autogobble}
+
+\author{Jaakko Hannikainen - Compilers}
+\title{Miniplc, an interpreter for the MiniPL programming language}
+
+\begin{document}
+\maketitle
+
+\noindent
+\begin{minipage}{0.35\textwidth}
+\begin{minted}{\pascallexer}
+    program Hello;
+    begin
+        writeln ("Hello, World!");
+    end.
+\end{minted}
+\end{minipage}
+\begin{minipage}{0.54\textwidth}
+\begin{minted}{text}
+    $ java -jar build/libs/minpascal-fatjar.jar helloWorld.mpp
+    $ cc helloWorld.c -o hello
+    $ ./hello
+    Hello, World!
+    $
+\end{minted}
+\end{minipage}
+
+\section{Introduction}
+MinPascal is a complier for the Mini-Pascal programming language. It
+compiles Mini-Pascal to a limited subset of C. \\[1.5em]
+
+\noindent
+Basic usage:
+\begin{minted}{shell}
+    ./gradlew jar
+    java -jar build/libs/minpascal.jar helloWorld.mpp # outputs helloWorld.c
+    cc helloWorld.c -o hello # Compile using your favourite C compiler and...
+    ./hello # execute it!
+\end{minted}
+
+\noindent
+Running tests:
+\begin{minted}{shell}
+    ./gradlew test # normal tests
+    ./gradlew pitest # mutation tests
+    ./gradlew test pitest jacocoTestReport # generate code coverage
+\end{minted}
+
+\newpage
+\section{Code layout}
+The compiler includes a generic AST parser in the package
+\texttt{fi.jgke.minpascal.astparser}, which uses the regular expression
+implementation in \texttt{fi.jgke.minpascal.util}. The auto-generated AST tree
+is passed to the compiler in \texttt{fi.jgke.minpascal.compiler}, which outputs
+a low-level variant of C. The compiler uses the following libraries:
+\begin{itemize}
+    \item Various implementations of \texttt{java.util.Collection} (such as lists, sets and maps)
+    \item \texttt{java.util.stream.Stream}
+    \item \texttt{java.util.function} for various Java 8 lambdas
+    \item \texttt{lombok} for automatic generation of getters and setters
+    \item \texttt{java.io} and \texttt{java.nio} for file input/output
+    \item \texttt{com.google.common.collect.Streams}' \texttt{.zip()} function
+\end{itemize}
+
+The tests are a bit more lenient in terms of using the standard library, and
+they use the standard Java implementation for regular expressions in quite many
+places.
+
+\subsection{Regular expressions}
+The class \texttt{fi.jgke.minpascal.util.Regex} contains a small Regex-like language
+implementation with the following properties:
+\begin{itemize}
+    \item Only checking for matches in the beginning of a string is supported
+    \item Only does a limited amount of backtracking is done before not
+        matching a string \\
+        (regex such as '(x+x+)+y' doesn't match 'xxxxxxy')
+    \item The following regular expression features are available:
+        Concatenation (ab), alternation (a|b), kleene star (a*), lazy
+        kleene star (a*?, required due to limited backtracking), kleene plus
+        (a+, equivalent to aa*), groups ([a-z]), negative groups ([\^{}a-z])
+        and end-of-file (\$).
+    \item The regex matcher only returns the length of the match.
+\end{itemize}
+
+The regexes are first compiled into a tree of patterns, which are then used to
+match strings.
+
+\subsection{AST parser}
+The AST parser has a very similar layout to the regex implementation, except
+that it's broken into multiple files. The BNF file is first broken into lines,
+then tokenized and parsed into matchers. These matchers can then be used to
+transform text into an AST. The different types of AST nodes are located in
+\texttt{fi.jgke.minpascal.astparser.nodes}, and the matchers are located in
+\texttt{fi.jgke.minpascal.astparser.parsers}. Whitespace is handled by the
+special rule \texttt{whitespace}, which matches on spaces, newlines and
+comments.
+
+\FloatBarrier
+
+\noindent
+\begin{figure}[ht!]
+    \begin{minted}{java}
+        private static List<String> tokenize(List<String> strs, String delimiter) {
+            return strs.stream()
+                .map(str -> Arrays.stream(str.split(Pattern.quote(delimiter), -1)))
+                .flatMap(ss -> ss
+                    .flatMap(s1 -> Stream.of(delimiter, s1))
+                    .skip(1))
+                .filter(s -> !s.trim().isEmpty())
+                .collect(Collectors.toList());
+        }
+    \end{minted}
+    \caption{Tokenizer for the BNF rules is very simple.}
+\end{figure}
+
+\FloatBarrier
+
+\subsection{AST}
+The AST is represented as a collection of AST nodes. Each node can either be
+empty (eg. an optional node which didn't match), a leaf node (eg. a terminal)
+or a list (from either concatenation or alternation). Alternation can be handled
+in the compiler with the \texttt{toMap} helper, which forces the compiler to
+check all alternatives. A backdoor (\texttt{getFirstChild}) is provided, which
+can be used to check whether a node exists as an immediate child.
+
+\begin{figure}[ht!]
+    \begin{minted}{java}
+        initRules("X ::= a | b",
+                  "a ::= 'a'",
+                  "b ::= 'b'");
+        new RuleParser("X").parse("a").getLeft().toMap()
+                .map("a", _ -> null)
+                .map("c", _ -> null)
+                .unwrap();
+    \end{minted}
+    \caption{A compiler exception is thrown on line 6 -- the rule for X doesn't
+    include any 'c' so the compiler cannot map over it.}
+\end{figure}
+
+\begin{figure}[ht!]
+    \begin{minted}{java}
+        initRules("X ::= a | b",
+                  "a ::= 'a'",
+                  "b ::= 'b'");
+        new RuleParser("X").parse("a").getLeft().toMap()
+                .map("a", _ -> null)
+                .unwrap();
+    \end{minted}
+    \caption{A compiler exception is thrown on line 6 -- 'b' isn't handled.}
+\end{figure}
+
+\newpage
+The AST is generated automatically based on the BNF grammar. Due to technical
+reasons, alternation matches result in duplicated AST nodes (eg.
+SimpleStatement in the sample below). The following is an example of the AST
+for the hello world program:
+
+\inputminted{text}{ast.txt}
+
+
+\newpage
+\section{BNF for the language}
+\label{sec:bnf}
+\bnf{../src/main/resources/MinPascal.bnf}
+
+\newpage
+\section{Language implementation-level decisions}
+Various implementation-level decisions, in no particular order:
+
+\begin{itemize}
+    \item True and false are handled as variables. This simplifies the grammar,
+        while allowing overriding the identifiers.
+    \item Side-effects' evaluation order is left-to-right.
+    \item Integers are represented with C's \texttt{int}, and reals with
+        \texttt{double}.
+    \item \texttt{main()} in C always returns 0 (unless an assertion fails).
+    \item Functions are required to hane 'return' as their last statement. As
+        the compiler doesn't perform any logic related to handling if/while
+        statements, it cannot check whether a function returns for statements
+        such as if(...) return foo else return bar.
+    \item Array size is stored in index -1. This makes it easy to pass around
+        in C.
+    \item Array index accesses are checked at runtime, and they throw assertion
+        failures.
+    \item Boolean type seemed to be missing from the specification (by
+        accident?), and is available under the name \texttt{boolean}.
+    \item The compiled C code leaks a lot of memory, due to the deadline. There
+        is some support for releasing memory, but it's only used within
+        \texttt{writeln} statements.
+    \item Nested functions are only supported if the C compiler supports them.
+        Again, deadlines.
+    \item Array types can be used directly without the index access ([]), this
+        is equivalent to accessing the first item ([0]).
+\end{itemize}
+
+\FloatBarrier
+
+\begin{figure}[ht!]
+    \begin{minted}{\pascallexer}
+        program Hello;
+        begin
+          writeln("Foo" + "Bar");
+        end.
+    \end{minted}
+    \caption{This snippet doesn't leak memory...}
+\end{figure}
+
+\FloatBarrier
+
+\begin{figure}[ht!]
+    \begin{minted}{\pascallexer}
+        program Hello;
+        begin
+          var x: string;
+          var y: string;
+          x := "FooBar";
+          y := "FooBar";
+          writeln(x + y);
+        end.
+    \end{minted}
+    \caption{...but this one does.}
+\end{figure}
+
+\FloatBarrier
+
+\newpage
+\section{Semantic analysis}
+The execution starts by compiling the BNF rules, which are ad-hoc checked.
+The actual program checks start when the input file is passed to the compiler.
+Each parser has its own checks. For example, while parsing
+\texttt{VarDeclaration}, the AndParser first checks whether the rule \texttt{op}
+matches. The RuleMatch for \texttt{op} checks whether the input starts with
+'('. The AndMatch proceeds to the next rule, which is \texttt{identifier}. This
+continues, until either the whole match is complete or one of the parsers
+throws an error.
+
+After the parsing is complete, the AST tree is passed to the compiler. Most of
+the errors here are either type errors or identifier-related errors. Type errors
+happen when the Mini-Pascal program tries to do an unsupported operation, such
+as calling an identifier that isn't a function or trying to add booleans
+together. The other time type errors can be thrown is return type checking.
+Identifiers are handled in the typical way; every time a new block is opened, a
+map is pushed to a global stack. The stack is searched every time the program
+uses any identifiers.
+
+\section{Code generation problems and solutions}
+The AST autoparser, unsurprisingly, took a lot of effort to get running. I'm
+still pretty happy about how it turned out.
+
+Pointer behaviour in Mini-Pascal is interesting, as it's implicit
+(\texttt{x~+~var~y~=~x~+~*y}), and is a source of many bugs. I'm pretty sure
+there are several bugs in the corner cases behind arrays, var types and the
+like...
+
+Code generation in general turned out to be a bit ugly -- it could certainly
+be prettified.
+
+The compiler doesn't try to recover from errors. It could certainly be a bit
+better, at least for the parsing.
+
+\section{Error handling strategies and solutions}
+
+Errors are handled by throwing appropriate exceptions when errors happen. At
+all times while compiling a position context is available, which can be used
+to approximate the location in the file where the error happened. 
+
+\begin{figure}[ht!]
+    \begin{minted}{text}
+        $ java -jar build/libs/minpascal-fatjar.jar helloWorld.mpp
+        Error near line 2, column 1: Parse error: could not match 'begin'
+        for string 'baegin   var x: string;  var y: strin...'
+        $
+    \end{minted}
+    \caption{A parse error; the parser expects 'begin' but only finds 'baegin'.}
+    \label{fig:parseerror}
+\end{figure}
+
+\begin{figure}[ht!]
+    \begin{minted}{text}
+        $ java -jar build/libs/minpascal-fatjar.jar helloWorld.mpp
+        Error near line 4, column 2: Identifier x already exists,
+        original defined at line 3, column 2
+        $
+    \end{minted}
+    \caption{A duplicate identifier; the identifier 'x' is defined at line 3,
+    but is redefined in the same scope on line 4.}
+    \label{fig:dupe}
+\end{figure}
+
+Various checks are done while compiling; these include both parsing errors (such
+as the parse error in figure~\ref{fig:parseerror}) and semantic errors (such as
+type errors or the duplicate identifier in figure~\ref{fig:dupe}).
+
+The following types of errors are handled:
+\begin{itemize}
+    \item Parse errors (string literal or regex didn't match, none of
+        alternatives in an OrParser matched)
+    \item Duplicate identifiers in the same scope (nested scope is fine)
+    \item Unknown identifiers
+    \item Invalid operators for types (such as 'true + true')
+    \item Generic type errors (returning an invalid type, assigning an invalid
+        type, calling a non-function...)
+    \item Compiler bugs, such as invalid handling of AST nodes
+\end{itemize}
+
+The compiler doesn't try to recover from errors.
+
+\end{document}

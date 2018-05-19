@@ -52,7 +52,7 @@ task applicationCodeCoverageReport(type: JacocoReport) {
 
 pitest {
     targetClasses = ['fi.jgke.minpascal.*']
-    excludedClasses = ['fi.jgke.minpascal.system.*']
+    //excludedClasses = ['fi.jgke.minpascal.system.*']
     excludedMethods = ['toString']
     timestampedReports = false
 }

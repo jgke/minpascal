@@ -1,0 +1,47 @@
+L:Program (
+  .:program~program
+  .:identifier~Hello
+  .:semicolon~;
+  L:more (
+    )
+  L:Block (
+    .:begin~begin
+    ?:Statement (
+      ?:SimpleStatement (
+        ?:SimpleStatement (
+          ?:IdentifierStatement (
+            ?:IdentifierStatement (
+              L:identifier (
+                .:identifier~writeln
+                ?:IdentifierStatementContent (
+                  ?:Arguments (
+                    L:Arguments (
+                      .:op~(
+                      L:Expression (
+                        L:Expression (
+                          L:Expression (
+                            ?:SimpleExpression (
+                              L:Sign (
+                                EmptyNode:Sign
+                                L:Term (
+                                  L:Term (
+                                    L:Factor (
+                                      ?:SubFactor (
+                                        ?:Literal (
+                                          ?:Literal (
+                                            ?:stringliteral (
+                                              .:stringliteral~"Hello
+                                              World!"))))
+                                      EmptyNode:SizeExpression)
+                                    EmptyNode:MulOp)
+                                  EmptyNode:AddOp)))
+                            EmptyNode:RelOp)
+                          L:more (
+                            ))
+                        .:cp~)))))))))))
+    L:more (
+      L:semicolon (
+        .:semicolon~;
+        EmptyNode:Statement))
+    .:end~end)
+  .:dot~.)
