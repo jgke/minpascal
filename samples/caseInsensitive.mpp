@@ -1,0 +1,11 @@
+program Hello;
+function baz (z : integer): integer;
+begin
+    return 5 + z;
+end
+begin
+  var foo : integer;
+  Foo := 5;
+  writeln(FOO);
+  writeln(BAZ(10));
+end.

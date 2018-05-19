@@ -1,0 +1,8 @@
+program Hello;
+begin
+  var read: integer;
+  begin
+    read(read);
+    writeln(read);
+  end
+end.

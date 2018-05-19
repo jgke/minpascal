@@ -1,0 +1,10 @@
+program Hello;
+procedure foo (x: array [] of integer);
+  begin
+    writeln (x[0], x.size);
+  end
+begin
+  var x : array [5] of integer;
+  x[0] := 4;
+  foo(x);
+end.

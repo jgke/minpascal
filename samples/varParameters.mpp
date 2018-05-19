@@ -1,0 +1,34 @@
+program Hello;
+function foo (x : integer): integer;
+begin
+    x :=  5 + x;
+    return x;
+end
+function baz (z : integer): integer;
+begin
+    return 5 + z;
+end
+function bar (var y : integer): integer;
+begin
+    y := baz(y);
+    return y;
+end
+procedure qux (var y : integer);
+begin
+    y := bar(y);
+end
+begin
+  var x: integer;
+  x := 5;
+  var y: integer;
+  y := 5;
+  y := foo(y);
+  WriteLn(y);
+  qux(y);
+  WriteLn(y);
+  WriteLn(x);
+  foo(x);
+  WriteLn(x);
+  bar(x);
+  WriteLn(x);
+end.

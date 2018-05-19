@@ -1,0 +1,13 @@
+program Hello;
+  procedure foo ();
+  begin
+    writeln ("Procedure call");
+  end
+  function bar (x : integer): integer;
+  begin
+    writeln ("Function call");
+    return 5 + x;
+  end
+begin
+  writeln (bar(5));
+end.

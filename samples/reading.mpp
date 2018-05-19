@@ -1,0 +1,9 @@
+program Hello;
+begin
+  var x : integer;
+  read(x);
+  writeln(x);
+  var y : string;
+  read(y);
+  writeln(y);
+end.
