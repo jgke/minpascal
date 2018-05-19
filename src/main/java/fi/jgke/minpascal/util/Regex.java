@@ -76,7 +76,7 @@ public class Regex {
                     if (content == null) throw new AssertionError();
                     while (!str.isEmpty()) {
                         for (Pattern subPattern : content) {
-                            if(matchSize + position >= str.length()) {
+                            if (matchSize + position >= str.length()) {
                                 position = 0;
                                 break;
                             }
@@ -111,7 +111,7 @@ public class Regex {
                             break;
                         matchSize += position;
                     }
-                    if(lazySize > 0)
+                    if (lazySize > 0)
                         return position + lazySize;
                     return position;
                 case CONCAT:
@@ -163,7 +163,7 @@ public class Regex {
             switch (c) {
                 case '\\':
                     Character remove = queue.remove();
-                    if(remove.equals('n'))
+                    if (remove.equals('n'))
                         patterns.add(new Pattern("\n"));
                     else
                         patterns.add(new Pattern("" + remove));
@@ -183,8 +183,8 @@ public class Regex {
                         Pattern subPattern;
                         subPattern = makePattern(queue);
                         pattern = new Pattern(Type.KLEENE_LAZY,
-                                Collections.singletonList(lastPattern),
-                                subPattern);
+                                              Collections.singletonList(lastPattern),
+                                              subPattern);
                     } else {
                         Type type = c == '+' ? Type.KLEENE_PLUS : Type.KLEENE;
                         pattern = new Pattern(type, Collections.singletonList(lastPattern));

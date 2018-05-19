@@ -105,4 +105,4 @@ write ::= 'writeln'
 whitespace ::= _comment | _ws | _epsilon
 _epsilon ::= ""
 _comment ::= "\{\*.*?\*\}"
-_ws ::= "( |\\n)+"
+_ws ::= "( |\n)+"
