@@ -15,8 +15,8 @@
 
 \setminted{autogobble}
 
-\author{Jaakko Hannikainen - Compilers}
-\title{Miniplc, an interpreter for the MiniPL programming language}
+\author{Jaakko Hannikainen - CSM14205 Code Generation}
+\title{MinPascal, a compiler for the Mini-Pascal programming language}
 
 \begin{document}
 \maketitle
@@ -62,7 +62,9 @@ Running tests:
 \end{minted}
 
 \noindent
-More samples are available in the samples/ subdirectory.
+More samples are available in the samples/ subdirectory. A Makefile is provided
+to ease running the programs -- the command \texttt{make run} can be used to
+run all the sample programs.
 
 \newpage
 \section{Code layout}
@@ -91,7 +93,7 @@ implementation with the following properties:
     \item Only checking for matches in the beginning of a string is supported
     \item Only does a limited amount of backtracking is done before not
         matching a string \\
-        (regex such as '(x+x+)+y' doesn't match 'xxxxxxy')
+        (regex such as 'x+xy' doesn't match 'xxxxxxy')
     \item The following regular expression features are available:
         Concatenation (ab), alternation (a|b), kleene star (a*), lazy
         kleene star (a*?, required due to limited backtracking), kleene plus
