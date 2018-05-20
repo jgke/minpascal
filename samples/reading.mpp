@@ -1,9 +1,11 @@
 program Hello;
 begin
   var x : integer;
+  writeln("Please input an integer");
   read(x);
   writeln(x);
   var y : string;
+  writeln("Please input a string");
   read(y);
   writeln(y);
 end.

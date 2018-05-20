@@ -4,4 +4,4 @@ MinPascal
 Samples
 -------
 
-Try running `make` :)
+Try running `make run` :)
