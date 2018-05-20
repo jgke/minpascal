@@ -59,12 +59,6 @@ public class Compiler {
                                 "}" +
                         "end:" +
                                 "(*str)[pos] = '\\0';" +
-                        "}",
-
-                        "char *_builtin_strdup(const char *str) {" +
-                                "char *out = malloc(strlen(str)+1);" +
-                                "strcpy(out, str);" +
-                                "return out;" +
                         "}"),
                 // @formatter:on
                 Collections.emptyList()
